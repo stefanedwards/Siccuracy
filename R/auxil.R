@@ -56,9 +56,23 @@ get_nlines <- function(fn, showWarning=TRUE, doError=FALSE) {
 #' @return \code{get_firstcolumn}: Vector with elements of first column, or \code{data.frame} if \code{class} contains multiple not-\code{"NULL"} elements.
 #' @rdname auxfunc
 get_firstcolumn <- function(fn, class='integer', ...) {
+  args <- list(...)
+  args$showWarning <- NULL
+  args$doError <- NULL
+  cols <- get_ncols(fn)
+  
   classes <- rep('NULL', times=get_ncols(fn))
   classes[1:length(class)] <- class
-  res <- read.table(fn, colClasses = classes, ...)
+
+  args$file <- fn
+  args$colClasses=classes
+  
+  if (!is.null(args$col.names)) {
+    if (length(args$col.names) != col)
+      args$col.names <- c(args$col.names, paste0('X', 1:(cols-length(args$col.names))))
+  }
+  
+  res <- do.call(read.table, args)
   if (ncol(res) == 1) res <- res[,1]
   return(res)
 }
