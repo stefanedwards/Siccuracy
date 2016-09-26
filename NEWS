@@ -1,0 +1,25 @@
+# 0.5.0
+
+  * Preparing package for publication.
+  * get_firstcolumn now works with several data types, but default use is still integer.
+
+# 0.3.2
+
+  * Added function `mergeChips` for merging multiple SNP chips into a single file.
+  * Added function `read.snps` for easy reading SNP files.
+
+# 0.3.1
+
+  * Added function `rowconcatenate`, albeit without test routines.
+  * Updated phasotogeno to handle numeric values instead of just integers.
+  * phasotogeno_int is the integer version of phasotogeno (where the latter does not work with heterozygosity).
+  * Bug fix: Now standardises by standard deviation, not variance.
+
+# 0.3.0
+
+  * Added NEWS file.
+  * In `imputation_accuracy3`, row and columns correlations that are `Inf`, `-Inf`, or `NaN` are set to `NA`.
+
+# 0.2.0
+
+  * Added Heterozygosity function.

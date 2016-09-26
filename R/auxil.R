@@ -50,7 +50,7 @@ get_nlines <- function(fn, showWarning=TRUE, doError=FALSE) {
 #' skip columns.
 #'
 #' @export
-#' @param class Character vector of classes to use for column(s), see \code{colClasses} in \code{\link[base]{read.table}}.
+#' @param class Character vector of classes to use for column(s), see \code{colClasses} in \code{\link[utils]{read.table}}.
 #' @param nLines Optional, number of lines to read. When NULL, \code{get_firstcolumn} uses \code{get_lines} for you.
 #' @param ... Parameters sent to \code{read.table}.
 #' @return \code{get_firstcolumn}: Vector with elements of first column, or \code{data.frame} if \code{class} contains multiple not-\code{"NULL"} elements.

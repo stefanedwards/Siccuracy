@@ -1,0 +1,18 @@
+Package: Siccuracy
+Type: Package
+Title: Stefan's imputation accuracies package
+Version: 0.5.0
+Date: 2016-04-18
+Author: Stefan McKinnon Edwards <stefan.hoj-edwards@roslin.ed.ac.uk>
+Maintainer: Stefan McKinnon Edwards <stefan.hoj-edwards@roslin.ed.ac.uk>
+Description: Golden standard for calculating imputation accuracies, and other
+    genotype statistics.
+License: GPL-2 | GPL-3
+LazyData: TRUE
+URL: https://bitbucket.org/shojedw/siccuracy
+Suggests:
+    testthat,
+    knitr,
+    rmarkdown
+RoxygenNote: 5.0.1
+VignetteBuilder: knitr
