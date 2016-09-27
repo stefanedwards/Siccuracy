@@ -33,7 +33,7 @@
 #' }
 #' @export
 #' @seealso \code{\link{write.snps}} for writing SNPs to a file.
-imputation_accuracy <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAval=9, standardized=TRUE, fast=FALSE) {
+imputation_accuracy <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAval=9, standardized=TRUE, fast=FALSE, full=FALSE) {
   stopifnot(file.exists(truefn))
   stopifnot(file.exists(imputefn))
   
@@ -47,7 +47,11 @@ imputation_accuracy <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAv
   m <- as.integer(nSNPs)
   n <- as.integer(nAnimals)
   
-  subroutine <- ifelse(fast, 'imp_acc_fast','imp_acc')
+  if (full) {
+    subroutine <- ifelse(fast, 'imp_acc_fast_full','imp_acc')
+  } else {
+    subroutine <- ifelse(fast, 'imp_acc_fast','imp_acc')
+  }
   
   res <- .Fortran(subroutine,
                   truefn=as.character(truefn),
@@ -58,13 +62,13 @@ imputation_accuracy <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAv
                   standardized=as.integer(standardized),
                   means=vector('numeric',m), vars=vector('numeric',m),  # Placeholders for return data.
                   rowcors=vector('numeric', n), matcor=numeric(1), colcors=vector('numeric',m),
-                  rowcorID=vector('integer',m),
+                  rowID=vector('integer',n),
                   PACKAGE='Siccuracy')
   res$colcors[is.infinite(res$colcors)] <- NA
   res$colcors[is.nan(res$colcors)] <- NA
   res$rowcors[is.infinite(res$rowcors)] <- NA
   res$rowcors[is.nan(res$rowcors)] <- NA
-  res[c('means','vars','rowcors','matcor','colcors','rowcorID')]
+  res[c('means','vars','rowcors','matcor','colcors','rowID')]
 }
 
 #' Deprecated function names
