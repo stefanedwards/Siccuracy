@@ -3,6 +3,7 @@
 export(get_firstcolumn)
 export(get_ncols)
 export(get_nlines)
+export(heterozygosity)
 export(imputation_accuracy)
 export(imputation_accuracy1)
 export(imputation_accuracy3)

@@ -20,7 +20,7 @@ get_firstcolumn(fn, class = "integer", ...)
 
 \item{doError}{Logical, if error occured while reading file, will it stop}
 
-\item{class}{Character vector of classes to use for column(s), see \code{colClasses} in \code{\link[base]{read.table}}.}
+\item{class}{Character vector of classes to use for column(s), see \code{colClasses} in \code{\link[utils]{read.table}}.}
 
 \item{...}{Parameters sent to \code{read.table}.}
 

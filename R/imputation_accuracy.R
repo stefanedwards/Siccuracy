@@ -1,10 +1,10 @@
 #' Imputation accuracy, aka. correlations
 #' 
 #' Calculation of column-wise, row-wise, and matrix-wise correlations between
-#' matrix in file \code{truefn} and \code{imputefn}.
-#' Assumes first column in both files is an integer ID column and thus excluded.
-#' Standardization (subtract mean, divide by variance) is done column-wise based
-#' on means and variances of \code{truefn}.
+#' matrix in files \code{truefn} and \code{imputefn}.
+#' Assumes first column in both files is an integer ID column and thus excluded from calculations.
+#' Standardization (subtract mean, divide by standard deviation) is done column-wise based
+#' on means and standard deviations of \code{truefn}.
 #' Correlations are only performed on those rows that are found in \emph{both} files,
 #' based on the first column (ID column).
 #'
@@ -30,9 +30,16 @@
 #'   \item{\code{rowcors}}{Row-wise (animal-wise) correlation between true and imputed matrix.}
 #'   \item{\code{matcor}}{Matrix-wise correlation between true and imputed matrix.}
 #'   \item{\code{colcors}}{Column-wise (locus-wise) correlation between true and imputed matrix.}
+#'   \item{\code{rowID}}{Row IDs, corresponding to \code{rowcors}.}
 #' }
 #' @export
 #' @seealso \code{\link{write.snps}} for writing SNPs to a file.
+#' @examples 
+#' \dontrun{
+#' 
+#' 
+#' 
+#' }
 imputation_accuracy <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAval=9, standardized=TRUE, fast=FALSE) {
   stopifnot(file.exists(truefn))
   stopifnot(file.exists(imputefn))

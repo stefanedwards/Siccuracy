@@ -25,7 +25,7 @@ If \code{NULL} (default), detected from \code{truefn}.}
 \item{NAval}{Integer, value of missing genotype.}
 
 \item{standardized}{Logical, whether to center and scale genotypes by dataset in \code{true}-matrix.
-Currently by subtracting column mean and dividing by column variance.}
+Currently by subtracting column mean and dividing by column standard deviation.}
 }
 \description{
 Deprecated function names

@@ -21,9 +21,9 @@ If \code{NULL} (default), detected from \code{truefn}.}
 \item{NAval}{Integer, value of missing genotype.}
 
 \item{standardized}{Logical, whether to center and scale genotypes by dataset in \code{true}-matrix.
-Currently by subtracting column mean and dividing by column variance.}
+Currently by subtracting column mean and dividing by column standard deviation.}
 
-\item{fast}{Use method that does not check row IDs.}
+\item{fast}{Use fast method that does not check row IDs (\code{TRUE}), or adaptive method that compares row IDs (default, \code{FALSE}).}
 }
 \value{
 List with following elements:
@@ -33,14 +33,15 @@ List with following elements:
   \item{\code{rowcors}}{Row-wise (animal-wise) correlation between true and imputed matrix.}
   \item{\code{matcor}}{Matrix-wise correlation between true and imputed matrix.}
   \item{\code{colcors}}{Column-wise (locus-wise) correlation between true and imputed matrix.}
+  \item{\code{rowID}}{Row IDs, corresponding to \code{rowcors}.}
 }
 }
 \description{
 Calculation of column-wise, row-wise, and matrix-wise correlations between
-matrix in file \code{truefn} and \code{imputefn}.
-Assumes first column in both files is an integer ID column and thus excluded.
-Standardization (subtract mean, divide by variance) is done column-wise based
-on means and variances of \code{truefn}.
+matrix in files \code{truefn} and \code{imputefn}.
+Assumes first column in both files is an integer ID column and thus excluded from calculations.
+Standardization (subtract mean, divide by standard deviation) is done column-wise based
+on means and standard deviations of \code{truefn}.
 Correlations are only performed on those rows that are found in \emph{both} files,
 based on the first column (ID column).
 }
@@ -49,6 +50,13 @@ This method stores the "true" matrix in memory with a low-precision real type,
 and rows in the "imputed" matrix are read and matched by ID.
 If there are no extra rows in either matrix and order of IDs is the same,
 consider using \code{fast}-option that does not store either.
+}
+\examples{
+\dontrun{
+
+
+
+}
 }
 \seealso{
 \code{\link{write.snps}} for writing SNPs to a file.
