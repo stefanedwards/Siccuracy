@@ -7,17 +7,15 @@
 !! standardized, boolean, whether to standardize genotypes based on entire true genotypes.
 !! rowcor, matcor, colcor, vector of results.
 subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means, vars, 
-    rowcors, matcor, colcors, rowcorID)
+    rowcors, matcor, colcors, rowID)
   implicit none
   
-  integer, parameter :: r8_kind = selected_real_kind(6, 37) ! 32-bit 
+  integer, parameter :: r8_kind = selected_real_kind(15, 307) ! double precision, 64-bit like, required for transferring to and fro R.
 
   !! Arguments
   character(255), intent(in) :: truefn, imputefn
   integer, intent(in) :: nSNPs, NAval, standardized, nAnimals
-  !double precision, dimension(nSNPs), intent(out) :: colcor
-  !double precision, dimension(nAnimals), intent(out) :: rowcor
-  !double precision, intent(out) :: matcor
+  integer, dimension(nAnimals), intent(out) :: rowID
   real(r8_kind), dimension(nSnps), intent(out) :: means, vars, colcors
   real(r8_kind), dimension(nAnimals), intent(out) :: rowcors
   real(r8_kind), intent(out) :: matcor
@@ -74,12 +72,14 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
   i = 0
   mx=0; my=0; mx2=0; mxy=0; my2=0
   cx(:)=0; cy(:)=0; cx2(:)=0; cxy(:)=0; cy2(:)=0; cNA(:) = 0
+  rowID(:) = 0
   do
     i = i + 1
     read(10, *, iostat=stat) animalID, true
     if (stat /= 0) then
       exit
     endif
+    rowID(i) = animalID
     read(20, *, iostat=stat) animalID, imputed
     if (stat /= 0) then
       exit
@@ -151,17 +151,17 @@ end subroutine
 !! If it is, well, go develop imp_acc2.
 !!
 !! param nAnimals is the number of animals (rows) in the true file.
-subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means, sds, rowcors, matcor, colcors,rowcorID)
+subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means, sds, rowcors, matcor, colcors,rowID)
   implicit none
   
-  integer, parameter :: r8_kind = selected_real_kind(6, 37) ! 32-bit 
+  integer, parameter :: r8_kind = selected_real_kind(15, 307) ! double precision, 64-bit like, required for transferring to and fro R.
 
   !! Arguments
   character(255), intent(in) :: truefn, imputefn
   integer, intent(in) :: nSNPs, NAval, standardized, nAnimals
   real(r8_kind), dimension(nSnps), intent(out) :: means, sds, colcors
   real(r8_kind), dimension(nAnimals), intent(out) :: rowcors
-  integer, dimension(nAnimals), intent(out) :: rowcorID
+  integer, dimension(nAnimals), intent(out) :: rowID
   real(r8_kind), intent(out) :: matcor
 
   !! Private variables
@@ -182,7 +182,7 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
 
   nan = 0.0
 
-  rowcorID(:) = 0
+  rowID(:) = 0
   rowcors(:) = 0.0
   colcors(:) = 0.0
   
@@ -277,7 +277,7 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
     !print *, 'Settled on', animalIndex(i)
 
     commonrows = commonrows + 1
-    rowcorID(i) = ianimalID
+    rowID(i) = ianimalID
     !print *, 'True:', trueMat(i,:)
     !print *, 'Impu;', imputed(:)
 

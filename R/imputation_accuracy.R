@@ -58,13 +58,13 @@ imputation_accuracy <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAv
                   standardized=as.integer(standardized),
                   means=vector('numeric',m), vars=vector('numeric',m),  # Placeholders for return data.
                   rowcors=vector('numeric', n), matcor=numeric(1), colcors=vector('numeric',m),
-                  rowcorID=vector('integer',m),
+                  rowID=vector('integer',n),
                   PACKAGE='Siccuracy')
   res$colcors[is.infinite(res$colcors)] <- NA
   res$colcors[is.nan(res$colcors)] <- NA
   res$rowcors[is.infinite(res$rowcors)] <- NA
   res$rowcors[is.nan(res$rowcors)] <- NA
-  res[c('means','vars','rowcors','matcor','colcors','rowcorID')]
+  res[c('means','vars','rowcors','matcor','colcors','rowID')]
 }
 
 #' Deprecated function names
