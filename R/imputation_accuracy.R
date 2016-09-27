@@ -21,8 +21,8 @@
 #'        If \code{NULL} (default), detected from \code{truefn}.
 #' @param NAval Integer, value of missing genotype.
 #' @param standardized Logical, whether to center and scale genotypes by dataset in \code{true}-matrix.
-#'        Currently by subtracting column mean and dividing by column variance.
-#' @param fast Use method that does not check row IDs.
+#'        Currently by subtracting column mean and dividing by column standard deviation.
+#' @param fast Use fast method that does not check row IDs (\code{TRUE}), or adaptive method that compares row IDs (default, \code{FALSE}).
 #' @return List with following elements:
 #' \describe{
 #'   \item{\code{means}}{Column means of true matrix.}
@@ -56,7 +56,7 @@ imputation_accuracy <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAv
                   nAnimals=as.integer(nAnimals),
                   NAval=as.integer(NAval),
                   standardized=as.integer(standardized),
-                  means=vector('numeric',m), vars=vector('numeric',m),  # Placeholders for return data.
+                  means=vector('numeric',m), sds=vector('numeric',m),  # Placeholders for return data.
                   rowcors=vector('numeric', n), matcor=numeric(1), colcors=vector('numeric',m),
                   rowID=vector('integer',n),
                   PACKAGE='Siccuracy')
@@ -64,7 +64,13 @@ imputation_accuracy <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAv
   res$colcors[is.nan(res$colcors)] <- NA
   res$rowcors[is.infinite(res$rowcors)] <- NA
   res$rowcors[is.nan(res$rowcors)] <- NA
-  res[c('means','vars','rowcors','matcor','colcors','rowID')]
+  
+  if (!fast & any(is.na(res$rowcors))) {
+    res$rowcors <- res$rowcors[!is.na(res$rowcors)]
+    res$rowID <- res$rowID[!is.na(res$rowID)]
+  }
+  
+  res[c('means','sds','rowcors','matcor','colcors','rowID')]
 }
 
 #' Deprecated function names

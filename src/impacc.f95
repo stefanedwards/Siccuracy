@@ -6,7 +6,7 @@
 !! NAval is an integer value of missing genotypes, which are ignored.
 !! standardized, boolean, whether to standardize genotypes based on entire true genotypes.
 !! rowcor, matcor, colcor, vector of results.
-subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means, vars, 
+subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means, sds, &
     rowcors, matcor, colcors, rowID)
   implicit none
   
@@ -16,7 +16,7 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
   character(255), intent(in) :: truefn, imputefn
   integer, intent(in) :: nSNPs, NAval, standardized, nAnimals
   integer, dimension(nAnimals), intent(out) :: rowID
-  real(r8_kind), dimension(nSnps), intent(out) :: means, vars, colcors
+  real(r8_kind), dimension(nSnps), intent(out) :: means, sds, colcors
   real(r8_kind), dimension(nAnimals), intent(out) :: rowcors
   real(r8_kind), intent(out) :: matcor
 
@@ -59,11 +59,10 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
     enddo
     close(10)
     means = M
-    vars = S/(nLines - 1)
-    !where (vars == 0.0) vars = 1.0
+    sds = sqrt(S/(nLines - 1))
   else
     means(:) = 0
-    vars(:) = 1
+    sds(:) = 1
   end if
 
   !! Go through both files
@@ -93,15 +92,15 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
     rNA = 0
 
     do j=1,nSnps
-      if (imputed(j) == NAval .or. true(j) == NAval .or. vars(j) == 0.) then
+      if (imputed(j) == NAval .or. true(j) == NAval .or. sds(j) == 0.) then
         rNA = rNA + 1
         cNA(j) = cNA(j) + 1
         !print *, animalID, j
         cycle
       end if
 
-      t = (true(j)-means(j))/vars(j)
-      imp = (imputed(j)-means(j))/vars(j)
+      t = (true(j)-means(j))/sds(j)
+      imp = (imputed(j)-means(j))/sds(j)
       t2 = t*t
       imp2 = imp*imp
       tim = t*imp
@@ -137,7 +136,7 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
   matcor = (nn * mxy - mx * my) / sqrt( (nn * mx2 - mx**2) * (nn*my2 - my**2) )
   nnn = i - 1  - cNA
   colcors = (nnn * cxy - cx * cy) / sqrt( (nnn * cx2 - cx**2) * (nnn*cy2 - cy**2) )
-  if (standardized == 1) where (vars == 0) colcors = 1/nan
+  if (standardized == 1) where (sds == 0) colcors = 1/nan
 
 end subroutine
 
@@ -151,10 +150,10 @@ end subroutine
 !! If it is, well, go develop imp_acc2.
 !!
 !! param nAnimals is the number of animals (rows) in the true file.
-subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means, sds, rowcors, matcor, colcors,rowID)
+subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means, sds, rowcors, matcor, colcors, rowID)
   implicit none
   
-  integer, parameter :: r8_kind = selected_real_kind(15, 307) ! double precision, 64-bit like, required for transferring to and fro R.
+  integer, parameter :: r8_kind = selected_real_kind(15, 150) ! double precision, 64-bit like, required for transferring to and fro R.
 
   !! Arguments
   character(255), intent(in) :: truefn, imputefn
@@ -165,6 +164,7 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
   real(r8_kind), intent(out) :: matcor
 
   !! Private variables
+  logical, dimension(nAnimals) :: foundID
   integer :: stat, start, animalID, commonrows, i, j, k, nn, maxanimal, minanimal, ianimalID
   real(r8_kind) :: t, t2, imp, imp2, tim, nan
   real(r8_kind), dimension(nSNPs) :: M, S, Mold, Sold
@@ -185,6 +185,7 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
   rowID(:) = 0
   rowcors(:) = 0.0
   colcors(:) = 0.0
+  foundID(:) = .false.
   
   !! Read in true genotype fil
   open(10, file=truefn, status='OLD')
@@ -278,6 +279,7 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
 
     commonrows = commonrows + 1
     rowID(i) = ianimalID
+    foundID(i) = .true.
     !print *, 'True:', trueMat(i,:)
     !print *, 'Impu;', imputed(:)
 
@@ -336,5 +338,9 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
   nnn = commonrows  - cNA
   colcors = (nnn * cxy - cx * cy) / sqrt( (nnn * cx2 - cx**2) * (nnn*cy2 - cy**2) )
   if (standardized == 1)  where (sds == 0.) colcors = 1/nan
+  where (foundID .eqv. .false.)
+    rowcors = 1/nan
+    rowID = 1/nan
+  end where
 
 end subroutine
