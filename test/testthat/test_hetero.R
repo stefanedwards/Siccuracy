@@ -15,7 +15,7 @@ test_that('Heterozygosity works with NA-values',{
 
   expect_equal(p, 1-q)
   expect_equal(res$p, p, tolerance=1e-7)
-  expect_equal(res$q, q, tolerance=1e-7) ## q is, in the Fortran subroutine, calculated simply as 1-p.
+  expect_equal(1-res$p, q, tolerance=1e-7)
   expect_equal(res$n, apply(true, 2, function(x) sum(!is.na(x))))
   expect_equal(res$Hobs, Hobs, tolerance=1e-7)
   expect_equal(res$Hexp, Hexp, tolerance=1e-7)

@@ -1,6 +1,6 @@
 !! Calculation of heterozygosity
 !! Sauce: http://www.uwyo.edu/dbmcd/molmark/practica/fst.html
-subroutine heterozygosity(fn, ncols, NAval, p, q, Hobs, Hexp, n)
+subroutine heterozygosity(fn, ncols, NAval, p, Hobs, Hexp, n)
   implicit none
 
   integer, parameter :: r8_kind = selected_real_kind(15, 307)
@@ -9,7 +9,7 @@ subroutine heterozygosity(fn, ncols, NAval, p, q, Hobs, Hexp, n)
   character(255), intent(in) :: fn
   integer, intent(in) :: ncols, NAval
   integer, dimension(ncols), intent(out) :: n
-  real(r8_kind), dimension(ncols), intent(out) :: p, q, Hobs, Hexp
+  real(r8_kind), dimension(ncols), intent(out) :: p, Hobs, Hexp
 
   !! Local variables
   integer :: i, stat, animalid, j
