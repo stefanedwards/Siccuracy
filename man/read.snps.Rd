@@ -18,7 +18,7 @@ read.snps(file, nlines = 0, ncols = NULL, na = NA, what = integer(),
 
 \item{what}{Type of internal storage for matrix. Use \code{integer()} or \code{numeric()}, but expect issues if ID column contains alphabetical components.}
 
-\item{extractIDs}{Logical, trim of first column and use as rownames?}
+\item{extractIDs}{Logical, default \code{TRUE}, trim of first column and use as rownames?}
 
 \item{quiet}{Logical, default \code{TRUE}. If \code{FALSE}, \code{scan} will print a line saying how may items have been read.}
 
@@ -29,6 +29,11 @@ Native \link[base]{matrix}.
 }
 \description{
 \code{read.snps} is wrapper around \code{\link[base]{scan}} that also converts into native matrix format.
+}
+\details{
+Assumes a file format with no header and first column are IDs. If no ID column, use \code{extractIDs = FALSE}.
+Usually white-space delimted, but separator can be set with \code{sep} argument as per \code{\link[base]{scan}}.
+For file format example see \link{Siccuracy}.
 }
 \examples{
 

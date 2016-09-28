@@ -19,6 +19,7 @@ write.snps(x, fn, row.names = TRUE, na = "9", ...)
 }
 \description{
 \code{write.snps} is short hand for \code{write.table} with some default options.
+For file format see \link{Siccuracy}.
 }
 \seealso{
 \code{\link[utils]{write.table}}, \link[base]{connections}
