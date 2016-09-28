@@ -3,12 +3,12 @@ Type: Package
 Title: Stefan's imputation accuracies package
 Version: 0.5.0
 Date: 2016-09-28
-Authors@R: person("Stefan", "Edwards", "McKinnon", role = c("aut", "cre"),
+Authors@R: person(given=c("Stefan","McKinnon"), family="Edwards", role = c("aut", "cre"),
 		     email = "sme@iysik.com")
 Description: Calculation of imputation accuracies and similar allele stats.
 License: GPL-2 | GPL-3
 LazyData: TRUE
-URL: https://bitbucket.org/shojedw/siccuracy
+URL: https://github.com/stefanedwards/Siccuracy
 Suggests:
     testthat,
     knitr,
