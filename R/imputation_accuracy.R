@@ -82,7 +82,7 @@ imputation_accuracy <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAv
 
 #' Deprecated function names
 #' @export
-#' @rdname depcreated_impacc
+#' @rdname depcreated
 #' @inheritParams imputation_accuracy
 imputation_accuracy3 <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAval=9, standardized=TRUE) {
   Deprecated('imputation_accuracy', package='Siccuracy')
@@ -91,7 +91,7 @@ imputation_accuracy3 <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NA
 
 #' Deprecated function names
 #' @export
-#' @rdname depcreated_impacc
+#' @rdname depcreated
 imputation_accuracy1 <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAval=9, standardized=TRUE) {
   Deprecated('imputation_accuracy', package='Siccuracy')
   imputation_accuracy(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, fast=TRUE)
