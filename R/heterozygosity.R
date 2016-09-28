@@ -35,6 +35,7 @@
 #' @param fn Filename of genotype matrix (0,1,2) with first column denoting ID.
 #' @param population Vector of same length as rows in \code{fn}; defaults to \code{1}, coerced from factor to integer.
 #' @param ncols Number of SNP columns in \code{fn}; if \code{NULL} (default), number is retrieved with \code{\link{get_ncols}}.
+#' @param nlines Lines in \code{fn}; if \code{NULL} (default), number is retrieved with \code{\link{get_nlines}}.
 #' @param NAval Integer value for unknown values, which are ignored.
 #' @return Data frame with columns
 #' \describe{
@@ -45,28 +46,27 @@
 #'   \item{\code{n}}{Vector of observed genotypes for each locus (ignoring NA-values). Alleles are twice this number.}
 #' }
 #' @references Equations based on \url{http://www.uwyo.edu/dbmcd/molmark/practica/fst.html}.
-heterozygosity <- function(fn, population=NULL, ncols=NULL, NAval=9) {
+heterozygosity <- function(fn, population=NULL, ncols=NULL, nlines=NULL, NAval=9) {
   stopifnot(file.exists(fn))
-  
+
+  if (is.null(nlines)) nlines <- get_nlines(fn)  
+  if (is.null(ncols)) ncols <- get_ncols(fn) - 1
+
   if (is.null(population)) {
-    m <- get_nlines(fn)
-    population <- integer(m)
+    population <- integer(nlines)
   } 
   pop <- as.factor(population)
   npop <- nlevels(pop)
 
-  if (is.null(ncols)) {
-    ncols <- get_ncols(fn) - 1
-  }
-  ncols <- as.integer(ncols)
-  
-  res <- .Fortran('heterozygosity', fn=as.character(fn), ncols=as.integer(ncols), NAval=as.integer(NAval),
+  res <- .Fortran('heterozygosity', fn=as.character(fn), ncols=as.integer(ncols), nlines=as.integer(nlines), 
                   populations=as.integer(pop), npop=as.integer(npop), 
-                  p=numeric(ncols), q=numeric(ncols), Hobs=numeric(ncols), Hexp=numeric(ncols), n=integer(ncols))
+                  p=numeric(npop*ncols), Hobs=numeric(npop*ncols), Hexp=numeric(npop*ncols), n=integer(npop*ncols))
   
+  # To do: res$populations is of length (nlines), while p, Hobs, etc. are of length npop*ncols.
   res$populations <- factor(res$populations, levels=1:npop, labels=levels(pop))
   if (is.character(population)) res$populations <- as.character(res$populations)
-  if (is.integer(population)) res$populations <- as.integer(as.charcter(res$populations))
+  if (is.integer(population)) res$populations <- as.integer(as.character(res$populations))
+  
   
   as.data.frame(res[c('populations','p','Hobs','Hexp','n')])
 }
