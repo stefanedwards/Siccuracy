@@ -51,7 +51,6 @@ get_nlines <- function(fn, showWarning=TRUE, doError=FALSE) {
 #'
 #' @export
 #' @param class Character vector of classes to use for column(s), see \code{colClasses} in \code{\link[utils]{read.table}}.
-#' @param nLines Optional, number of lines to read. When NULL, \code{get_firstcolumn} uses \code{get_lines} for you.
 #' @param ... Parameters sent to \code{read.table}.
 #' @return \code{get_firstcolumn}: Vector with elements of first column, or \code{data.frame} if \code{class} contains multiple not-\code{"NULL"} elements.
 #' @rdname auxfunc
@@ -82,6 +81,7 @@ NULL
 #' Write genotype matrices to file.
 #'
 #' \code{write.snps} is short hand for \code{write.table} with some default options.
+#' For file format see \link{Siccuracy}.
 #' 
 #' @param x The matrix to write.
 #' @param fn Filename or connection of file to write to.
@@ -97,13 +97,17 @@ write.snps <- function(x, fn, row.names=TRUE, na='9', ...) {
 #' Read genotype matrix from file.
 #'
 #' \code{read.snps} is wrapper around \code{\link[base]{scan}} that also converts into native matrix format.
+#' 
+#' Assumes a file format with no header and first column are IDs. If no ID column, use \code{extractIDs = FALSE}.
+#' Usually white-space delimted, but separator can be set with \code{sep} argument as per \code{\link[base]{scan}}.
+#' For file format example see \link{Siccuracy}.
 #'
 #' @param file Name of file to read from or connection.
 #' @param nlines Integer. If positive, the maximum number of line to read.
 #' @param ncols Integer, default \code{NULL}. Number of columns in input file, including ID column. If \code{NULL} and \code{file} is string, automagically detected.
 #' @param na If not \code{NA} (default), entries with the value are replaced with \code{NA}.
 #' @param what Type of internal storage for matrix. Use \code{integer()} or \code{numeric()}, but expect issues if ID column contains alphabetical components.
-#' @param extractIDs Logical, trim of first column and use as rownames?
+#' @param extractIDs Logical, default \code{TRUE}, trim of first column and use as rownames?
 #' @param quiet Logical, default \code{TRUE}. If \code{FALSE}, \code{scan} will print a line saying how may items have been read.
 #' @param ... Passed on to \code{\link[base]{scan}}.
 #' @return Native \link[base]{matrix}.
@@ -113,12 +117,15 @@ write.snps <- function(x, fn, row.names=TRUE, na='9', ...) {
 #'
 #' # Make test data
 #' tmpfile <- tempfile()
-#' write.snps(Siccuracy:::make_true(5, 10), tmpfile)
+#' write.snps(Siccuracy:::make.true(5, 10), tmpfile)
+#' M <- read.snps(tmpfile)
 #'
 #' # Process the genotypes in chunks:
-#' f <- file(tmpfile, 'r')  # Setting mode to 'r' is very important to avoid resetting the pointer at file head!
+#' # Setting mode to 'r' is very important to avoid resetting the pointer at file head!
+#' ncols <- get_ncols(tmpfile)
+#' f <- file(tmpfile, 'r') 
 #' while (TRUE) {
-#'   M <- read.snp(f, nlines=500)
+#'   M <- read.snps(f, nlines=500, ncols=ncols)
 #'   if (nrow(M) == 0) break
 #' }
 #' close(f)
@@ -126,7 +133,7 @@ read.snps <- function(file, nlines=0, ncols=NULL, na=NA, what=integer(), extract
   if (is.null(ncols) & is.character(file)) {
     ncols <- get_ncols(file)
   }
-  if (is.null(ncols)) stop('Cannot automagically detect number of columns to read in input as given file is not a character.')
+  if (is.null(ncols)) stop('Cannot automagically detect number of columns to read as input file is a connection, not a character.')
 
   M <- matrix(scan(file, nlines=nlines, what=what, quiet=quiet, ...), ncol=ncols, byrow=TRUE)
   if (nrow(M) == 0) return(M)

@@ -21,7 +21,7 @@ test_that("Lengths of returned vectors matches expected lengths (fast)",{
   results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized=TRUE, fast=TRUE)
   true <- ts$true
   expect_equal(length(results$means), ncol(true))
-  expect_equal(length(results$vars), ncol(true))
+  expect_equal(length(results$sds), ncol(true))
   expect_equal(length(results$rowcors), nrow(true))
   expect_equal(length(results$matcor), 1)
   expect_equal(length(results$colcors), ncol(true))
@@ -33,7 +33,7 @@ test_that("Lengths of returned vectors matches expected lengths (fast)",{
   results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized=TRUE, fast=FALSE)
   true <- ts$true
   expect_equal(length(results$means), ncol(true))
-  expect_equal(length(results$vars), ncol(true))
+  expect_equal(length(results$sds), ncol(true))
   expect_equal(length(results$rowcors), nrow(true))
   expect_equal(length(results$matcor), 1)
   expect_equal(length(results$colcors), ncol(true))
