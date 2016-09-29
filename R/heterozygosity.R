@@ -1,5 +1,3 @@
-
-
 #' Calculates hetereozygosity stats for a single population
 #'
 #' Calculate gene frequencies and observed and expected heterozygosites for locus.
@@ -23,30 +21,38 @@
 #' \deqn{
 #'   H_{exp} = 2 \cdot p \cdot q
 #'   }{Hexp = 2*p*q}
-#'
+#' 
+#' \strong{Missing values:}
 #' In the above, \code{NA} elements are ignored and thus do not count toward either genotype nor number of rows.
+#' Genotypes with values smaller than 0 or greater than 2 are considered missing.
 #'
 #' Finally, an inbreeding coeffiecent would be calculated as:
 #' \deqn{
 #'   F = \frac{H_{exp} - H_{obs}}{H_{exp}}
 #' }{F = (Hexp - Hobs)/Hexp}
-#'
+#' For which \eqn{F_{st}}{Fst} estimator to use, and how to combine across multiple
+#' snps, see Bhatia et al. (2013).
+#' 
 #' @export
 #' @param fn Filename of genotype matrix (0,1,2) with first column denoting ID.
 #' @param population Vector of same length as rows in \code{fn}; defaults to \code{1}, coerced from factor to integer.
 #' @param ncols Number of SNP columns in \code{fn}; if \code{NULL} (default), number is retrieved with \code{\link{get_ncols}}.
 #' @param nlines Lines in \code{fn}; if \code{NULL} (default), number is retrieved with \code{\link{get_nlines}}.
-#' @param NAval Integer value for unknown values, which are ignored.
 #' @return Data frame with columns
 #' \describe{
 #'   \item{\code{population}}{Population, as specified by argument \code{population}.}
 #'   \item{\code{p}}{Vector of allele frequencies of alleles coded as '0'.}
 #'   \item{\code{Hobs}}{Vector of observed heterozygosity (\eqn{H_{obs}}{Hobs}).}
-#'   \item{\code{Hexp}}{Vector of expected heterozygosity (\eqn{H_{exp}}{exp}).}
+#'   \item{\code{Hexp}}{Vector of expected heterozygosity (\eqn{H_{exp}}{Hexp}).}
 #'   \item{\code{n}}{Vector of observed genotypes for each locus (ignoring NA-values). Alleles are twice this number.}
 #' }
-#' @references Equations based on \url{http://www.uwyo.edu/dbmcd/molmark/practica/fst.html}.
-heterozygosity <- function(fn, population=NULL, ncols=NULL, nlines=NULL, NAval=9) {
+#' @references 
+#' Equations based on \url{http://www.uwyo.edu/dbmcd/molmark/practica/fst.html}.
+#' 
+#' Bhatia, Patterson, Sankararaman, and Price. Estimating and interpreting FST: The impact of rare variants.
+#' \emph{Genome Research} (2013) 23: 1514-1521. \href{http://genome.cshlp.org/content/early/2013/07/16/gr.154831.113.full.pdf}{Preprint}
+#' \href{http://dx.doi.org/10.1101/gr.154831.113}{doi: 10.1101/gr.154831.113}.
+heterozygosity <- function(fn, population=NULL, ncols=NULL, nlines=NULL) {
   stopifnot(file.exists(fn))
 
   if (is.null(nlines)) nlines <- get_nlines(fn)  
@@ -63,10 +69,9 @@ heterozygosity <- function(fn, population=NULL, ncols=NULL, nlines=NULL, NAval=9
                   p=numeric(npop*ncols), Hobs=numeric(npop*ncols), Hexp=numeric(npop*ncols), n=integer(npop*ncols))
   
   # To do: res$populations is of length (nlines), while p, Hobs, etc. are of length npop*ncols.
-  res$populations <- factor(res$populations, levels=1:npop, labels=levels(pop))
+  res$populations <- factor(rep(1:npop, each=ncols), levels=1:npop, labels=levels(pop))
   if (is.character(population)) res$populations <- as.character(res$populations)
   if (is.integer(population)) res$populations <- as.integer(as.character(res$populations))
-  
   
   as.data.frame(res[c('populations','p','Hobs','Hexp','n')])
 }

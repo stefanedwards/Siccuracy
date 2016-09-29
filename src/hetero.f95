@@ -18,13 +18,6 @@ subroutine heterozygosity(fn, ncols, nlines, populations, npop, &
   integer, dimension(ncols) :: genotype
   integer, dimension(0:2,ncols, npop) :: allelecount
 
-  open(66, file='debug.txt')
-  write(66, *) 'fn:', fn
-  write(66, *) 'ncols:', ncols
-  write(66, *) 'nlines:', nlines
-  write(66, *) 'populations:', populations
-  write(66, *) 'npop:', npop
-  
   allelecount(:,:,:) = 0
   n(:,:) = 0
 
@@ -46,12 +39,6 @@ subroutine heterozygosity(fn, ncols, nlines, populations, npop, &
 
   Hobs(:,:) = allelecount(1,:,:) / (1. * n(:,:))
   Hexp(:,:) = 2.*p*(1-p)
-
-  print *,'p for populations'
-  do i=1,npop
-    write(66, *) i,p(:,i)
-  enddo
-  close(66)
 
 end subroutine
 
