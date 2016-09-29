@@ -1,12 +1,13 @@
 ! Converts phase-file to genotype file.
 !numfmt should default to '5.2'
-subroutine convert_phase_num(phasefn, genofn, ncol, nrow, naval, numfmt)
+subroutine convert_phase_num(phasefn, genofn, ncol, nrow, naval, numfmt, lennumfmt)
 
   implicit none
 
   !! Arguments
-  character(255), intent(in) :: phasefn, genofn, numfmt
-  integer, intent(in) :: ncol, naval
+  character(255), intent(in) :: phasefn, genofn
+  character(len=lennumfmt) :: numfmt
+  integer, intent(in) :: ncol, naval, lennumfmt
   integer, intent(inout) :: nrow
 
   !! Local variables
@@ -17,7 +18,6 @@ subroutine convert_phase_num(phasefn, genofn, ncol, nrow, naval, numfmt)
   write(nChar,*) ncol
   fmt='(i20,'//trim(adjustl(nChar))//'F'//trim(numfmt)//')'
   print *,'I did something:',fmt
-  return
 
   open(97, file=phasefn, status='OLD')
   open(98, file=genofn, status='UNKNOWN')
@@ -40,14 +40,14 @@ subroutine convert_phase_num(phasefn, genofn, ncol, nrow, naval, numfmt)
 
 end subroutine
 
-subroutine convert_phase_int(phasefn, genofn, ncol, nrow, naval, numfmt)
+subroutine convert_phase_int(phasefn, genofn, ncol, nrow, naval, numfmt, lennumfmt)
 
   implicit none
 
   !! Arguments
   character(255), intent(in) :: phasefn, genofn
-  character(20), intent(in) :: numfmt
-  integer, intent(in) :: ncol, naval
+  character(len=lennumfmt) :: numfmt
+  integer, intent(in) :: ncol, naval, lennumfmt
   integer, intent(inout) :: nrow
 
   !! Local variables

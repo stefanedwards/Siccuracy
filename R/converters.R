@@ -42,7 +42,8 @@ convert_phases <- function(phasefn, genofn, ncol=NULL, nrow=NULL, int=TRUE, nava
   if (is.null(nrow)) nrow <- 0
   
   subroutine <- ifelse(int, 'convert_phase_int', 'convert_phase_num')
-  res <- .Fortran(subroutine, phasefn=as.character(phasefn), genofn=as.character(genofn), ncol=as.integer(ncol), nrow=as.integer(nrow), naval=as.integer(naval), numfmt=as.character(numeric.format))
+  res <- .Fortran(subroutine, phasefn=as.character(phasefn), genofn=as.character(genofn), ncol=as.integer(ncol), nrow=as.integer(nrow), 
+                  naval=as.integer(naval), numfmt=as.character(numeric.format), lennumfmt=as.integer(nchar(numeric.format)))
   res$nrow
 }
 

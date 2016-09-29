@@ -74,3 +74,22 @@ test_that('Converting phase-files with missing values (numeric)', {
   expect_equal(n, nrow(true))
   expect_equal(b, true)
 })
+
+test_that('Converting phase-files respects numerical format', {
+  phase <- Siccuracy:::make.imputed(Siccuracy:::make.true(2, 3))
+  phase[] <- phase[] + round(runif(prod(dim(phase))), 3)  
+  phasefn <- tempfile()
+  write.snps(phase, phasefn, row.names = TRUE)
+  truefn <- tempfile()
+  n <- convert_phases(phasefn, truefn, int=FALSE, naval=9, numeric.format='8.4')
+  s <- scan(truefn, what='character', quiet=TRUE)[-1]
+  expect(all(nchar(s) == 6), 'Wrong number of characters in written output.')  # spaces are stripped; expected character length is 4+2 (decimals + period + leading digit).
+  n <- convert_phases(phasefn, truefn, int=FALSE, naval=9, numeric.format='10.6')
+  s <- scan(truefn, what='character', quiet=TRUE)[-1]
+  expect(all(nchar(s) == 8), 'Wrong number of characters in written output.')  # spaces are stripped; expected character length is 6+2 (decimals + period + leading digit).
+
+  context('Test result when number of decimals exceed width')
+  n <- convert_phases(phasefn, truefn, int=FALSE, naval=9, numeric.format='10.8') 
+  s <- scan(truefn, what='character', quiet=TRUE)
+  expect(length(s) == 1, 'Space as separators are not missing.')
+})
