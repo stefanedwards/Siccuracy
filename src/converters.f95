@@ -17,7 +17,6 @@ subroutine convert_phase_num(phasefn, genofn, ncol, nrow, naval, numfmt, lennumf
 
   write(nChar,*) ncol
   fmt='(i20,'//trim(adjustl(nChar))//'F'//trim(numfmt)//')'
-  print *,'I did something:',fmt
 
   open(97, file=phasefn, status='OLD')
   open(98, file=genofn, status='UNKNOWN')

@@ -51,7 +51,6 @@ get_nlines <- function(fn, showWarning=TRUE, doError=FALSE) {
 #'
 #' @export
 #' @param class Character vector of classes to use for column(s), see \code{colClasses} in \code{\link[utils]{read.table}}.
-#' @param nLines Optional, number of lines to read. When NULL, \code{get_firstcolumn} uses \code{get_lines} for you.
 #' @param ... Parameters sent to \code{read.table}.
 #' @return \code{get_firstcolumn}: Vector with elements of first column, or \code{data.frame} if \code{class} contains multiple not-\code{"NULL"} elements.
 #' @rdname auxfunc
@@ -118,12 +117,15 @@ write.snps <- function(x, fn, row.names=TRUE, na='9', ...) {
 #'
 #' # Make test data
 #' tmpfile <- tempfile()
-#' write.snps(Siccuracy:::make_true(5, 10), tmpfile)
+#' write.snps(Siccuracy:::make.true(5, 10), tmpfile)
+#' M <- read.snps(tmpfile)
 #'
 #' # Process the genotypes in chunks:
-#' f <- file(tmpfile, 'r')  # Setting mode to 'r' is very important to avoid resetting the pointer at file head!
+#' # Setting mode to 'r' is very important to avoid resetting the pointer at file head!
+#' ncols <- get_ncols(tmpfile)
+#' f <- file(tmpfile, 'r') 
 #' while (TRUE) {
-#'   M <- read.snp(f, nlines=500)
+#'   M <- read.snps(f, nlines=500, ncols=ncols)
 #'   if (nrow(M) == 0) break
 #' }
 #' close(f)
@@ -131,7 +133,7 @@ read.snps <- function(file, nlines=0, ncols=NULL, na=NA, what=integer(), extract
   if (is.null(ncols) & is.character(file)) {
     ncols <- get_ncols(file)
   }
-  if (is.null(ncols)) stop('Cannot automagically detect number of columns to read in input as given file is not a character.')
+  if (is.null(ncols)) stop('Cannot automagically detect number of columns to read as input file is a connection, not a character.')
 
   M <- matrix(scan(file, nlines=nlines, what=what, quiet=quiet, ...), ncol=ncols, byrow=TRUE)
   if (nrow(M) == 0) return(M)

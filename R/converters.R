@@ -47,18 +47,22 @@ convert_phases <- function(phasefn, genofn, ncol=NULL, nrow=NULL, int=TRUE, nava
   res$nrow
 }
 
+#' @param phasefn Filename of input file, every two rows are for same animal.
+#' @param genofn Filename of intended output.
+#' @param ncol Number of columns to read, if \code{NULL} (default), number is estimated from file.
+#' @param nrow Number of rows to maximally read from \code{phasefn}. If \code{NULL}, no limit is used.
+#' @return Number of rows written.
 #' @export
 #' @rdname depcreated
-#' @inheritParams imputation_accuracy
 phasotogeno <- function(phasefn, genofn, ncol=NULL, nrow=NULL) {
-  Deprecated('imputation_accuracy', package='Siccuracy')
+  .Deprecated('imputation_accuracy', package='Siccuracy')
   convert_phases(phasefn, genofn, ncol, nrow, int=FALSE)
 }
 #' @export
 #' @rdname depcreated
-#' @inheritParams imputation_accuracy
+#' @inheritParams phasotogeno
 phasotogeno_int <- function(phasefn, genofn, ncol=NULL, nrow=NULL) {
-  Deprecated('imputation_accuracy', package='Siccuracy')
+  .Deprecated('imputation_accuracy', package='Siccuracy')
   convert_phases(phasefn, genofn, ncol, nrow, int=TRUE)
 }
 

@@ -23,8 +23,6 @@ get_firstcolumn(fn, class = "integer", ...)
 \item{class}{Character vector of classes to use for column(s), see \code{colClasses} in \code{\link[utils]{read.table}}.}
 
 \item{...}{Parameters sent to \code{read.table}.}
-
-\item{nLines}{Optional, number of lines to read. When NULL, \code{get_firstcolumn} uses \code{get_lines} for you.}
 }
 \value{
 \code{get_ncols}: Number of read fields, including ID columns.

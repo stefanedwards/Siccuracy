@@ -18,6 +18,14 @@ imputation_accuracy1(truefn, imputefn, nSNPs = NULL, nAnimals = NULL,
   NAval = 9, standardized = TRUE)
 }
 \arguments{
+\item{phasefn}{Filename of input file, every two rows are for same animal.}
+
+\item{genofn}{Filename of intended output.}
+
+\item{ncol}{Number of columns to read, if \code{NULL} (default), number is estimated from file.}
+
+\item{nrow}{Number of rows to maximally read from \code{phasefn}. If \code{NULL}, no limit is used.}
+
 \item{truefn}{Filename to true matrix. NB! Max. 255 characters!}
 
 \item{imputefn}{Filename to imputed matrix.}
@@ -32,6 +40,9 @@ If \code{NULL} (default), detected from \code{truefn}.}
 
 \item{standardized}{Logical, whether to center and scale genotypes by dataset in \code{true}-matrix.
 Currently by subtracting column mean and dividing by column standard deviation.}
+}
+\value{
+Number of rows written.
 }
 \description{
 Deprecated function names

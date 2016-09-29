@@ -39,12 +39,15 @@ For file format example see \link{Siccuracy}.
 
 # Make test data
 tmpfile <- tempfile()
-write.snps(Siccuracy:::make_true(5, 10), tmpfile)
+write.snps(Siccuracy:::make.true(5, 10), tmpfile)
+M <- read.snps(tmpfile)
 
 # Process the genotypes in chunks:
-f <- file(tmpfile, 'r')  # Setting mode to 'r' is very important to avoid resetting the pointer at file head!
+# Setting mode to 'r' is very important to avoid resetting the pointer at file head!
+ncols <- get_ncols(tmpfile)
+f <- file(tmpfile, 'r') 
 while (TRUE) {
-  M <- read.snp(f, nlines=500)
+  M <- read.snps(f, nlines=500, ncols=ncols)
   if (nrow(M) == 0) break
 }
 close(f)

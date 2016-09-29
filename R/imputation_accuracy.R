@@ -34,12 +34,6 @@
 #' }
 #' @export
 #' @seealso \code{\link{write.snps}} for writing SNPs to a file.
-#' @examples 
-#' \dontrun{
-#' 
-#' 
-#' 
-#' }
 imputation_accuracy <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAval=9, standardized=TRUE, fast=FALSE) {
   stopifnot(file.exists(truefn))
   stopifnot(file.exists(imputefn))
@@ -85,7 +79,7 @@ imputation_accuracy <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAv
 #' @rdname depcreated
 #' @inheritParams imputation_accuracy
 imputation_accuracy3 <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAval=9, standardized=TRUE) {
-  Deprecated('imputation_accuracy', package='Siccuracy')
+  .Deprecated('imputation_accuracy', package='Siccuracy')
   imputation_accuracy(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, fast=FALSE)
 }
 
@@ -93,6 +87,6 @@ imputation_accuracy3 <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NA
 #' @export
 #' @rdname depcreated
 imputation_accuracy1 <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAval=9, standardized=TRUE) {
-  Deprecated('imputation_accuracy', package='Siccuracy')
+  .Deprecated('imputation_accuracy', package='Siccuracy')
   imputation_accuracy(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, fast=TRUE)
 }

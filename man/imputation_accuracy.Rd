@@ -51,13 +51,6 @@ and rows in the "imputed" matrix are read and matched by ID.
 If there are no extra rows in either matrix and order of IDs is the same,
 consider using \code{fast}-option that does not store either.
 }
-\examples{
-\dontrun{
-
-
-
-}
-}
 \seealso{
 \code{\link{write.snps}} for writing SNPs to a file.
 }
