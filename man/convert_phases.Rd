@@ -18,7 +18,7 @@ convert_phases(phasefn, genofn, ncol = NULL, nrow = NULL, int = TRUE,
 
 \item{int}{Logical (default \code{TRUE}), read and write integers.}
 
-\item{naval}{Missing values; genotypes equal to or larger than this value are set to this value.}
+\item{naval}{Missing value, default \code{9}.}
 
 \item{numeric.format}{Character describing \code{<width>.<decimals>}. Default \code{'5.2'}. Has no effect when \code{int=TRUE}.}
 }
@@ -50,5 +50,7 @@ By default assumes genotypes are whole integers (cf. \code{int} argument).
 If numeric values are required, e.g. gene dosages from imputation, use \code{int=FALSE}. 
 Use \code{numeric.format} to change from default 5 characters width and 2 decimals (\code{"5.2"}). 
 NB! Function does not test for validity of this argument, so change with caution!
+
+\strong{Missing values:} Values after summing less than 0 or greater than 2 are assumed as missing and replaced with \code{naval}.
 }
 

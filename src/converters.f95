@@ -26,7 +26,7 @@ subroutine convert_phase_num(phasefn, genofn, ncol, nrow, naval, numfmt, lennumf
     if (stat /= 0) exit
     read(97, *, iostat=stat) animalid, lineb
     summ = linea + lineb
-    where (summ >= naval) summ = naval
+    where (summ > 2.000 .or. summ < 0.000) summ = naval
     write(98, fmt) animalid, summ
     i = i + 1
     if (i == nrow) exit
@@ -65,7 +65,7 @@ subroutine convert_phase_int(phasefn, genofn, ncol, nrow, naval, numfmt, lennumf
     if (stat /= 0) exit
     read(97, *, iostat=stat) animalid, lineb
     summ = linea + lineb
-    where (summ >= naval)  summ = naval
+    where (summ > 2 .or. summ < 0) summ = naval
     write(98, fmt) animalid, summ
     i = i + 1
     if (i == nrow) exit
