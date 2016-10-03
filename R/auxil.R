@@ -67,7 +67,7 @@ get_firstcolumn <- function(fn, class='integer', ...) {
   args$colClasses=classes
   
   if (!is.null(args$col.names)) {
-    if (length(args$col.names) != col)
+    if (length(args$col.names) != cols)
       args$col.names <- c(args$col.names, paste0('X', 1:(cols-length(args$col.names))))
   }
   
