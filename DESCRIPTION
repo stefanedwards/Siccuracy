@@ -15,3 +15,4 @@ Suggests:
     rmarkdown
 RoxygenNote: 5.0.1
 VignetteBuilder: knitr
+BugReports: https://github.com/stefanedwards/Siccuracy/issues
