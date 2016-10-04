@@ -71,3 +71,64 @@ phasotogeno_int <- function(phasefn, genofn, ncol=NULL, nrow=NULL) {
 
 
 # Convert plink A format #########################
+
+#' Convert PLINK recoded A to SNP file.
+#' 
+#' Facilitates converting a PLINK binary file to simplified SNP file format.
+#' Requires using PLINK to recode it to the \code{A} format by using command line \code{plink -bfile <file stem> --recode A}.
+#' This function then swiftly strips of first 6 columns (family ID, sample ID, paternal ID, maternal ID, sex, phenotypic record) 
+#' and inserts an integer-based ID column. \code{NA}'s outputted from PLINK are replaced with \code{naval} argument.
+#' 
+#' The new integer IDs can be supplied. If not, they will be made for you.
+#' \code{newID} may be an integer vector and will be used as is.
+#' If data.frame with columns \code{famID}, \code{sampID}, and \code{newID}, they will be reordered to match input file.
+#' 
+#' @param rawfn Output file from plink. Most likely \code{plink.raw} if PLINK command line argument \code{--output} is not used.
+#' @param outfn Filename of new file.
+#' @param NewID Integer scalar (default \code{0}) for automatically assigning new IDs. See description for more. 
+#' @param ncol Number of \emph{SNP} columns in \code{rawfn}. Is total number of columns minus 6.
+#' @param nlines Number of lines to process.
+#' @param naval Integer scalar to use for \code{NA} values.
+#' @return Data.frame with columns \code{famID}, \code{sampID}, and \code{newID}.
+#' @references 
+#' \itemize{
+#'  \item PLINK. Purcell and Chang. \url{https://www.cog-genomics.org/plink2}
+#'  \item \href{http://www.gigasciencejournal.com/content/4/1/7}{Chang CC, Chow CC, Tellier LCAM, Vattikuti S, Purcell SM, Lee JJ (2015) Second-generation PLINK: rising to the challenge of larger and richer datasets. GigaScience, 4.}
+#' }
+#' @export
+convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, naval=9) {
+  stopifnot(file.exists(rawfn))
+  
+  if (is.data.frame(newID)) stopifnot(all(c('famID','sampID','newID') %in% names(newID)))
+  if (is.null(ncol)) ncol <- get_ncols(rawfn) - 6
+  
+  firstcols <- get_firstcolumn(rawfn, class=list('character','character'), col.names=c('famID','sampID'))
+  if (is.null(nlines)) {
+    if (length(newID) == 1) {
+      nlines <- nrow(firstcols)
+    } else if (is.data.frame(newID)) {
+      nlines = nrow(newID)
+    } else {
+      nlines = length(newID)
+    }
+  }
+  
+  if (length(newID) == 1) {
+    .newID <- firstcols
+    .newID$newID <- 1:nrow(.newID) + newID
+  } else if (is.atomic(newID)) {
+    .newID <- cbind(firstcols[1:nlines,], newID[1:nlines])
+  } else {
+    newID <- do.call(data.frame, append(lapply(newID, as.character), list(stringsAsFactors=FALSE)))
+    .newID <- merge(firstcols, newID, by=c('famID','sampID'), sort=FALSE, all.x=TRUE, all.y=FALSE, stringsAsFactors=FALSE)
+  }
+  
+  newID <- .newID[1:nlines,]
+  
+  #subroutine convert_plinkA(rawfn, outputfn, newID, ncol, nrow, naval, stat) 
+  res <- .Fortran('convertplinka', rawfn=as.character(rawfn), outputfn=as.character(outfn), newID=as.integer(newID$newID),
+                  ncol=as.integer(ncol), nrow=as.integer(nlines), naval=as.integer(naval),
+                  stat=integer(1), PACKAGE='Siccuracy', NAOK=TRUE)
+  
+  newID
+}
