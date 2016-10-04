@@ -130,5 +130,5 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, naval=
                   ncol=as.integer(ncol), nrow=as.integer(nlines), naval=as.integer(naval),
                   stat=integer(1), PACKAGE='Siccuracy', NAOK=TRUE)
   
-  res
+  newID
 }
