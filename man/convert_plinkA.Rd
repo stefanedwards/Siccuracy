@@ -12,13 +12,13 @@ convert_plinkA(rawfn, outfn, newID = 0, ncol = NULL, nlines = NULL,
 
 \item{outfn}{Filename of new file.}
 
+\item{newID}{Integer scalar (default \code{0}) for automatically assigning new IDs. See description for more.}
+
 \item{ncol}{Number of \emph{SNP} columns in \code{rawfn}. Is total number of columns minus 6.}
 
 \item{nlines}{Number of lines to process.}
 
 \item{naval}{Integer scalar to use for \code{NA} values.}
-
-\item{NewID}{Integer scalar (default \code{0}) for automatically assigning new IDs. See description for more.}
 }
 \value{
 Data.frame with columns \code{famID}, \code{sampID}, and \code{newID}.

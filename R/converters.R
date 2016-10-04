@@ -90,7 +90,7 @@ phasotogeno_int <- function(phasefn, genofn, ncol=NULL, nrow=NULL) {
 #' 
 #' @param rawfn Output file from plink. Most likely \code{plink.raw} if PLINK command line argument \code{--output} is not used.
 #' @param outfn Filename of new file.
-#' @param NewID Integer scalar (default \code{0}) for automatically assigning new IDs. See description for more. 
+#' @param newID Integer scalar (default \code{0}) for automatically assigning new IDs. See description for more. 
 #' @param ncol Number of \emph{SNP} columns in \code{rawfn}. Is total number of columns minus 6.
 #' @param nlines Number of lines to process.
 #' @param naval Integer scalar to use for \code{NA} values.
