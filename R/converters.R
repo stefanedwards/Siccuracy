@@ -99,7 +99,7 @@ phasotogeno_int <- function(phasefn, genofn, ncol=NULL, nrow=NULL) {
 convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, naval=9) {
   stopifnot(file.exists(rawfn))
   
-  if (is.data.frame(newID)) stopifnot(all(c('famID','samplID','newID') %in% newID))
+  if (is.data.frame(newID)) stopifnot(all(c('famID','sampID','newID') %in% names(newID)))
   if (is.null(ncol)) ncol <- get_ncols(rawfn) - 6
   
   firstcols <- get_firstcolumn(rawfn, class=list('character','character'), col.names=c('famID','sampID'))
@@ -117,18 +117,17 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, naval=
     .newID <- firstcols
     .newID$newID <- 1:nrow(.newID) + newID
   } else if (is.atomic(newID)) {
-    .newID <- cbind(firstcols, newID)
+    .newID <- cbind(firstcols[1:nlines,], newID[1:nlines])
   } else {
-    .newID <- merge(firstcols, newID, by=c('famID','samplID'), sort=FALSE, all.x=TRUE, all.y=FALSE)
+    newID <- do.call(data.frame, append(lapply(newID, as.character), list(stringsAsFactors=FALSE)))
+    .newID <- merge(firstcols, newID, by=c('famID','sampID'), sort=FALSE, all.x=TRUE, all.y=FALSE, stringsAsFactors=FALSE)
   }
   
   newID <- .newID[1:nlines,]
-  newIDtopass <- newID$newID
   
   #subroutine convert_plinkA(rawfn, outputfn, newID, ncol, nrow, naval, stat) 
-  n <- getNativeSymbolInfo('convertplinka', PACKAGE='Siccuracy')
-  res <- .Fortran('convertplinka', rawfn=as.character(rawfn), outputfn=as.character(outfn), newID=as.integer(newIDtopass),
-                  ncol=as.integer(ncol), nrow=as.integer(nlines), 
+  res <- .Fortran('convertplinka', rawfn=as.character(rawfn), outputfn=as.character(outfn), newID=as.integer(newID$newID),
+                  ncol=as.integer(ncol), nrow=as.integer(nlines), naval=as.integer(naval),
                   stat=integer(1), PACKAGE='Siccuracy', NAOK=TRUE)
   
   res

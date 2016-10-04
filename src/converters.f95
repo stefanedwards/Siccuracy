@@ -99,25 +99,25 @@ subroutine convertplinka(rawfn, outputfn, newID, ncol, nrow, naval, stat)
   character(5), dimension(6) :: sixcolumns
 
   !! Set output format
-  !write(nChar,*) ncol
-  !fmt='(i20,'//trim(adjustl(nChar))//'i2)'
+  write(nChar,*) ncol
+  fmt='(i20,'//trim(adjustl(nChar))//'i2)'
   
-  !write(chrNA, '(I2)') naval
+  write(chrNA, '(I2)') naval
   
   i = 0
-  !open(90, file=rawfn, status='OLD')
-  !open(91, file=outputfn, status='UNKNOWN')
-  !do while (.TRUE.)
-  !  read(90, *, iostat=stat) sixcolumns, SNPs
-  !  if (stat /= 0) exit
-  !  i = i + 1
-  !  !where(SNPs == 'NA') SNPs = chrNA
-  !  !read(SNPs, '(I2)') iSNPs
-  !  !write(91, fmt) newID(i), iSNPs
-  !  if (i == nrow) exit
-  !end do  
-  !close(90)
-  !close(91)
+  open(90, file=rawfn, status='OLD')
+  open(91, file=outputfn, status='UNKNOWN')
+  do while (.TRUE.)
+    read(90, *, iostat=stat) sixcolumns, SNPs
+    if (stat /= 0) exit
+    i = i + 1
+    where(SNPs == 'NA') SNPs = chrNA
+    read(SNPs, '(I2)') iSNPs
+    write(91, fmt) newID(i), iSNPs
+    if (i == nrow) exit
+  end do  
+  close(90)
+  close(91)
   
   stat = i
 
