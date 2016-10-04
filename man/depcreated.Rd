@@ -5,7 +5,7 @@
 \alias{imputation_accuracy3}
 \alias{phasotogeno}
 \alias{phasotogeno_int}
-\title{Deprecated function names}
+\title{Deprecated functions}
 \usage{
 phasotogeno(phasefn, genofn, ncol = NULL, nrow = NULL)
 
@@ -45,8 +45,10 @@ Currently by subtracting column mean and dividing by column standard deviation.}
 Number of rows written.
 }
 \description{
-Deprecated function names
+\code{phasotogeno} and \code{phasotogeno_int} has been replaced by \code{\link{convert_phases}}. 
+The difference between the two former functions is covered by the \code{int} argument in the new function.
 
-Deprecated function names
+\code{imputation_accuracy1} and \code{imputation_accuracy3} has been replaced by \code{\link{imputation_accuracy}}.
+The difference between the two former functions is now covered by the \code{fast}-argument of the latter.
 }
 

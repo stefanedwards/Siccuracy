@@ -74,7 +74,9 @@ imputation_accuracy <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAv
   res[c('means','sds','rowcors','matcor','colcors','rowID')]
 }
 
-#' Deprecated function names
+#' \code{imputation_accuracy1} and \code{imputation_accuracy3} has been replaced by \code{\link{imputation_accuracy}}.
+#' The difference between the two former functions is now covered by the \code{fast}-argument of the latter.
+#' 
 #' @export
 #' @rdname depcreated
 #' @inheritParams imputation_accuracy
@@ -83,7 +85,6 @@ imputation_accuracy3 <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NA
   imputation_accuracy(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, fast=FALSE)
 }
 
-#' Deprecated function names
 #' @export
 #' @rdname depcreated
 imputation_accuracy1 <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAval=9, standardized=TRUE) {

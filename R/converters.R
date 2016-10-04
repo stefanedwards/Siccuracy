@@ -49,6 +49,11 @@ convert_phases <- function(phasefn, genofn, ncol=NULL, nrow=NULL, int=TRUE, nava
   res$nrow
 }
 
+#' Deprecated functions
+#' 
+#' \code{phasotogeno} and \code{phasotogeno_int} has been replaced by \code{\link{convert_phases}}. 
+#' The difference between the two former functions is covered by the \code{int} argument in the new function.
+#' 
 #' @param phasefn Filename of input file, every two rows are for same animal.
 #' @param genofn Filename of intended output.
 #' @param ncol Number of columns to read, if \code{NULL} (default), number is estimated from file.
@@ -57,14 +62,14 @@ convert_phases <- function(phasefn, genofn, ncol=NULL, nrow=NULL, int=TRUE, nava
 #' @export
 #' @rdname depcreated
 phasotogeno <- function(phasefn, genofn, ncol=NULL, nrow=NULL) {
-  .Deprecated('imputation_accuracy', package='Siccuracy')
+  .Deprecated('convert_phases', package='Siccuracy')
   convert_phases(phasefn, genofn, ncol, nrow, int=FALSE)
 }
 #' @export
 #' @rdname depcreated
 #' @inheritParams phasotogeno
 phasotogeno_int <- function(phasefn, genofn, ncol=NULL, nrow=NULL) {
-  .Deprecated('imputation_accuracy', package='Siccuracy')
+  .Deprecated('convert_phases', package='Siccuracy')
   convert_phases(phasefn, genofn, ncol, nrow, int=TRUE)
 }
 
