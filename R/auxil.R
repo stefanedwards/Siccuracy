@@ -155,6 +155,16 @@ make.true <- function(n,m) {
   rownames(true) <- as.character(1:nrow(true))
   true
 }
+make.phase <- function(n, m) {
+  m <- m + 1
+  n <- n * 2
+  true <- matrix(sample(0:1, size = n*m, replace=TRUE), ncol=m)  # fill true with random 0, 1, or 2.
+  # add non-segregating site
+  i <- sample.int(m, 1)
+  true[2:n,i] <- true[1,i]
+  true[,1] <- rep(1:(nrow(true)/2), each=2)
+  true
+}
 make.imputed <- function(true) {
   m <- ncol(true)
   n <- nrow(true)
