@@ -11,7 +11,7 @@
 #' @return Exit status, invisible.
 #' @export
 # subroutine rowconcatenate(files, fns, fnout, nlines, ncols, result)
-cbind_SNPs <- function(fns, fnout, nlines=NULL, ncols=NULL, skiplines=0, excludeids=integer(0), format='F5.2') {
+cbind_SNPs <- function(fns, fnout, nlines=NULL, ncols=NULL, skiplines=0, excludeids=integer(0), format='5.2', int=TRUE) {
   if (!all(file.exists(fns))) {
     stop('Not all files in fns exists.')
   }
@@ -23,13 +23,15 @@ cbind_SNPs <- function(fns, fnout, nlines=NULL, ncols=NULL, skiplines=0, exclude
   if (is.integer(format)) {
     format <- 'I2'
   } else if (is.numeric(format)) {
-    format <- 'R5.2'
+    format <- 'F5.2'
   }
+  format <- gsub('^[[:alpha:]]','',format)[1]
+  
   
   ftemp <- tempfile()
   write.table(fns, file = ftemp, row.names = FALSE, col.names=FALSE)
   
-  res <- .Fortran('cbind_SNPs_Rwrap',
+  res <- .Fortran('cbindsnpsrwrapper',
                   files=length(fns),
                   fnin=as.character(ftemp),
                   fnout=as.character(fnout),
@@ -41,9 +43,10 @@ cbind_SNPs <- function(fns, fnout, nlines=NULL, ncols=NULL, skiplines=0, exclude
                   result=integer(1),
                   lenfmt=nchar(format),
                   uesrfmt=as.character(format),
+                  int=as.integer(int),
                   PACKAGE='Siccuracy')
   file.remove(ftemp)
-  invisible(as.logical(res$result))
+  invisible(res$result==0)
 }
 
 #' \code{rowconcatenate} has been deprecated.
