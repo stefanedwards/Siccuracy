@@ -8,10 +8,13 @@
 #' Correlations are only performed on those rows that are found in \emph{both} files,
 #' based on the first column (ID column).
 #'
+#' Genotypes equal to \code{NAval} are considered missing (i.e. \code{NA}) and are not included in the calculations.
+#'
 #' This method stores the "true" matrix in memory with a low-precision real type,
 #' and rows in the "imputed" matrix are read and matched by ID.
 #' If there are no extra rows in either matrix and order of IDs is the same,
-#' consider using \code{fast}-option that does not store either.
+#' consider setting \code{adaptive=FALSE}, as this has a memory usage of O(m), compared to O(nm) for the adaptive method, where 'm' is the number of SNPs and 'n' the number of animals.
+#' The non-adaptive method is however, and very surprisingly, slightly slower.
 #'
 #' @param truefn Filename to true matrix. NB! Max. 255 characters!
 #' @param imputefn Filename to imputed matrix.
@@ -22,7 +25,7 @@
 #' @param NAval Integer, value of missing genotype.
 #' @param standardized Logical, whether to center and scale genotypes by dataset in \code{true}-matrix.
 #'        Currently by subtracting column mean and dividing by column standard deviation.
-#' @param fast Use fast method that does not check row IDs (\code{TRUE}), or adaptive method that compares row IDs (default, \code{FALSE}).
+#' @param adaptive Use adaptive method (default) that stores \code{truefn} and compares rows by ID in first column.
 #' @return List with following elements:
 #' \describe{
 #'   \item{\code{means}}{Column means of true matrix.}
@@ -34,7 +37,7 @@
 #' }
 #' @export
 #' @seealso \code{\link{write.snps}} for writing SNPs to a file.
-imputation_accuracy <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAval=9, standardized=TRUE, fast=FALSE) {
+imputation_accuracy <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAval=9, standardized=TRUE, adaptive=TRUE) {
   stopifnot(file.exists(truefn))
   stopifnot(file.exists(imputefn))
   
@@ -48,7 +51,7 @@ imputation_accuracy <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAv
   m <- as.integer(nSNPs)
   n <- as.integer(nAnimals)
   
-  subroutine <- ifelse(fast, 'imp_acc_fast','imp_acc')
+  subroutine <- ifelse(adaptive, 'imp_acc', 'imp_acc_fast')
   
   res <- .Fortran(subroutine,
                   truefn=as.character(truefn),
@@ -66,7 +69,7 @@ imputation_accuracy <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAv
   res$rowcors[is.infinite(res$rowcors)] <- NA
   res$rowcors[is.nan(res$rowcors)] <- NA
   
-  if (!fast & any(is.na(res$rowcors))) {
+  if (adaptive & any(is.na(res$rowcors))) {
     res$rowcors <- res$rowcors[!is.na(res$rowcors)]
     res$rowID <- res$rowID[!is.na(res$rowID)]
   }
@@ -82,12 +85,12 @@ imputation_accuracy <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAv
 #' @inheritParams imputation_accuracy
 imputation_accuracy3 <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAval=9, standardized=TRUE) {
   .Deprecated('imputation_accuracy', package='Siccuracy')
-  imputation_accuracy(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, fast=FALSE)
+  imputation_accuracy(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, adaptive=TRUE)
 }
 
 #' @export
 #' @rdname depcreated
 imputation_accuracy1 <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAval=9, standardized=TRUE) {
   .Deprecated('imputation_accuracy', package='Siccuracy')
-  imputation_accuracy(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, fast=TRUE)
+  imputation_accuracy(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, adaptive=FALSE)
 }

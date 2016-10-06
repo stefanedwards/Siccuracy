@@ -5,7 +5,7 @@
 \title{Imputation accuracy, aka. correlations}
 \usage{
 imputation_accuracy(truefn, imputefn, nSNPs = NULL, nAnimals = NULL,
-  NAval = 9, standardized = TRUE, fast = FALSE)
+  NAval = 9, standardized = TRUE, adaptive = TRUE)
 }
 \arguments{
 \item{truefn}{Filename to true matrix. NB! Max. 255 characters!}
@@ -23,7 +23,7 @@ If \code{NULL} (default), detected from \code{truefn}.}
 \item{standardized}{Logical, whether to center and scale genotypes by dataset in \code{true}-matrix.
 Currently by subtracting column mean and dividing by column standard deviation.}
 
-\item{fast}{Use fast method that does not check row IDs (\code{TRUE}), or adaptive method that compares row IDs (default, \code{FALSE}).}
+\item{adaptive}{Use adaptive method (default) that stores \code{truefn} and compares rows by ID in first column.}
 }
 \value{
 List with following elements:
@@ -46,10 +46,13 @@ Correlations are only performed on those rows that are found in \emph{both} file
 based on the first column (ID column).
 }
 \details{
+Genotypes equal to \code{NAval} are considered missing (i.e. \code{NA}) and are not included in the calculations.
+
 This method stores the "true" matrix in memory with a low-precision real type,
 and rows in the "imputed" matrix are read and matched by ID.
 If there are no extra rows in either matrix and order of IDs is the same,
-consider using \code{fast}-option that does not store either.
+consider setting \code{adaptive=FALSE}, as this has a memory usage of O(m), compared to O(nm) for the adaptive method, where 'm' is the number of SNPs and 'n' the number of animals.
+The non-adaptive method is however, and very surprisingly, slightly slower.
 }
 \seealso{
 \code{\link{write.snps}} for writing SNPs to a file.
