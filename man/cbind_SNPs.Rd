@@ -5,8 +5,8 @@
 \alias{rowconcatenate}
 \title{Column bind files with genotype matrices}
 \usage{
-cbind_SNPs(fns, fnout, nlines = NULL, ncols = NULL, skiplines = 0,
-  excludeids = integer(0))
+cbind_SNPs(fns, fnout, nlines = NULL, skiplines = 0,
+  excludeids = integer(0), format = NULL, int = TRUE)
 
 rowconcatenate(fns, fnout, nlines = NULL, ncols = NULL, skiplines = 0,
   excludeids = integer(0))
@@ -18,11 +18,15 @@ rowconcatenate(fns, fnout, nlines = NULL, ncols = NULL, skiplines = 0,
 
 \item{nlines}{Number of lines to read from each file. When \code{NULL} (default), use all lines.}
 
-\item{ncols}{Number of columns to read from each file. When \code{NULL} (default), use all columns.}
-
 \item{skiplines}{Integer, number of lines to skip before outputting. \code{nlines} counts towards total number of lines, i.e. both skipped and outputted.}
 
 \item{excludeids}{Integer vector of first column id's to \emph{exclude} from the output. \code{nlines} also counts towards excluded lines.}
+
+\item{format}{Character of Fortran formats. Defaults to \code{F5.2}; use \code{I2} for integers, or numeric() or integer() for the former two.}
+
+\item{int}{Logical, True: outputs integers only, \code{FALSE:}: also outputs decimals.}
+
+\item{ncols}{Number of columns to read from each file. When \code{NULL} (default), use all columns.}
 }
 \value{
 Exit status, invisible.
@@ -31,5 +35,6 @@ Exit status, invisible.
 Does row-wise concatenation of multiple genotype files, ignoring the first column.
 
 \code{rowconcatenate} has been deprecated.
+Use \code{\link{cbind_SNPs}} instead.
 }
 
