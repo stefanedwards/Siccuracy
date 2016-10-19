@@ -144,31 +144,3 @@ read.snps <- function(file, nlines=0, ncols=NULL, na=NA, what=integer(), extract
   if (!is.na(na)) M[M==na] <- NA
   M
 }
-
-
-# For testing.
-make.true <- function(n,m) {
-  true <- matrix(sample(0:2, size = n*m, replace=TRUE), ncol=m)  # fill true with random 0, 1, or 2.
-  # add non-segregating site
-  i <- sample.int(m, 1)
-  true[2:n,i] <- true[1,i]
-  rownames(true) <- as.character(1:nrow(true))
-  true
-}
-make.imputed <- function(true) {
-  m <- ncol(true)
-  n <- nrow(true)
-  imputed <- true
-  imputed[sample.int(n*m, floor(n*m*0.5))] <- sample(0:2, size=floor(n*m*0.5), replace=TRUE) # change half the elements
-  imputed[sample.int(n*m, floor(n*m*0.1))] <- NA  # some elements are missing.
-  imputed
-}
-make.test <- function(n, m) {
-  true <- make.true(n, m)
-  imputed <- make.imputed(true)
-  truefn <- tempfile('true', fileext = '.txt')
-  imputedfn <- tempfile('imputed', fileext='.txt')
-  write.snps(true, truefn)
-  write.snps(imputed, imputedfn)
-  list(true=true, imputed=imputed, truefn=truefn, imputedfn=imputedfn)
-}

@@ -20,25 +20,7 @@ cbind_SNPs <- function(fns, fnout, nlines=NULL, skiplines=0, excludeids=integer(
   if (is.null(nlines)) nlines <- get_nlines(fns[1])
   ncols <- sapply(fns, get_ncols) - 1
   
-  if (is.null(format)) format <- ifelse(int, integer(1), numeric(1))
-  if (is.integer(format)) {
-    if (length(format) != 1) {
-      format <- 'I2'
-    } else if (format == 0) {
-      format <- 'I2'
-    } else {
-      format <- as.character(format)
-    }
-  } else if (is.numeric(format)) {
-    if (length(format) != 1) {
-      format <- 'F5.2'
-    } else if (format == 0.0) {
-      format <- 'F5.2'
-    } else {
-      format <- formatC(format, digits=1, format='f')
-    }
-  }
-  if (!grepl('^[[:alpha:]]+', format)) format <- paste0(ifelse(int, 'I', 'F'), format)
+  format <- parse.format(format, int)
   
   ftemp <- tempfile()
   write.table(fns, file = ftemp, row.names = FALSE, col.names=FALSE)
