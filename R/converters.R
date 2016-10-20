@@ -107,9 +107,13 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
   stopifnot(file.exists(rawfn))
   
   if (is.data.frame(newID)) stopifnot(all(c('famID','sampID','newID') %in% names(newID)))
-  if (is.null(ncol)) ncol <- get_ncols(rawfn) - 6
+  #if (is.null(ncol)) ncol <- get_ncols(rawfn) - 6
   
-  firstcols <- get_firstcolumn(rawfn, class=list('character','character'), col.names=c('famID','sampID'))
+  firstline <- scan(rawfn, what=character(), nlines=1, quiet=TRUE)
+  if (is.null(ncol)) ncol <- length(firstline) - 6
+  header <- all(firstline[1:3] == c('FID','IID','PAT'))
+  
+  firstcols <- get_firstcolumn(rawfn, class=list('character','character'), col.names=c('famID','sampID'), header=header)
   if (is.null(nlines)) {
     if (length(newID) == 1) {
       nlines <- nrow(firstcols)
@@ -134,7 +138,7 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
   
   #subroutine convert_plinkA(rawfn, outputfn, newID, ncol, nrow, naval, stat) 
   res <- .Fortran('convertplinka', rawfn=as.character(rawfn), outputfn=as.character(outfn), newID=as.integer(newID$newID),
-                  ncol=as.integer(ncol), nrow=as.integer(nlines), naval=as.integer(naval),
+                  ncol=as.integer(ncol), nrow=as.integer(nlines), naval=as.integer(na), header=as.integer(header),
                   stat=integer(1), PACKAGE='Siccuracy', NAOK=TRUE)
   
   newID
