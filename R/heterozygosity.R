@@ -36,8 +36,8 @@
 #' @export
 #' @param fn Filename of genotype matrix (0,1,2) with first column denoting ID.
 #' @param population Vector of same length as rows in \code{fn}; defaults to \code{1}, coerced from factor to integer.
-#' @param ncols Number of SNP columns in \code{fn}; if \code{NULL} (default), number is retrieved with \code{\link{get_ncols}}.
-#' @param nlines Lines in \code{fn}; if \code{NULL} (default), number is retrieved with \code{\link{get_nlines}}.
+#' @param ncol Integer, number of SNP columns in \code{fn} When \code{NULL}, automagically detected with \code{get_ncols(fn)-1}.
+#' @param nlines Integer, number of lines in \code{fn}. When \code{NULL}, automagically detected with \code{gen_nlines(fn)}.
 #' @return Data frame with columns
 #' \describe{
 #'   \item{\code{population}}{Population, as specified by argument \code{population}.}

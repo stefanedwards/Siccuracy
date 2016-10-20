@@ -22,11 +22,17 @@
 #' 
 #' \itemize{
 #'   \item \strong{Converters} \code{\link{convert_phases}}, \code{\link{convert_plinkA}}
+#'   \item \strong{File info} \code{\link{get_nlines}}, \code{\link{get_firstcolumn}}, \code{\link{get_ncols}}
 #'   \item \strong{Imputation accuracies} \code{\link{imputation_accuracy}} correlations between matrices
 #'   \item \strong{Heterozygosity} \code{\link{heterozygosity}} counting alleles
-#'   \item \strong{File info} \code{\link{get_nlines}}, \code{\link{get_firstcolumn}}, \code{\link{get_ncols}}
+#'   \item \strong{Mutators} \code{\link{cbind_SNPs}}, \code{\link{rbind_SNPs}} for combining multiple files.
 #'   \item \strong{Reading and writing} \code{\link{write.snps}}, \code{\link{read.snps}}
 #' }
+#' 
+#' @section Output format:
+#' 
+#' Functions that write new files may have a pair of arguments (\code{int} and \code{format}) 
+#' that specifies whether the outputted format are integers (\code{int=TRUE}) or have decimals.
 #' 
 #' @docType package
 #' @name Siccuracy

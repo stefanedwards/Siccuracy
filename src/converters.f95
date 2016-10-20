@@ -78,6 +78,62 @@ subroutine convert_phase_int(phasefn, genofn, ncol, nrow, naval, numfmt, lennumf
 
 end subroutine
 
+subroutine convert_phase(phasefn, genofn, ncol, nrow, na, int, lenfmt, userfmt)
+
+  implicit none
+  
+  !! Arguments
+  character(255), intent(in) :: phasefn, genofn
+  character(len=lenfmt) :: userfmt
+  integer, intent(in) :: ncol, na, int, lenfmt
+  integer, intent(inout) :: nrow
+
+  !! Local variables
+  integer :: stat, i, animalid
+  logical :: isint
+  integer, dimension(:),  allocatable :: summint
+  real, dimension(ncol) :: linea, lineb, summ
+  character(100) :: nChar, fmt
+
+  isint = int == 1
+  
+  if (isint .eqv. .true.)  then
+    allocate(summint(ncol))
+  endif
+
+  write(nChar,*) ncol
+  fmt='(i20,'//trim(adjustl(nChar))//trim(userfmt)//')'
+
+  open(97, file=phasefn, status='OLD')
+  open(98, file=genofn, status='UNKNOWN')
+  i = 0
+  do while (.TRUE.)
+    read(97, *, iostat=stat) animalid, linea
+    if (stat /= 0) exit
+    read(97, *, iostat=stat) animalid, lineb
+    summ = linea + lineb
+    where (summ > 2.000 .or. summ < 0.000) summ = na
+    if (isint .eqv. .true.) then
+      summint = summ
+      write(98, fmt) animalid, summ
+    else 
+      write(98, fmt) animalid, summ
+    endif
+    i = i + 1
+    if (i == nrow) exit
+  end do
+
+  close(97)
+  close(98)
+
+  nrow = i
+  
+  if (isint .eqv. .true.) then
+    deallocate(summint)
+  endif
+
+end subroutine
+
 !! Converting plink --recode A
 
 subroutine convertplinka(rawfn, outputfn, newID, ncol, nrow, naval, stat) 

@@ -1,44 +1,43 @@
 #' Auxiliary functions
 #'
 #' Short-hand functions for retriving file information such as number of columns or rows,
-#' or picking the first column (relevant if this contains animal IDs).
+#' or picking the first column (relevant if this contains IDs).
 #' @name auxfunc
 #' @rdname auxfunc
 NULL
 
 #' Gets number of columns from first line of file.
 #'
-#' \code{get_ncols} works only with numeric values.
+#' \code{get_ncols} returns number of columns.
 #'
-#' @param fn Filename to read from. May be text, gz, or bz2.
+#' @param file Filename or connection to read from.
 #' @return \code{get_ncols}: Number of read fields, including ID columns.
 #' @export
 #' @rdname auxfunc
 get_ncols <- function(fn) {
-  on.exit(try(close(f), silent=TRUE))
-  f <- gzfile(fn, 'r')
-  s <- scan(f, what=character(), quiet=TRUE, nlines=1)
-  close(f)
+  #on.exit(try(close(f), silent=TRUE))
+  #f <- gzfile(fn, 'r')
+  s <- scan(fn, what=character(), quiet=TRUE, nlines=1)
+  #close(f)
   length(s)
 }
 
 
 #' Gets number of rows in as file.
 #'
-#' \code{get_nlines} works only with numeric values.
+#' \code{get_nlines} returns number of lines. **Requires first column to be numeric**.
 #'
-#' @param showWarning Logical, whether to display a warning if reading file is erroneous.
-#' @param doError Logical, if error occured while reading file, will it stop
+#' @param fn Filename.
 #' @export
 #' @return \code{get_nlines}: Number of lines.
 #' @rdname auxfunc
-get_nlines <- function(fn, showWarning=TRUE, doError=FALSE) {
+get_nlines <- function(fn) {
   stopifnot(file.exists(fn))
   res <- .Fortran('get_nlines', fn=as.character(fn), nlines=integer(1), stat=integer(1))
   if (res$nlines == 0 & res$stat != 0) {
-    msg <- paste0('get_nlines did not read lines; stat error ', res$stat, '.')
-    if (doError) { stop(msg)
-    } else if (showWarning) warning(msg)
+    msg <- paste0('get_nlines did not read lines; IOSTAT error ', res$stat, '.')
+    warning(msg)
+    return(NULL)
   }
   res$nlines
 }
@@ -84,13 +83,13 @@ NULL
 #' For file format see \link{Siccuracy}.
 #' 
 #' @param x The matrix to write.
-#' @param fn Filename or connection of file to write to.
-#' @param row.names If genotype matrix is "raw" and has first column with animals IDs, set this to False.
-#' @param na Character to write in-place of missing values, defaults '9'.
+#' @param file Filename or connection.
+#' @param row.names If genotype matrix is "raw" and has first column with animals IDs, set this to \code{FALSE}.
+#' @param na The string to use for \code{NA} in the data.
 #' @param ... Passed on to write.table.
 #' @seealso \code{\link[utils]{write.table}}, \link[base]{connections}
 #' @export
-write.snps <- function(x, fn, row.names=TRUE, na='9', ...) {
+write.snps <- function(x, file, row.names=TRUE, na='9', ...) {
   write.table(x, fn, col.names=FALSE, row.names=row.names, quote=FALSE, na=na, ...)
 }
 
@@ -101,18 +100,20 @@ write.snps <- function(x, fn, row.names=TRUE, na='9', ...) {
 #' Assumes a file format with no header and first column are IDs. If no ID column, use \code{extractIDs = FALSE}.
 #' Usually white-space delimted, but separator can be set with \code{sep} argument as per \code{\link[base]{scan}}.
 #' For file format example see \link{Siccuracy}.
+#' 
+#' If ID columns contains alphabetical elements, use \code{what=character()}. This will however return a matrix. 
+#' Use e.g. \code{storage.mode(m) <- 'integer'} to convert to integer-based, keeping all other attributes.
+#' 
 #'
-#' @param file Name of file to read from or connection.
-#' @param nlines Integer. If positive, the maximum number of line to read.
-#' @param ncols Integer, default \code{NULL}. Number of columns in input file, including ID column. If \code{NULL} and \code{file} is string, automagically detected.
-#' @param na If not \code{NA} (default), entries with the value are replaced with \code{NA}.
-#' @param what Type of internal storage for matrix. Use \code{integer()} or \code{numeric()}, but expect issues if ID column contains alphabetical components.
-#' @param extractIDs Logical, default \code{TRUE}, trim of first column and use as rownames?
-#' @param quiet Logical, default \code{TRUE}. If \code{FALSE}, \code{scan} will print a line saying how may items have been read.
+#' @param file Filename or connection.
+#' @param ncols Integer, number of columns in \code{file}, including ID column. When \code{NULL} (default), automagically detected with \code{\link{get_ncols}}.
+#' @param na Missing values; entries with this value are replaced with \code{NA}..
+#' @param what The \link[base]{typeof} of data to be read, e.g. \code{integer()},  \code{numeric()}, or \code{character()}.
+#' @param extractIDs Logical, default \code{TRUE}, trim of first column and use as rownames.
 #' @param ... Passed on to \code{\link[base]{scan}}.
 #' @return Native \link[base]{matrix}.
 #' @export
-#' @seealso  \code{\link{write.snps}}, \link[base]{typeof}
+#' @seealso  \code{\link{write.snps}}, \link[base]{typeof}, \code{\link{get_ncols}}, \code{\link[base]{scan}}.
 #' @examples
 #'
 #' # Make test data
@@ -129,13 +130,13 @@ write.snps <- function(x, fn, row.names=TRUE, na='9', ...) {
 #'   if (nrow(M) == 0) break
 #' }
 #' close(f)
-read.snps <- function(file, nlines=0, ncols=NULL, na=NA, what=integer(), extractIDs=TRUE, quiet=TRUE, ...) {
+read.snps <- function(file, ncols=NULL, na=NA, what=integer(), extractIDs=TRUE, ...) {
   if (is.null(ncols) & is.character(file)) {
     ncols <- get_ncols(file)
   }
   if (is.null(ncols)) stop('Cannot automagically detect number of columns to read as input file is a connection, not a character.')
 
-  M <- matrix(scan(file, nlines=nlines, what=what, quiet=quiet, ...), ncol=ncols, byrow=TRUE)
+  M <- matrix(scan(file, nlines=nlines, what=what, ...), ncol=ncols, byrow=TRUE)
   if (nrow(M) == 0) return(M)
   if (extractIDs) {
     rownames(M) <- M[,1]

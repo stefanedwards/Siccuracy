@@ -4,26 +4,24 @@
 \alias{imputation_accuracy}
 \title{Imputation accuracy, aka. correlations}
 \usage{
-imputation_accuracy(truefn, imputefn, nSNPs = NULL, nAnimals = NULL,
-  NAval = 9, standardized = TRUE, adaptive = TRUE)
+imputation_accuracy(truefn, imputefn, ncol = NULL, nlines = NULL, na = 9,
+  standardized = TRUE, adaptive = TRUE)
 }
 \arguments{
-\item{truefn}{Filename to true matrix. NB! Max. 255 characters!}
+\item{truefn}{Filename of \emph{true} matrix.}
 
-\item{imputefn}{Filename to imputed matrix.}
+\item{imputefn}{Filename of \emph{imputed} matrix.}
 
-\item{nSNPs}{Integer, number of snps (i.e. number of columns minus 1).
-If \code{NULL} (default), detected from \code{truefn}.}
+\item{ncol}{Integer, number of SNP columns in files. When \code{NULL}, automagically detected with \code{get_ncols(truefn)-1}.}
 
-\item{nAnimals}{Integer, number of rows.
-If \code{NULL} (default), detected from \code{truefn}.}
+\item{nlines}{Integer, number of lines in \code{truefn}. When \code{NULL}, automagically detected with \code{gen_nlines(truefn)}.}
 
-\item{NAval}{Integer, value of missing genotype.}
+\item{na}{Value of missing genotypes.}
 
 \item{standardized}{Logical, whether to center and scale genotypes by dataset in \code{true}-matrix.
 Currently by subtracting column mean and dividing by column standard deviation.}
 
-\item{adaptive}{Use adaptive method (default) that stores \code{truefn} and compares rows by ID in first column.}
+\item{adaptive}{Use adaptive method (default) that stores \code{truefn} in memory and compares rows by ID in first column.}
 }
 \value{
 List with following elements:

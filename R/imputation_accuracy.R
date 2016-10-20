@@ -16,16 +16,14 @@
 #' consider setting \code{adaptive=FALSE}, as this has a memory usage of O(m), compared to O(nm) for the adaptive method, where 'm' is the number of SNPs and 'n' the number of animals.
 #' The non-adaptive method is however, and very surprisingly, slightly slower.
 #'
-#' @param truefn Filename to true matrix. NB! Max. 255 characters!
-#' @param imputefn Filename to imputed matrix.
-#' @param nSNPs Integer, number of snps (i.e. number of columns minus 1).
-#'        If \code{NULL} (default), detected from \code{truefn}.
-#' @param nAnimals Integer, number of rows.
-#'        If \code{NULL} (default), detected from \code{truefn}.
-#' @param NAval Integer, value of missing genotype.
+#' @param truefn Filename of \emph{true} matrix.
+#' @param imputefn Filename of \emph{imputed} matrix.
+#' @param ncol Integer, number of SNP columns in files. When \code{NULL}, automagically detected with \code{get_ncols(truefn)-1}.
+#' @param nlines Integer, number of lines in \code{truefn}. When \code{NULL}, automagically detected with \code{gen_nlines(truefn)}.
+#' @param na Value of missing genotypes.
 #' @param standardized Logical, whether to center and scale genotypes by dataset in \code{true}-matrix.
 #'        Currently by subtracting column mean and dividing by column standard deviation.
-#' @param adaptive Use adaptive method (default) that stores \code{truefn} and compares rows by ID in first column.
+#' @param adaptive Use adaptive method (default) that stores \code{truefn} in memory and compares rows by ID in first column.
 #' @return List with following elements:
 #' \describe{
 #'   \item{\code{means}}{Column means of true matrix.}
@@ -37,19 +35,16 @@
 #' }
 #' @export
 #' @seealso \code{\link{write.snps}} for writing SNPs to a file.
-imputation_accuracy <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAval=9, standardized=TRUE, adaptive=TRUE) {
+imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, standardized=TRUE, adaptive=TRUE) {
   stopifnot(file.exists(truefn))
   stopifnot(file.exists(imputefn))
   
   standardized <- as.logical(standardized)
-  if (is.null(nSNPs)) {
-    nSNPs <- get_ncols(truefn)-1
-  }
-  if (is.null(nAnimals)) {
-    nAnimals <- get_nlines(truefn)
-  }
-  m <- as.integer(nSNPs)
-  n <- as.integer(nAnimals)
+  if (is.null(ncols)) ncols <- get_ncols(truefn)-1
+  if (is.null(nlines)) nlines <- get_nlines(truefn)
+  
+  m <- as.integer(ncols)
+  n <- as.integer(nlines)
   
   subroutine <- ifelse(adaptive, 'imp_acc', 'imp_acc_fast')
   
@@ -57,8 +52,8 @@ imputation_accuracy <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAv
                   truefn=as.character(truefn),
                   imputedfn=as.character(imputefn),
                   nSnps=m,
-                  nAnimals=as.integer(nAnimals),
-                  NAval=as.integer(NAval),
+                  nAnimals=as.integer(nlines),
+                  NAval=as.integer(na),
                   standardized=as.integer(standardized),
                   means=vector('numeric',m), sds=vector('numeric',m),  # Placeholders for return data.
                   rowcors=vector('numeric', n), matcor=numeric(1), colcors=vector('numeric',m),
@@ -78,7 +73,11 @@ imputation_accuracy <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAv
 }
 
 #' \code{imputation_accuracy1} and \code{imputation_accuracy3} has been replaced by \code{\link{imputation_accuracy}}.
-#' The difference between the two former functions is now covered by the \code{fast}-argument of the latter.
+#' The difference between the two former functions is now covered by the \code{adaptive}-argument of the latter.
+#' 
+#' @param nSNPs Deprecated, use \code{ncol}.
+#' @param nAnimals Deprecated, use \code{nlines}.
+#' @param NAval Deprecated, use \code{na}.
 #' 
 #' @export
 #' @rdname depcreated

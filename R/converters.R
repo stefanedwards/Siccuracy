@@ -23,29 +23,31 @@
 #'
 #' By default assumes genotypes are whole integers (cf. \code{int} argument).
 #' If numeric values are required, e.g. gene dosages from imputation, use \code{int=FALSE}. 
-#' Use \code{numeric.format} to change from default 5 characters width and 2 decimals (\code{"5.2"}). 
+#' Use \code{format} to change from default 5 characters width and 2 decimals (\code{"5.2"}). 
 #' NB! Function does not test for validity of this argument, so change with caution!
 #'
-#' \strong{Missing values:} Values after summing less than 0 or greater than 2 are assumed as missing and replaced with \code{naval}.
+#' \strong{Missing values:} Values after summing less than 0 or greater than 2 are assumed as missing and replaced with \code{na}.
 #'
 #' @param phasefn Filename of input file, every two rows are for same animal.
 #' @param genofn Filename of intended output.
-#' @param ncol Number of SNPs in file, if \code{NULL} (default), number is estimated from file.
-#' @param nrow Number of rows to maximally read from \code{phasefn}. If \code{NULL}, no limit is used.
-#' @param naval Missing value, default \code{9}.
+#' @param ncol Integer, number of SNP columns in files. When \code{NULL}, automagically detected with \code{get_ncols(phasefn)-1}.
+#' @param nlines Integer, maximum number of pairs of lines to convert.
+#' @param na Missing value.
 #' @param int Logical (default \code{TRUE}), read and write integers.
-#' @param numeric.format Character describing \code{<width>.<decimals>}. Default \code{'5.2'}. Has no effect when \code{int=TRUE}.
+#' @param format Character, Fortran edit descriptors for output. See \link{parse.format}.
 #' @return Number of rows written.
 #' @export
-convert_phases <- function(phasefn, genofn, ncol=NULL, nrow=NULL, int=TRUE, naval=9, numeric.format='5.2') {
+convert_phases <- function(phasefn, genofn, ncol=NULL, nrow=NULL, na=9, int=TRUE, format=NULL) {
   stopifnot(file.exists(phasefn))
   
   if (is.null(ncol)) ncol <- get_ncols(phasefn)-1
   if (is.null(nrow)) nrow <- 0
   
-  subroutine <- ifelse(int, 'convert_phase_int', 'convert_phase_num')
-  res <- .Fortran(subroutine, phasefn=as.character(phasefn), genofn=as.character(genofn), ncol=as.integer(ncol), nrow=as.integer(nrow), 
-                  naval=as.integer(naval), numfmt=as.character(numeric.format), lennumfmt=as.integer(nchar(numeric.format)))
+  format <- parse.format(format, int)
+  
+  # subroutine convert_phase(phasefn, genofn, ncol, nrow, na, int, lenfmt, userfmt)
+  res <- .Fortran('convert_phase', phasefn=as.character(phasefn), genofn=as.character(genofn), ncol=as.integer(ncol), nrow=as.integer(nrow), 
+                  na=as.integer(na), lenfmt=as.integer(nchar(format)), userfmt=as.character(userfmt))
   res$nrow
 }
 
@@ -88,12 +90,12 @@ phasotogeno_int <- function(phasefn, genofn, ncol=NULL, nrow=NULL) {
 #' \code{newID} may be an integer vector and will be used as is.
 #' If data.frame with columns \code{famID}, \code{sampID}, and \code{newID}, they will be reordered to match input file.
 #' 
-#' @param rawfn Output file from plink. Most likely \code{plink.raw} if PLINK command line argument \code{--output} is not used.
+#' @param rawfn Plink output filename. Most likely \code{plink.raw} if PLINK command line argument \code{--output} is not used.
 #' @param outfn Filename of new file.
 #' @param newID Integer scalar (default \code{0}) for automatically assigning new IDs. See description for more. 
-#' @param ncol Number of \emph{SNP} columns in \code{rawfn}. Is total number of columns minus 6.
+#' @param ncol Integer,number of SNP columns in \code{rawfn}. When \code{NULL}, automagically detected with \code{get_ncols(rawfn)-6}.
 #' @param nlines Number of lines to process.
-#' @param naval Integer scalar to use for \code{NA} values.
+#' @param na Missing value, 
 #' @return Data.frame with columns \code{famID}, \code{sampID}, and \code{newID}.
 #' @references 
 #' \itemize{
@@ -101,7 +103,7 @@ phasotogeno_int <- function(phasefn, genofn, ncol=NULL, nrow=NULL) {
 #'  \item \href{http://www.gigasciencejournal.com/content/4/1/7}{Chang CC, Chow CC, Tellier LCAM, Vattikuti S, Purcell SM, Lee JJ (2015) Second-generation PLINK: rising to the challenge of larger and richer datasets. GigaScience, 4.}
 #' }
 #' @export
-convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, naval=9) {
+convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) {
   stopifnot(file.exists(rawfn))
   
   if (is.data.frame(newID)) stopifnot(all(c('famID','sampID','newID') %in% names(newID)))
