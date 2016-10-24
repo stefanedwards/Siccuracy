@@ -154,11 +154,18 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #
 # Using `PLINK --recode A` option probably counts the *major* allele; it is llisted in the header. 
 
-#' Converts PLINK binary format to flat format.
+#' Converts PLINK binary format to flat format
 #' 
+#' @details 
 #' The new integer IDs can be supplied. If not, they will be made for you.
 #' \code{newID} may be an integer vector and will be used as is.
 #' If data.frame with columns \code{famID}, \code{sampID}, and \code{newID}, they will be reordered to match input file.
+#' 
+#' \strong{\code{method}} \emph{simple} stores entire genotype matrix \emph{in memory}, as PLINK binary files are stored in locus-major mode, 
+#' i.e. first \eqn{m} bits store first locus for all \eqn{n} animals.
+#' Since we are interested in writing out all \eqn{m} loci for each animal, for efficiency we need to read the entire file.
+#' \emph{As an alternate} ...
+#' 
 #' @param bfile Filename of PLINK binary files, i.e. without extension.
 #' @param outfn Filename of new file.
 #' @param na Missing value.
@@ -167,7 +174,12 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #' @param fam If binary files have different stems, specify each of them with \code{fam}, \code{bim}, \code{bed}, and set \code{bfile=NULL}.
 #' @param bim See \code{fam}.
 #' @param bed See \code{fam}.
-#' @param countminor Logical: Should the output count minor allele (default), or major allele as \code{plink --recode A}?
+#' @param countminor Logical: Should the output count minor allele (default), or major allele as \code{plink --recode A}.
+#' @param maf Numeric, restrict SNPs to SNPs with this frequency. 
+#' @param extract Extract only these SNPs.
+#' @param exclude Do not extract these SNPs.
+#' @param keep Keep only these samples.
+#' @param Remove Removes these samples from output.
 #' @param method Character, which of following methods to use: \code{simple} (store entire matrix in memeory) or ??
 #' @export
 #' @references 
@@ -177,7 +189,7 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #'  \item Chang CC, Chow CC, Tellier LCAM, Vattikuti S, Purcell SM, Lee JJ (2015) \href{http://www.gigasciencejournal.com/content/4/1/7}{Second-generation PLINK: rising to the challenge of larger and richer datasets.} \emph{GigaScience}, 4.
 #' }
 #
-convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bim=NULL, bed=NULL, countminor=TRUE, method='simple') {
+convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bim=NULL, bed=NULL, countminor=TRUE, maf=0.0, extract=NULL, exclude=NULL, keep=NULL, remove=NULL, method='simple') {
   
   # Get filenames
   if (!(is.null(bfile) | is.na(bfile))) {
@@ -230,12 +242,17 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
   
   if (use.method == 1) {
     #subroutine readplinksimple(bed, fnout, ncol, nlines, na, newID, status)
-    res <- .Fortran('readplinksimple', bed=as.character(bed), fnout=as.character(outfn), 
-                    ncol=as.integer(ncol), nlines=as.integer(nlines), na=as.integer(na), newID=as.integer(newID$newID), minor=as.integer(countminor), status=as.integer(0))
+    res <- .Fortran('readplinksimple', bed=as.character(bed), fnout=as.character(outfn[1]), 
+                    ncol=as.integer(ncol), nlines=as.integer(nlines), na=as.integer(na), newID=as.integer(newID$newID), minor=as.integer(countminor), 
+                    maf=as.numeric(maf), extract=as.integer(rep(1, ncol)), keep=integer(nlines), 
+                    status=as.integer(0))
+    ret <- newID
   } else if (use.method == 2) {
+    # The not-so-simple complex way to do stuff. Boy, do we get to have fun now!
+    
+    
     
   }  
   #res$newID=newID
   #res
-  newID
 }

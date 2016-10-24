@@ -26,7 +26,6 @@ test_that('Basic plink conversion works (`simple1`)', {
   res <- convert_plinkA(.datadir('simple1.raw'), fn1)
   snp1 <- read.snps(fn1)
   
-  # subroutine readplinksimple(ped, bim, bed, fnout, ncol, nlines, na, status)
   fn2 <- tempfile()
   res <- convert_plink(.datadir('simple1'), fn2, countminor=FALSE)
   snp2 <- read.snps(fn2)
@@ -82,4 +81,32 @@ test_that('Duplicate IDs lead to issues', {
   
   expect_equal(res$newID, get_firstcolumn(fn2), info='Same length, i.e. including duplicate label.')
   
+})
+
+test_that('Count minor/major allele works', {
+  fn1 <- tempfile()
+  res <- convert_plinkA(.datadir('simple1.raw'), fn1)
+  snp1 <- read.snps(fn1)
+  
+  fn2 <- tempfile()
+  res <- convert_plink(.datadir('simple1'), fn2, countminor=FALSE)
+  expect_equal(snp1, read.snps(fn2))
+  snp.major <- read.snps(fn2, na=9)
+  
+  
+  res <- convert_plink(.datadir('simple1'), fn2, countminor=TRUE)
+  snp.minor <- read.snps(fn2, na = 9)
+  expect_equal(snp.major, 2-snp.minor)
+})
+
+
+test_that('Simple converter accepts minimal allele frequencies', {
+  fn1 <- tempfile()
+  res <- convert_plinkA(.datadir('simple2_30.raw'), fn1)  # maf 0.30
+  snp1 <- read.snps(fn1)  
+  
+  fn2 <- tempfile()
+  res <- convert_plink(.datadir('simple2'), fn2, countminor=FALSE, maf=0.30)
+  snp2 <- read.snps(fn2)
+  expect_equal(snp1, snp2)
 })
