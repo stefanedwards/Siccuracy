@@ -134,12 +134,108 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
     .newID <- merge(firstcols, newID, by=c('famID','sampID'), sort=FALSE, all.x=TRUE, all.y=FALSE, stringsAsFactors=FALSE)
   }
   
+  nlines <- min(nlines, nrow(.newID))
   newID <- .newID[1:nlines,]
+  newID$newID <- as.integer(newID$newID)
   
   #subroutine convert_plinkA(rawfn, outputfn, newID, ncol, nrow, naval, stat) 
   res <- .Fortran('convertplinka', rawfn=as.character(rawfn), outputfn=as.character(outfn), newID=as.integer(newID$newID),
                   ncol=as.integer(ncol), nrow=as.integer(nlines), naval=as.integer(na), header=as.integer(header),
                   stat=integer(1), PACKAGE='Siccuracy', NAOK=TRUE)
   
+  newID
+}
+
+
+# Convert PLINK binary files ########
+# Our understanding of the different filetypes.
+# The binary bim/bed/ped format lists for each loci (in bm-file) the major and minor allele.
+# The corresponding bed file counts the *minor* allele.
+#
+# Using `PLINK --recode A` option probably counts the *major* allele; it is llisted in the header. 
+
+#' Converts PLINK binary format to flat format.
+#' 
+#' The new integer IDs can be supplied. If not, they will be made for you.
+#' \code{newID} may be an integer vector and will be used as is.
+#' If data.frame with columns \code{famID}, \code{sampID}, and \code{newID}, they will be reordered to match input file.
+#' @param bfile Filename of PLINK binary files, i.e. without extension.
+#' @param outfn Filename of new file.
+#' @param na Missing value.
+#' @param newID Integer scalar (default \code{0}) for automatically assigning new IDs. See description for more. 
+#' @param nlines Number of lines to process.
+#' @param fam If binary files have different stems, specify each of them with \code{fam}, \code{bim}, \code{bed}, and set \code{bfile=NULL}.
+#' @param bim See \code{fam}.
+#' @param bed See \code{fam}.
+#' @param countminor Logical: Should the output count minor allele (default), or major allele as \code{plink --recode A}?
+#' @param method Character, which of following methods to use: \code{simple} (store entire matrix in memeory) or ??
+#' @export
+#' @references 
+#' \itemize{
+#'  \item PLINK v. 1.07 BED file format: \url{http://pngu.mgh.harvard.edu/~purcell/plink/binary.shtml}
+#'  \item Shaun Purvell and Christopher Chang. \emph{PLINK v. 1.90} \url{https://www.cog-genomics.org/plink2}
+#'  \item Chang CC, Chow CC, Tellier LCAM, Vattikuti S, Purcell SM, Lee JJ (2015) \href{http://www.gigasciencejournal.com/content/4/1/7}{Second-generation PLINK: rising to the challenge of larger and richer datasets.} \emph{GigaScience}, 4.
+#' }
+#
+convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bim=NULL, bed=NULL, countminor=TRUE, method='simple') {
+  
+  # Get filenames
+  if (!(is.null(bfile) | is.na(bfile))) {
+    bfile <- sub_ext(bfile, c('fam','bim','bed'))
+    fam <- bfile[1]
+    bim <- bfile[2]
+    bed <- bfile[3]
+  }
+  stopifnot(all(file.exists(fam, bim, bed)))
+  
+  # Make up new IDs, as in convert_plinkA:
+  if (is.data.frame(newID)) stopifnot(all(c('famID','sampID','newID') %in% names(newID)))
+  #if (is.null(ncol)) ncol <- get_ncols(rawfn) - 6
+  
+  firstline <- scan(fam, what=character(), nlines=1, quiet=TRUE)
+  if (is.null(ncol)) ncol <- length(firstline) - 6
+  header <- all(firstline[1:3] == c('FID','IID','PAT'))
+  
+  firstcols <- get_firstcolumn(fam, class=list('character','character'), col.names=c('famID','sampID'), header=header)
+  if (is.null(nlines)) {
+    if (length(newID) == 1) {
+      nlines <- nrow(firstcols)
+    } else if (is.data.frame(newID)) {
+      nlines = nrow(newID)
+    } else {
+      nlines = length(newID)
+    }
+  }
+  
+  if (length(newID) == 1) {
+    .newID <- firstcols
+    .newID$newID <- 1:nrow(.newID) + newID
+  } else if (is.atomic(newID)) {
+    .newID <- cbind(firstcols[1:nlines,], newID[1:nlines])
+  } else {
+    newID <- do.call(data.frame, append(lapply(newID, as.character), list(stringsAsFactors=FALSE)))
+    .newID <- merge(firstcols, newID, by=c('famID','sampID'), sort=FALSE, all.x=TRUE, all.y=FALSE, stringsAsFactors=FALSE)
+  }
+
+  nlines <- min(nlines, nrow(.newID))
+  newID <- .newID[1:nlines,]
+  newID$newID <- as.integer(newID$newID)
+  
+  # Number of columns:
+  ncol <- get_nlines(bim)
+  
+  
+  # Detect subroutine:
+  use.method <- pmatch(method, c('simple','lowmem'))
+  
+  if (use.method == 1) {
+    #subroutine readplinksimple(bed, fnout, ncol, nlines, na, newID, status)
+    res <- .Fortran('readplinksimple', bed=as.character(bed), fnout=as.character(outfn), 
+                    ncol=as.integer(ncol), nlines=as.integer(nlines), na=as.integer(na), newID=as.integer(newID$newID), minor=as.integer(countminor), status=as.integer(0))
+  } else if (use.method == 2) {
+    
+  }  
+  #res$newID=newID
+  #res
   newID
 }
