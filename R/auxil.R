@@ -29,15 +29,21 @@ get_ncols <- function(fn) {
 #'
 #' @param fn Filename.
 #' @export
-#' @return \code{get_nlines}: Number of lines.
+#' @return \code{get_nlines}: Number of lines, or \code{NA} on error.
 #' @rdname auxfunc
+#' @section Error messages:
+#' \code{get_nlines} is implemented in Fortran and may return \code{NA} with an error message, if an error is encountered.
+#' 
+#' IOSTAT errors:
+#' \describe{
+#'  \item{5010}{The first column most likely contains non-integer or non-numeric elements.}
+#' }
 get_nlines <- function(fn) {
   stopifnot(file.exists(fn))
   res <- .Fortran('get_nlines', fn=as.character(fn), nlines=integer(1), stat=integer(1))
   if (res$nlines == 0 & res$stat != 0) {
-    msg <- paste0('get_nlines did not read lines; IOSTAT error ', res$stat, '.')
-    warning(msg)
-    return(NULL)
+    warning(paste0('get_nlines did not read lines; IOSTAT error ', res$stat, '.'))
+    return(structure(NA, code=res$stat))
   }
   res$nlines
 }

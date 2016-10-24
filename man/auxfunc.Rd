@@ -25,7 +25,7 @@ get_firstcolumn(fn, class = "integer", ...)
 \value{
 \code{get_ncols}: Number of read fields, including ID columns.
 
-\code{get_nlines}: Number of lines.
+\code{get_nlines}: Number of lines, or \code{NA} on error.
 
 \code{get_firstcolumn}: Vector with elements of first column, or \code{data.frame} if \code{class} contains multiple not-\code{"NULL"} elements.
 }
@@ -40,5 +40,14 @@ or picking the first column (relevant if this contains IDs).
 \code{get_firstcolumn} is a wrapper for \code{read.table} that allows the user
 to easily get the first column(s) by padding \code{colClasses} with \code{"NULL"} character elements to
 skip columns.
+}
+\section{Error messages}{
+
+\code{get_nlines} is implemented in Fortran and may return \code{NA} with an error message, if an error is encountered.
+
+IOSTAT errors:
+\describe{
+ \item{5010}{The first column most likely contains non-integer or non-numeric elements.}
+}
 }
 
