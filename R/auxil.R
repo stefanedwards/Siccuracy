@@ -116,6 +116,7 @@ write.snps <- function(x, file, row.names=TRUE, na='9', ...) {
 #' @param na Missing values; entries with this value are replaced with \code{NA}..
 #' @param what The \link[base]{typeof} of data to be read, e.g. \code{integer()},  \code{numeric()}, or \code{character()}.
 #' @param extractIDs Logical, default \code{TRUE}, trim of first column and use as rownames.
+#' @param quiet logical: if \code{FALSE}, \code{scan()} will print a line, saying how many items have been read.
 #' @param ... Passed on to \code{\link[base]{scan}}.
 #' @return Native \link[base]{matrix}.
 #' @export
@@ -136,13 +137,13 @@ write.snps <- function(x, file, row.names=TRUE, na='9', ...) {
 #'   if (nrow(M) == 0) break
 #' }
 #' close(f)
-read.snps <- function(file, ncols=NULL, na=NA, what=integer(), extractIDs=TRUE, ...) {
+read.snps <- function(file, ncols=NULL, na=NA, what=integer(), extractIDs=TRUE, quiet=TRUE, ...) {
   if (is.null(ncols) & is.character(file)) {
     ncols <- get_ncols(file)
   }
   if (is.null(ncols)) stop('Cannot automagically detect number of columns to read as input file is a connection, not a character.')
 
-  M <- matrix(scan(file, what=what, ...), ncol=ncols, byrow=TRUE)
+  M <- matrix(scan(file, what=what, quiet=quiet, ...), ncol=ncols, byrow=TRUE)
   if (nrow(M) == 0) return(M)
   if (extractIDs) {
     rownames(M) <- M[,1]
