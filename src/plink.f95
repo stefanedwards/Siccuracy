@@ -30,7 +30,6 @@ subroutine readplinksimple(bed, fnout, ncol, nlines, na, newID, minor, maf, extr
   
   masksnps=extract==1
   
-  
   if (minor == 1) then
     codes = (/ 0, 1, 2, na /)
   else
@@ -77,7 +76,7 @@ subroutine readplinksimple(bed, fnout, ncol, nlines, na, newID, minor, maf, extr
       if (j == nlines) then
         if (snpcount /= 0) then
           allelefreq = majorcount / (snpcount*2.)
-          masksnps(k) = allelefreq .ge. maf .and. allelefreq .le. (1-maf)
+          masksnps(k) = masksnps(k) .and. allelefreq .ge. maf .and. allelefreq .le. (1-maf)
         endif
         j = 0
         snpcount = 0
@@ -96,7 +95,6 @@ subroutine readplinksimple(bed, fnout, ncol, nlines, na, newID, minor, maf, extr
   fmt='(i20,'//trim(adjustl(nChar))//'I2)'
   
   print *, 'masksnps:', masksnps
-  
   
   open(16, file=fnout)
   do i=1,nlines

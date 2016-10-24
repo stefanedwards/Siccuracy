@@ -110,3 +110,15 @@ test_that('Simple converter accepts minimal allele frequencies', {
   snp2 <- read.snps(fn2)
   expect_equal(snp1, snp2)
 })
+
+test_that('Simple and complex extractions/inclusions work', {
+  fn1 <- tempfile()
+  res <- convert_plinkA(.datadir('simple2.raw'), fn1)  # maf 0.30
+  snp1 <- read.snps(fn1)  
+  
+  m <- ncol(snp1)
+  extract <- seq.int(1, m, by=3)
+  res <- convert_plink(.datadir('simple2'), fn1, extract=extract, countminor=FALSE)
+  snp2 <- read.snps(fn1)  
+  expect_equal(snp2, snp1[,extract])
+})

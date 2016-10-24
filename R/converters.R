@@ -233,8 +233,47 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
   newID <- .newID[1:nlines,]
   newID$newID <- as.integer(newID$newID)
   
+  # Handle SNPS
   # Number of columns:
   ncol <- get_nlines(bim)
+  .extract <- rep(TRUE, ncol)
+  
+  # Decide upon exclude/include
+  if (!is.null(extract) | !is.null(exclude)) {
+    if (is.logical(extract) & sum(extract) < ncol) stop('`extract` as logical must be same length as SNPs in input file and without NAs.')
+    if (is.logical(exclude) & sum(exclude) < ncol) stop('`exclude` as logical must be same length as SNPs in input file and without NAs.')
+    
+    if (is.numeric(extract)) extract <- as.integer(extract)
+    if (is.numeric(exclude)) exclude <- as.integer(exclude)
+    
+    if (!is.logical(extract) & !is.integer(extract)) extract <- as.character(extract)
+    if (!is.logical(exclude) | !is.integer(exclude)) exclude <- as.character(exclude)
+
+    if (is.character(extract) | is.character(exclude)) {
+      snps <- get_firstcolumn(bim, class=c('character','character'), col.names=c('chr','rs'), stringsAsFactors=FALSE)
+    }    
+  
+    if (is.logical(extract)) {
+      .extract <- extract
+    } else {
+      .extract[] <- FALSE
+      if (is.integer(extract)) {
+        .extract[extract] <- TRUE
+      } else {
+        .extract[match(extract, snps$rs)] <- TRUE
+      }
+    }
+    
+    if (is.logical(exclude)) {
+      .extract <- .extract & !exclude
+    } else {
+      if (is.integer(exclude)) {
+        .extract[exclude] <- FALSE
+      } else {
+        .extract[match(exclude, snps$rs)] <- FALSE
+      }
+    }
+  }
   
   
   # Detect subroutine:
@@ -244,7 +283,7 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
     #subroutine readplinksimple(bed, fnout, ncol, nlines, na, newID, status)
     res <- .Fortran('readplinksimple', bed=as.character(bed), fnout=as.character(outfn[1]), 
                     ncol=as.integer(ncol), nlines=as.integer(nlines), na=as.integer(na), newID=as.integer(newID$newID), minor=as.integer(countminor), 
-                    maf=as.numeric(maf), extract=as.integer(rep(1, ncol)), keep=integer(nlines), 
+                    maf=as.numeric(maf), extract=as.integer(.extract), keep=integer(nlines), 
                     status=as.integer(0))
     ret <- newID
   } else if (use.method == 2) {
