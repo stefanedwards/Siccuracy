@@ -57,22 +57,12 @@ subroutine cbindsnps(files, fns, fnout, nlines, ncols, skiplines, idlength, excl
   advance(:) = 'no'
   advance(files) = 'yes'
   
-  if (asint .eqv. .true.) then
-    do i=1,files
-      units(i) = 200 + i
-      open(units(i), file=fns(i), status='OLD')
-      write(fmt0, '(i5)') ncols(i)
-      fmt(i)='('//trim(adjustl(fmt0))//trim(adjustl(userfmt))//')'
-    end do
-  else
-    do i=1,files
-      units(i) = 200 + i
-      open(units(i), file=fns(i), status='OLD')
-      write(fmt0, '(i5)') ncols(i)
-      fmt(i)='('//trim(adjustl(fmt0))//trim(adjustl(userfmt))//')'
-    end do
-  end if
-  
+  do i=1,files
+    units(i) = 200 + i
+    open(units(i), file=fns(i), status='OLD')
+    write(fmt0, '(i5)') ncols(i)
+    fmt(i)='('//trim(adjustl(fmt0))//trim(adjustl(userfmt))//')'
+  end do
   open(55, file=fnout, status='UNKNOWN')
 
   do j=1,nlines
@@ -114,46 +104,42 @@ end subroutine cbindsnps
 
 !! Merges two SNP chips
 
-subroutine combinechips(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
-  nhd, hdid, nld, ldid, hdpos, ldpos,  missing, lenfmt, userfmt, status, asint)
+subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
+  nhd, hdid, nld, ldid, hdpos, ldpos,  missing, lenfmt, userfmt, stat, asint)
 
   integer, intent(in) :: hdcols, ldcols, outcols, nhd, nld, missing, lenfmt, asint
   character(lenfmt), intent(in) :: userfmt
-  character(300), intent(in) :: fnhd, fnld, fnout
+  character(255), intent(in) :: fnhd, fnld, fnout
   integer, intent(in), dimension(nhd) :: hdid
   integer, intent(in), dimension(nld) :: ldid
   integer, intent(in), dimension(hdcols) :: hdpos
   integer, intent(in), dimension(ldcols) :: ldpos
-  integer, intent(out) :: status
+  integer, intent(out) :: stat
 
   logical :: foundID, isint
-  integer :: stat, i, oldi, animalID
+  integer :: i, oldi, animalID
   
   character(50)  :: fmt
   integer, allocatable :: intoutput(:)
   real, allocatable :: line(:), realoutput(:)
-  ! only allocate one of these buggers.
   
   isint = asint == 1
   
   write(fmt, '(i5)') outcols
+  fmt='(i20,'//trim(adjustl(fmt))//userfmt//')'
+  
   if (isint .eqv. .true.) then
-    fmt='(i20,'//trim(adjustl(fmt))//'I'//userfmt//')'
     allocate(intoutput(outcols))
     intoutput(:) = missing
   else
-    fmt='(i20,'//trim(adjustl(fmt))//'R'//userfmt//')'
     allocate(realoutput(outcols))
     realoutput(:) = missing
   end if
 
+
   ! Open output file.
   open(71, file=fnout, status='UNKNOWN', iostat=stat)
-  if (stat /= 0) then
-    status = 1
-    return
-  end if
-
+  
   ! Read through HD file.
   allocate(line(hdcols))
   i = 0
@@ -170,7 +156,6 @@ subroutine combinechips(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
     do while (.TRUE.)
       if (i == nhd) i = 0
       i = i + 1
-      !print *, i, oldi, hdid(i)
       if (hdid(i) == animalID) then
         foundID = .TRUE.
         exit
@@ -226,16 +211,18 @@ subroutine combinechips(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
     oldi = i
     if (foundID) then
       if (isint .eqv. .true.) then
-        intoutput(hdpos) = line(1:hdcols)
+        intoutput(ldpos) = line(1:ldcols)
         write(71, fmt) animalID, intoutput
       else
-        realoutput(hdpos) = line(1:hdcols)
+        realoutput(ldpos) = line(1:ldcols)
         write(71, fmt) animalID, realoutput
       end if
     end if
 
   end do
   close(72)
+  close(71)
+  
   deallocate(line)
 
   if (isint .eqv. .true.) then
@@ -244,8 +231,5 @@ subroutine combinechips(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
     deallocate(realoutput)
   endif
 
-  close(71)
 
-end subroutine combinechips
-
-
+end subroutine rbindsnps

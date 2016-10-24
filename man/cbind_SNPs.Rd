@@ -2,19 +2,17 @@
 % Please edit documentation in R/mutate_chips.R
 \name{cbind_SNPs}
 \alias{cbind_SNPs}
-\alias{rowconcatenate}
 \title{Column bind files with genotype matrices}
 \usage{
-cbind_SNPs(fns, fnout, nlines = NULL, skiplines = 0,
+cbind_SNPs(fns, fnout, ncols = NULL, nlines = NULL, skiplines = 0,
   excludeids = integer(0), format = NULL, int = TRUE)
-
-rowconcatenate(fns, fnout, nlines = NULL, ncols = NULL, skiplines = 0,
-  excludeids = integer(0))
 }
 \arguments{
 \item{fns}{Character vector of filenames to concatenate. Max 255 characters per filename due to R-Fortran.}
 
 \item{fnout}{Filename of resulting file}
+
+\item{ncols}{Number of columns to read from each file. When \code{NULL} (default), use all columns.}
 
 \item{nlines}{Number of lines to read from each file. When \code{NULL} (default), use all lines.}
 
@@ -22,19 +20,14 @@ rowconcatenate(fns, fnout, nlines = NULL, ncols = NULL, skiplines = 0,
 
 \item{excludeids}{Integer vector of first column id's to \emph{exclude} from the output. \code{nlines} also counts towards excluded lines.}
 
-\item{format}{Character of Fortran formats. Defaults to \code{F5.2}; use \code{I2} for integers, or numeric() or integer() for the former two.}
+\item{format}{Character, Fortran edit descriptors for output. See \link{parse.format}.}
 
-\item{int}{Logical, True: outputs integers only, \code{FALSE:}: also outputs decimals.}
-
-\item{ncols}{Number of columns to read from each file. When \code{NULL} (default), use all columns.}
+\item{int}{Logical (default \code{TRUE}), read and write integers.}
 }
 \value{
 Exit status, invisible.
 }
 \description{
 Does row-wise concatenation of multiple genotype files, ignoring the first column.
-
-\code{rowconcatenate} has been deprecated.
-Use \code{\link{cbind_SNPs}} instead.
 }
 

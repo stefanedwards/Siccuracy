@@ -1,6 +1,7 @@
 # Internals
 
-
+#' Parses formatting string.
+#' @noRd
 parse.format <- function(format=NULL, int=TRUE) {
   if (is.null(format)) format <- ifelse(int, integer(1), numeric(1))
   if (is.integer(format)) {
