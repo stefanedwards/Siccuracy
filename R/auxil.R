@@ -142,7 +142,7 @@ read.snps <- function(file, ncols=NULL, na=NA, what=integer(), extractIDs=TRUE, 
   }
   if (is.null(ncols)) stop('Cannot automagically detect number of columns to read as input file is a connection, not a character.')
 
-  M <- matrix(scan(file, nlines=nlines, what=what, ...), ncol=ncols, byrow=TRUE)
+  M <- matrix(scan(file, what=what, ...), ncol=ncols, byrow=TRUE)
   if (nrow(M) == 0) return(M)
   if (extractIDs) {
     rownames(M) <- M[,1]
