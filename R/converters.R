@@ -28,8 +28,8 @@
 #'
 #' \strong{Missing values:} Values after summing less than 0 or greater than 2 are assumed as missing and replaced with \code{na}.
 #'
-#' @param phasefn Filename of input file, every two rows are for same animal.
-#' @param genofn Filename of intended output.
+#' @param fn Filename of input file, every two rows are for same animal.
+#' @param outfn Filename of intended output.
 #' @param ncol Integer, number of SNP columns in files. When \code{NULL}, automagically detected with \code{get_ncols(phasefn)-1}.
 #' @param nlines Integer, maximum number of pairs of lines to convert.
 #' @param na Missing value.
@@ -37,17 +37,17 @@
 #' @param format Character, Fortran edit descriptors for output. See \link{parse.format}.
 #' @return Number of rows written.
 #' @export
-convert_phases <- function(phasefn, genofn, ncol=NULL, nrow=NULL, na=9, int=TRUE, format=NULL) {
-  stopifnot(file.exists(phasefn))
+convert_phases <- function(fn, outfn, ncol=NULL, nlines=NULL, na=9, int=TRUE, format=NULL) {
+  stopifnot(file.exists(fn))
   
-  if (is.null(ncol)) ncol <- get_ncols(phasefn)-1
-  if (is.null(nrow)) nrow <- 0
+  if (is.null(ncol)) ncol <- get_ncols(fn)-1
+  if (is.null(nlines)) nlines <- 0
   
   format <- parse.format(format, int)
   
   # subroutine convert_phase(phasefn, genofn, ncol, nrow, na, int, lenfmt, userfmt)
-  res <- .Fortran('convert_phase', phasefn=as.character(phasefn), genofn=as.character(genofn), ncol=as.integer(ncol), nrow=as.integer(nrow), 
-                  na=as.integer(na), lenfmt=as.integer(nchar(format)), userfmt=as.character(userfmt))
+  res <- .Fortran('convert_phase', phasefn=as.character(fn), genofn=as.character(outfn), ncol=as.integer(ncol), nrow=as.integer(nlines), 
+                  na=as.integer(na), lenfmt=as.integer(nchar(format)), userfmt=as.character(format))
   res$nrow
 }
 
@@ -179,7 +179,7 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #' @param extract Extract only these SNPs.
 #' @param exclude Do not extract these SNPs.
 #' @param keep Keep only these samples.
-#' @param Remove Removes these samples from output.
+#' @param remove Removes these samples from output.
 #' @param method Character, which of following methods to use: \code{simple} (store entire matrix in memeory) or ??
 #' @export
 #' @references 

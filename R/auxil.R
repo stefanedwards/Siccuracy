@@ -14,10 +14,10 @@ NULL
 #' @return \code{get_ncols}: Number of read fields, including ID columns.
 #' @export
 #' @rdname auxfunc
-get_ncols <- function(fn) {
+get_ncols <- function(file) {
   #on.exit(try(close(f), silent=TRUE))
   #f <- gzfile(fn, 'r')
-  s <- scan(fn, what=character(), quiet=TRUE, nlines=1)
+  s <- scan(file, what=character(), quiet=TRUE, nlines=1)
   #close(f)
   length(s)
 }
@@ -89,14 +89,14 @@ NULL
 #' For file format see \link{Siccuracy}.
 #' 
 #' @param x The matrix to write.
-#' @param file Filename or connection.
+#' @param file Filename or connection to write to.
 #' @param row.names If genotype matrix is "raw" and has first column with animals IDs, set this to \code{FALSE}.
 #' @param na The string to use for \code{NA} in the data.
 #' @param ... Passed on to write.table.
 #' @seealso \code{\link[utils]{write.table}}, \link[base]{connections}
 #' @export
 write.snps <- function(x, file, row.names=TRUE, na='9', ...) {
-  write.table(x, fn, col.names=FALSE, row.names=row.names, quote=FALSE, na=na, ...)
+  write.table(x, file, col.names=FALSE, row.names=row.names, quote=FALSE, na=na, ...)
 }
 
 #' Read genotype matrix from file.
