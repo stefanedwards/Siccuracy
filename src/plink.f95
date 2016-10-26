@@ -40,10 +40,12 @@ subroutine readplinksimple(bed, fnout, ncol, nlines, na, newID, minor, maf, extr
   read(15) readmagicnumber, readplinkmode
   if (all(readmagicnumber /= magicnumber) ) then
     status=-1
+    close(15)
     return
   endif
   if (readplinkmode /= plinkmode) then
     status=-2
+    close(15)
     return
   endif
 
@@ -94,14 +96,124 @@ subroutine readplinksimple(bed, fnout, ncol, nlines, na, newID, minor, maf, extr
   write(nChar,*) count(masksnps)
   fmt='(i20,'//trim(adjustl(nChar))//'I2)'
   
-  print *, 'masksnps:', masksnps
-  
   open(16, file=fnout)
   do i=1,nlines
-    write(16, fmt) newID(i), pack(snps(i,:), masksnps)
+    if (keep(i) == 1) write(16, fmt) newID(i), pack(snps(i,:), masksnps)
   enddo
   close(16)
 
   deallocate(snps)
   
 end subroutine readplinksimple
+
+
+!! Fragmented approach.
+! First an R wrapper for retrieving filenames,
+! then the actual subroutine (that calls readplinksimple)
+
+subroutine convertplinkrwrapper(listfn, n, remerge, fragments, &
+    bed, fnout, ncol, nlines, na, newID, minor, maf, extract, keep, status)
+    ! 2nd line are readplinksimple arguments.
+   
+  implicit none
+  
+  ! Arguments
+  character(255), intent(in) :: bed, fnout, listfn
+  integer, intent(in) :: ncol, nlines, na, minor, remerge, n
+  integer, dimension(nlines), intent(in) :: newID, keep
+  integer, dimension(ncol), intent(in) :: extract, fragments
+  integer, intent(out) :: status
+  double precision, intent(in) :: maf
+  
+  ! Local variables
+  character(255), dimension(n) :: filelist
+  integer :: i
+  
+  open(77, file=listfn)
+  read(77, *) (filelist(i), i=1, n)
+  close(77)
+  
+  call convertplinkfragment(filelist((n/2+1):n), filelist(1:(n/2)), n/2, remerge==1, fragments,   &
+      bed, fnout, ncol, nlines, na, newID, minor, maf, extract, keep, status)
+
+end subroutine convertplinkrwrapper
+
+subroutine convertplinkfragment(bedfilenames, flatfilenames, n, remerge, fragments, &
+    bed, fnout, ncol, nlines, na, newID, minor, maf, extract, keep, status)
+
+  implicit none
+  ! Arguments
+  logical, intent(in) :: remerge
+  character(255), intent(in) :: bed, fnout
+  character(255), dimension(n), intent(in) :: bedfilenames, flatfilenames
+  integer, intent(in) :: ncol, nlines, na, minor, n
+  integer, dimension(nlines), intent(in) :: newID, keep
+  integer, dimension(ncol), intent(in) :: extract, fragments
+  integer, intent(out) :: status
+  double precision, intent(in) :: maf
+  
+  ! Local variables
+  byte :: readplinkmode, element, plinkmode
+  byte, dimension(2) :: readmagicnumber, magicnumber
+  integer :: i,j,k,stat,ncoli
+  integer, dimension(n) :: bedcons, flatcons
+  integer, dimension(ncol) :: allpos
+  integer, dimension(:), allocatable :: subset
+  logical, dimension(ncol) :: mask
+  
+
+  ! Supported formats as per plink 1.9.
+  data magicnumber/X'6c',X'1b'/,  plinkmode/X'01'/
+  
+  open(15, file=bed, status='OLD', ACCESS='STREAM', FORM='UNFORMATTED')
+  read(15) readmagicnumber, readplinkmode
+  if (all(readmagicnumber /= magicnumber) ) then
+    status=-1
+    close(15)
+    return
+  endif
+  if (readplinkmode /= plinkmode) then
+    status=-2
+    close(15)
+    return
+  endif
+  
+  do i=1,n
+    ! Delete file first.
+    ! Opening for binary output does not truncate the file, so any previous data will be left trailing...
+    open(100+i, file=bedfilenames(i), status='old', iostat=stat)
+    if (stat == 0) close(100+i, status='delete')
+    ! Then open for writing.
+    open(100+i, file=bedfilenames(i), status='UNKNOWN', ACCESS='STREAM', form='UNFORMATTED')
+    write(100+i) magicnumber, plinkmode
+  enddo
+
+  i = 1
+  j = 1
+  outer: do
+    read(15, iostat=stat) element
+    if (stat /= 0) exit
+    write(100+fragments(i)) element
+    j = j + 4
+    if (j .ge. nlines) then
+      j = 1
+      i = i+1
+    endif
+  enddo outer
+
+  close(15)
+  do i=1,n
+    close(100+i)
+  enddo
+  
+  forall(i=1:ncol) allpos(i)=i
+  do i=1,n
+    mask=fragments==i
+    ncoli=count(mask)
+    allocate(subset(ncoli))
+    subset = extract(pack(allpos,mask))
+        !readplinksimple(bed, fnout, ncol, nlines, na, newID, minor, maf, extract, keep, status)
+    call readplinksimple(bedfilenames(i), flatfilenames(i), ncoli, nlines, na, newID, minor, maf, subset, keep, stat)
+    deallocate(subset)
+  enddo
+end subroutine 

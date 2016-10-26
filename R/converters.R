@@ -164,7 +164,34 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #' \strong{\code{method}} \emph{simple} stores entire genotype matrix \emph{in memory}, as PLINK binary files are stored in locus-major mode, 
 #' i.e. first \eqn{m} bits store first locus for all \eqn{n} animals.
 #' Since we are interested in writing out all \eqn{m} loci for each animal, for efficiency we need to read the entire file.
-#' \emph{As an alternate} ...
+#' \emph{lowmem} breaks the loci into smaller chunks (e.g. by chromosome), writes each chunk to a file, and merges them back as with \code{\link{cbind_SNPs}}.
+#' \emph{dryrun} does not call the Fortran subroutine, but returns the treated arguments that would have been sent to the subroutine.
+#'
+#' For \code{method='lowmem'} use argument \code{fragment} to indicate how the loci are subdivided. 
+#' When \code{fragment='chr'} (case unsensitive), loci are split according to 1st column of .bim file.
+#' If \code{fragment} is a scalar integer, loci are split into this number of blocks.
+#' If an integer vector of same length as \code{ncol}, it directly specifies which block a locus is sent to. \code{max(fragment)} specifies the number of blocks.
+#' 
+#' If \code{remerge=FALSE}, \code{outfn} should be a vector of same length as number of blocks, and will be filenames of the formatted blocks.
+#'   
+#' @section Filtering loci or samples:
+#' Filters on loci or samples can be employed in a number of ways; filtering on loci and samples are handled independently.
+#' Inclusion criteria (\code{extract} and \code{keep}) reduces the output to only those loci or samples that pass the criteria.
+#' Exclusion criteria (\code{exclude} and \code{remove}) are applied \emph{after} inclusion criteria, and \emph{reduces} the output further.
+#'
+#' \code{extract} and \code{exclude} can be any combination of:
+#' \describe{
+#'  \item{Logical}{Vector of same length as loci in input file.}
+#'  \item{Integer or numeric}{Indicates positional which loci to include or exclude. Numeric vectors are coerced to integer vectors.}
+#'  \item{Character}{Matched against probe IDs, i.e. 2nd column of .bim file.}
+#' }
+#' 
+#' \code{keep} and \code{remove} are as \code{exctract} and \code{exclude} above, can be a combination of, and can additionally be:
+#' \describe{
+#'  \item{Character}{Matched against both famID or sampID, i.e. 1st and 2nd column of .fam file.}
+#'  \item{List with named elements \code{famID} and/or \code{sampID}}{The named elements are matches against, respectively, the 1st and 2nd column of the .fam file.}
+#' }
+#' 
 #' 
 #' @param bfile Filename of PLINK binary files, i.e. without extension.
 #' @param outfn Filename of new file.
@@ -176,11 +203,14 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #' @param bed See \code{fam}.
 #' @param countminor Logical: Should the output count minor allele (default), or major allele as \code{plink --recode A}.
 #' @param maf Numeric, restrict SNPs to SNPs with this frequency. 
-#' @param extract Extract only these SNPs.
-#' @param exclude Do not extract these SNPs.
-#' @param keep Keep only these samples.
-#' @param remove Removes these samples from output.
-#' @param method Character, which of following methods to use: \code{simple} (store entire matrix in memeory) or ??
+#' @param extract Extract only these SNPs, see Details.
+#' @param exclude Do not extract these SNPs, see Details.
+#' @param keep Keep only these samples, see Details.
+#' @param remove Removes these samples from output, see Details.
+#' @param fragment \code{"chr"} or integer vector. Only used when \code{method='lowmem'}.
+#' @param remerge Logical, whether to re-merge fragmented blocks. Only used when \code{method='lowmem'}.
+#' @param fragmentfns Character vector or function for producing filenames.
+#' @param method Character, which of following methods to use: \code{simple}, \code{lowmem}, or \code{drymem}. See Details.
 #' @export
 #' @references 
 #' \itemize{
@@ -189,7 +219,7 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #'  \item Chang CC, Chow CC, Tellier LCAM, Vattikuti S, Purcell SM, Lee JJ (2015) \href{http://www.gigasciencejournal.com/content/4/1/7}{Second-generation PLINK: rising to the challenge of larger and richer datasets.} \emph{GigaScience}, 4.
 #' }
 #
-convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bim=NULL, bed=NULL, countminor=TRUE, maf=0.0, extract=NULL, exclude=NULL, keep=NULL, remove=NULL, method='simple') {
+convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bim=NULL, bed=NULL, countminor=TRUE, maf=0.0, extract=NULL, exclude=NULL, keep=NULL, remove=NULL, method='simple', fragment="chr", remerge=TRUE, fragmentfns=NULL) {
   
   # Get filenames
   if (!(is.null(bfile) | is.na(bfile))) {
@@ -199,7 +229,10 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
     bed <- bfile[3]
   }
   stopifnot(all(file.exists(fam, bim, bed)))
-  
+
+  # Detect subroutine:
+  use.method <- pmatch(method, c('simple','lowmem','dryrun'))
+
   # Make up new IDs, as in convert_plinkA:
   if (is.data.frame(newID)) stopifnot(all(c('famID','sampID','newID') %in% names(newID)))
   #if (is.null(ncol)) ncol <- get_ncols(rawfn) - 6
@@ -233,21 +266,70 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
   newID <- .newID[1:nlines,]
   newID$newID <- as.integer(newID$newID)
   
+  
+  # Handle samples
+  .keep <- rep(TRUE, nlines)
+    
+  if (!is.null(keep) | !is.null(remove)) {
+    if (is.logical(keep)) {
+      if (sum(!is.na(keep)) < nlines) stop('`keep` as logical must be at least same length as samples in input file, without NA\'s, and as `newID` (if not scalar).')
+    }
+    if (is.logical(remove)) {
+      if (sum(!is.na(remove)) < nlines) stop('`keep` as logical must be at least same length as samples in input file, without NA\'s, and as `newID` (if not scalar).')
+    }
+
+    if (is.numeric(keep)) keep <- as.integer(keep)
+    if (is.numeric(remove)) remove <- as.integer(remove)
+   
+    if (!is.logical(keep) & !is.integer(keep) & !is.list(keep)) keep <- as.character(keep)
+    if (!is.logical(remove) & !is.integer(remove) & !is.list(remove)) remove <- as.character(remove)
+    
+    if (is.logical(keep)) {
+      .keep <- keep
+    } else if (length(keep) > 0) {
+      .keep[] <- FALSE
+      if (is.integer(keep)) {
+        .keep[keep] <- TRUE
+      } else if (is.character(keep)) {
+        .keep[newID$famID %in% keep] <- TRUE
+        .keep[newID$sampID %in% keep] <- TRUE
+      } else if (is.list(keep)) {
+        .keep[newID$famID %in% keep$famID] <- TRUE
+        .keep[newID$sampID %in% keep$sampID] <- TRUE
+      }
+    }
+    
+    if (is.logical(remove)) {
+      .keep <- .keep & !remove
+    } else if (length(remove) > 0) {
+      if (is.integer(remove)) {
+        .keep[remove] <- FALSE
+      } else if (is.character(remove)) {
+        .keep[newID$famID %in% remove] <- FALSE
+        .keep[newID$sampID %in% remove] <- FALSE
+      } else if (is.list(remove)) {
+        .keep[newID$famID %in% remove$famID] <- FALSE
+        .keep[newID$sampID %in% remove$sampID] <- FALSE
+      }      
+    }
+  }
+  
   # Handle SNPS
   # Number of columns:
   ncol <- get_nlines(bim)
   .extract <- rep(TRUE, ncol)
+  snps <- NULL
   
   # Decide upon exclude/include
   if (!is.null(extract) | !is.null(exclude)) {
-    if (is.logical(extract) & sum(extract) < ncol) stop('`extract` as logical must be same length as SNPs in input file and without NAs.')
-    if (is.logical(exclude) & sum(exclude) < ncol) stop('`exclude` as logical must be same length as SNPs in input file and without NAs.')
+    if (is.logical(extract) & sum(!is.na(extract)) < ncol) stop('`extract` as logical must be same length as SNPs in input file and without NA\'s.')
+    if (is.logical(exclude) & sum(!is.na(exclude)) < ncol) stop('`exclude` as logical must be same length as SNPs in input file and without NA\'s.')
     
     if (is.numeric(extract)) extract <- as.integer(extract)
     if (is.numeric(exclude)) exclude <- as.integer(exclude)
     
     if (!is.logical(extract) & !is.integer(extract)) extract <- as.character(extract)
-    if (!is.logical(exclude) | !is.integer(exclude)) exclude <- as.character(exclude)
+    if (!is.logical(exclude) & !is.integer(exclude)) exclude <- as.character(exclude)
 
     if (is.character(extract) | is.character(exclude)) {
       snps <- get_firstcolumn(bim, class=c('character','character'), col.names=c('chr','rs'), stringsAsFactors=FALSE)
@@ -255,43 +337,82 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
   
     if (is.logical(extract)) {
       .extract <- extract
-    } else {
+    } else if (length(extract) > 0) {
       .extract[] <- FALSE
       if (is.integer(extract)) {
         .extract[extract] <- TRUE
       } else {
-        .extract[match(extract, snps$rs)] <- TRUE
+        .extract[snps$rs %in% extract] <- TRUE
       }
     }
     
     if (is.logical(exclude)) {
       .extract <- .extract & !exclude
-    } else {
+    } else if (length(exclude) > 0) {
       if (is.integer(exclude)) {
         .extract[exclude] <- FALSE
       } else {
-        .extract[match(exclude, snps$rs)] <- FALSE
+        .extract[snps$rs %in% exclude] <- FALSE
       }
     }
   }
   
   
-  # Detect subroutine:
-  use.method <- pmatch(method, c('simple','lowmem'))
+  ##  Fragments
+  if (use.method != 1) {
+    if (is.character(fragment) & length(fragment) == 1 & tolower(fragment) == 'chr') {
+      if (is.null(snps)) snps <- get_firstcolumn(bim, class=c('character','character'), col.names=c('chr','rs'), stringsAsFactors=FALSE)
+      fragment <- cumsum(!duplicated(snps$chr))
+    }
+    if (!is.integer(fragment)) fragment <- as.integer(fragment)
+    if (length(fragment) == 1) {
+      fragment <- rep(1:fragment, each=ceiling(ncol/fragment))[1:ncol]
+    }
+    if (length(fragment) != ncol) stop('Argument `fragment` should be scalar or same length as number of loci.')
+    
+    
+    if (is.function(fragmentfns)) {
+      n <- length(formals(fragmentfns))
+      if (n == 0) {
+        tmpfiles <- replicate(max(fragment), fragmentfns(), simplify=TRUE)
+      } else if (n == 1) {
+        tmpfiles <- sapply(1:max(fragment), fragmentfns)
+      } else {
+        .outfn <- sapply( 1:max(fragment), fragmentfns, max(fragment))
+      }
+    } else {
+      tmpfiles <- as.character(fragmentfns)
+      tmpfiles <- c(tmpfiles, as.character(replicate(2*max(fragment)-length(tmpfiles), tempfile())))
+    }
+    
+  }  
   
   if (use.method == 1) {
     #subroutine readplinksimple(bed, fnout, ncol, nlines, na, newID, status)
-    res <- .Fortran('readplinksimple', bed=as.character(bed), fnout=as.character(outfn[1]), 
+    res <- .Fortran('readplinksimple', bed=as.character(bed), fnout=as.character(outfn), 
                     ncol=as.integer(ncol), nlines=as.integer(nlines), na=as.integer(na), newID=as.integer(newID$newID), minor=as.integer(countminor), 
-                    maf=as.numeric(maf), extract=as.integer(.extract), keep=integer(nlines), 
+                    maf=as.numeric(maf), extract=as.integer(.extract), keep=as.integer(.keep), 
                     status=as.integer(0))
-    ret <- newID
   } else if (use.method == 2) {
     # The not-so-simple complex way to do stuff. Boy, do we get to have fun now!
+    tmpfile <- tempfile()
+    writeLines(tmpfiles, tmpfile)
+    
+    #subroutine convertplinkrwrapper(listfn, n, remerge, fragment,
+    #                                bed, fnout, ncol, nlines, na, newID, minor, maf, extract, keep, status)
+    res <- .Fortran('convertplinkrwrapper', listfn=as.character(tmpfile), n=as.integer(length(tmpfiles)), remerge=as.integer(remerge), snpset=as.integer(fragment),
+                    bed=as.character(bed), fnout=as.character(outfn), 
+                    ncol=as.integer(ncol), nlines=as.integer(nlines), na=as.integer(na), newID=as.integer(newID$newID),
+                    minor=as.integer(countminor), maf=as.numeric(maf), extract=as.integer(.extract), keep=as.integer(.keep),
+                    status=as.integer(0))
     
     
-    
-  }  
-  #res$newID=newID
-  #res
+  } else if (use.method == 3) {
+    return(list(bed=as.character(bed), fnout=as.character(outfn), 
+                ncol=as.integer(ncol), nlines=as.integer(nlines), na=as.integer(na), newID=as.integer(newID$newID), minor=as.integer(countminor), 
+                maf=as.numeric(maf), extract=as.integer(.extract), keep=as.integer(.keep),
+                fragment=as.integer(fragment), fragmentfns=as.character(fragmentfns)))
+  } 
+  res$newID=newID
+  res
 }
