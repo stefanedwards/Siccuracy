@@ -53,8 +53,8 @@ parse.format <- function(format=NULL, int=TRUE) {
 }
 
 # For testing.
-make.true <- function(n,m) {
-  true <- matrix(sample(0:2, size = n*m, replace=TRUE), ncol=m)  # fill true with random 0, 1, or 2.
+make.true <- function(n,m,types=0:2) {
+  true <- matrix(sample(types, size = n*m, replace=TRUE), ncol=m)  # fill true with random 0, 1, or 2.
   # add non-segregating site
   i <- sample.int(m, 1)
   true[2:n,i] <- true[1,i]
@@ -77,4 +77,9 @@ make.test <- function(n, m) {
   write.snps(true, truefn)
   write.snps(imputed, imputedfn)
   list(true=true, imputed=imputed, truefn=truefn, imputedfn=imputedfn)
+}
+make.phase <- function(n,m) {
+  x <- make.true(2*n, m, types=0:1) 
+  rownames(x)[seq.int(2,nrow(x), by=2)] <- rownames(x)[seq.int(1,nrow(x), by=2)]
+  x
 }

@@ -47,7 +47,7 @@ convert_phases <- function(fn, outfn, ncol=NULL, nlines=NULL, na=9, int=TRUE, fo
   
   # subroutine convert_phase(phasefn, genofn, ncol, nrow, na, int, lenfmt, userfmt)
   res <- .Fortran('convert_phase', phasefn=as.character(fn), genofn=as.character(outfn), ncol=as.integer(ncol), nrow=as.integer(nlines), 
-                  na=as.integer(na), lenfmt=as.integer(nchar(format)), userfmt=as.character(format))
+                  na=as.integer(na), int=as.integer(int), lenfmt=as.integer(nchar(format)), userfmt=as.character(format))
   res$nrow
 }
 
