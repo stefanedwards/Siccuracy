@@ -4,16 +4,16 @@
 \alias{heterozygosity}
 \title{Calculates hetereozygosity stats for a single population}
 \usage{
-heterozygosity(fn, population = NULL, ncols = NULL, nlines = NULL)
+heterozygosity(fn, population = NULL, ncol = NULL, nlines = NULL)
 }
 \arguments{
 \item{fn}{Filename of genotype matrix (0,1,2) with first column denoting ID.}
 
 \item{population}{Vector of same length as rows in \code{fn}; defaults to \code{1}, coerced from factor to integer.}
 
-\item{nlines}{Integer, number of lines in \code{fn}. When \code{NULL}, automagically detected with \code{gen_nlines(fn)}.}
-
 \item{ncol}{Integer, number of SNP columns in \code{fn} When \code{NULL}, automagically detected with \code{get_ncols(fn)-1}.}
+
+\item{nlines}{Integer, number of lines in \code{fn}. When \code{NULL}, automagically detected with \code{gen_nlines(fn)}.}
 }
 \value{
 Data frame with columns

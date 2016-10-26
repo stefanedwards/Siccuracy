@@ -4,23 +4,23 @@
 \alias{convert_phases}
 \title{Convert phase files to genotype files.}
 \usage{
-convert_phases(phasefn, genofn, ncol = NULL, nrow = NULL, na = 9,
+convert_phases(fn, outfn, ncol = NULL, nlines = NULL, na = 9,
   int = TRUE, format = NULL)
 }
 \arguments{
-\item{phasefn}{Filename of input file, every two rows are for same animal.}
+\item{fn}{Filename of input file, every two rows are for same animal.}
 
-\item{genofn}{Filename of intended output.}
+\item{outfn}{Filename of intended output.}
 
 \item{ncol}{Integer, number of SNP columns in files. When \code{NULL}, automagically detected with \code{get_ncols(phasefn)-1}.}
+
+\item{nlines}{Integer, maximum number of pairs of lines to convert.}
 
 \item{na}{Missing value.}
 
 \item{int}{Logical (default \code{TRUE}), read and write integers.}
 
 \item{format}{Character, Fortran edit descriptors for output. See \link{parse.format}.}
-
-\item{nlines}{Integer, maximum number of pairs of lines to convert.}
 }
 \value{
 Number of rows written.

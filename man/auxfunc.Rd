@@ -7,20 +7,20 @@
 \alias{get_nlines}
 \title{Auxiliary functions}
 \usage{
-get_ncols(fn)
+get_ncols(file)
 
 get_nlines(fn)
 
 get_firstcolumn(fn, class = "integer", ...)
 }
 \arguments{
+\item{file}{Filename or connection to read from.}
+
 \item{fn}{Filename.}
 
 \item{class}{Character vector of classes to use for column(s), see \code{colClasses} in \code{\link[utils]{read.table}}.}
 
 \item{...}{Parameters sent to \code{read.table}.}
-
-\item{file}{Filename or connection to read from.}
 }
 \value{
 \code{get_ncols}: Number of read fields, including ID columns.

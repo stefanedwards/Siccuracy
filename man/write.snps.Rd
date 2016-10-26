@@ -9,7 +9,7 @@ write.snps(x, file, row.names = TRUE, na = "9", ...)
 \arguments{
 \item{x}{The matrix to write.}
 
-\item{file}{Filename or connection.}
+\item{file}{Filename or connection to write to.}
 
 \item{row.names}{If genotype matrix is "raw" and has first column with animals IDs, set this to \code{FALSE}.}
 
