@@ -1,3 +1,6 @@
+library(testthat)
+library(Siccuracy)
+
 context('Imputation accuracies')
 
 test_that("Lengths of returned vectors matches expected lengths (non-adaptive)",{
@@ -35,14 +38,14 @@ test_that("Results matches R's correlations (standardized=FALSE)",{
   col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
 
   context('Fast')
-  results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, NAval=9, standardized=FALSE, adaptive=FALSE)
+  results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, na=9, standardized=FALSE, adaptive=FALSE)
   expect_equal(results$matcor, mat1, tolerance=1e-9)
   expect_equal(results$rowcors, row1, tolerance=1e-9)
   expect_equal(results$colcors, col1, tolerance=1e-9)
   expect_equal(results$rowID, as.integer(rownames(true)))
   
   context('Adaptive')
-  results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, NAval=9, standardized=FALSE, adaptive=TRUE)
+  results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, na=9, standardized=FALSE, adaptive=TRUE)
   expect_equal(results$matcor, mat1, tolerance=1e-9)
   expect_equal(results$rowcors, row1, tolerance=1e-9)
   expect_equal(results$colcors, col1, tolerance=1e-9)
@@ -64,7 +67,7 @@ test_that("Results matches R's correlations (standardized=TRUE)",{
   col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
   
   context('Fast')
-  results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, NAval=9, standardized=TRUE, adaptive=FALSE)
+  results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, na=9, standardized=TRUE, adaptive=FALSE)
   expect_equal(results$matcor, mat1, tolerance=1e-9)
   expect_equal(results$rowcors, row1, tolerance=1e-9)
   expect_equal(results$colcors, col1, tolerance=1e-9)
@@ -73,7 +76,7 @@ test_that("Results matches R's correlations (standardized=TRUE)",{
   
   
   context('Adaptive')
-  results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, NAval=9, standardized=TRUE, adaptive=TRUE)
+  results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, na=9, standardized=TRUE, adaptive=TRUE)
   expect_equal(results$matcor, mat1, tolerance=1e-9)
   expect_equal(results$rowcors, row1, tolerance=1e-9)
   expect_equal(results$colcors, col1, tolerance=1e-9)
@@ -93,7 +96,7 @@ test_that("Adaptive works with more true rows, and imputed are shuffled",{
   row2 <- sapply(r, function(i) cor(true[i,], ts$imputed[i,], use='na.or.complete'))[order(r)]
   col2 <- sapply(1:ncol(true), function(i) cor(true[r,i], imputed[,i], use='na.or.complete'))  
     
-  results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, NAval=9, standardized=FALSE, adaptive=TRUE)
+  results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, na=9, standardized=FALSE, adaptive=TRUE)
   expect_equal(results$matcor, mat2, tolerance=1e-9)
   expect_equal(results$rowcors, row2, tolerance=1e-9)
   expect_equal(results$colcors, col2, tolerance=1e-9)
@@ -115,7 +118,7 @@ test_that("Adaptive works with less true rows, and imputed are shuffled",{
   row2 <- sapply(r, function(i) cor(ts$true[i,], ts$imputed[i,], use='na.or.complete'))
   col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[r,i], use='na.or.complete'))  
   
-  results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, NAval=9, standardized=FALSE, adaptive=TRUE)
+  results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, na=9, standardized=FALSE, adaptive=TRUE)
   expect_equal(results$matcor, mat2, tolerance=1e-9)
   expect_equal(results$rowcors, row2, tolerance=1e-9)
   expect_equal(results$colcors, col2, tolerance=1e-9)

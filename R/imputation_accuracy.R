@@ -40,10 +40,10 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
   stopifnot(file.exists(imputefn))
   
   standardized <- as.logical(standardized)
-  if (is.null(ncols)) ncols <- get_ncols(truefn)-1
+  if (is.null(ncol)) ncol <- get_ncols(truefn)-1
   if (is.null(nlines)) nlines <- get_nlines(truefn)
   
-  m <- as.integer(ncols)
+  m <- as.integer(ncol)
   n <- as.integer(nlines)
   
   subroutine <- ifelse(adaptive, 'imp_acc', 'imp_acc_fast')
