@@ -207,7 +207,7 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #' @param exclude Do not extract these SNPs, see Details.
 #' @param keep Keep only these samples, see Details.
 #' @param remove Removes these samples from output, see Details.
-#' @param fragment \code{"chr"} or integer vector. Only used when \code{method='lowmem'}.
+#' @param fragments \code{"chr"} or integer vector. Only used when \code{method='lowmem'}.
 #' @param remerge Logical, whether to re-merge fragmented blocks. Only used when \code{method='lowmem'}.
 #' @param fragmentfns Character vector or function for producing filenames.
 #' @param method Character, which of following methods to use: \code{simple}, \code{lowmem}, or \code{drymem}. See Details.
@@ -219,7 +219,7 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #'  \item Chang CC, Chow CC, Tellier LCAM, Vattikuti S, Purcell SM, Lee JJ (2015) \href{http://www.gigasciencejournal.com/content/4/1/7}{Second-generation PLINK: rising to the challenge of larger and richer datasets.} \emph{GigaScience}, 4.
 #' }
 #
-convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bim=NULL, bed=NULL, countminor=TRUE, maf=0.0, extract=NULL, exclude=NULL, keep=NULL, remove=NULL, method='simple', fragment="chr", remerge=TRUE, fragmentfns=NULL) {
+convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bim=NULL, bed=NULL, countminor=TRUE, maf=0.0, extract=NULL, exclude=NULL, keep=NULL, remove=NULL, method='simple', fragments="chr", remerge=TRUE, fragmentfns=NULL) {
   
   # Get filenames
   if (!(is.null(bfile) | is.na(bfile))) {
@@ -256,19 +256,21 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
     .newID <- firstcols
     .newID$newID <- 1:nrow(.newID) + newID
   } else if (is.atomic(newID)) {
-    .newID <- cbind(firstcols[1:nlines,], newID[1:nlines])
+    .newID <- firstcols
+    .newID$newID <- 0
+    .newID$newID[1:length(newID)] <- newID
   } else {
-    newID <- do.call(data.frame, append(lapply(newID, as.character), list(stringsAsFactors=FALSE)))
+    newID <- do.call(data.frame, append(lapply(newID[,c('famID','sampID','newID')], as.character), list(stringsAsFactors=FALSE)))
     .newID <- merge(firstcols, newID, by=c('famID','sampID'), sort=FALSE, all.x=TRUE, all.y=FALSE, stringsAsFactors=FALSE)
   }
 
-  nlines <- min(nlines, nrow(.newID))
+  nlines <- nrow(.newID)
   newID <- .newID[1:nlines,]
   newID$newID <- as.integer(newID$newID)
   
   
   # Handle samples
-  .keep <- rep(TRUE, nlines)
+  .keep <- newID$newID != 0
     
   if (!is.null(keep) | !is.null(remove)) {
     if (is.logical(keep)) {
@@ -313,6 +315,7 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
       }      
     }
   }
+  newID$keep <- .keep
   
   # Handle SNPS
   # Number of columns:
@@ -360,35 +363,35 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
   
   ##  Fragments
   if (use.method != 1) {
-    if (is.character(fragment) & length(fragment) == 1 & tolower(fragment) == 'chr') {
+    if (is.character(fragments) & length(fragments) == 1 & tolower(fragments) == 'chr') {
       if (is.null(snps)) snps <- get_firstcolumn(bim, class=c('character','character'), col.names=c('chr','rs'), stringsAsFactors=FALSE)
-      fragment <- cumsum(!duplicated(snps$chr))
+      fragments <- cumsum(!duplicated(snps$chr))
     }
-    if (!is.integer(fragment)) fragment <- as.integer(fragment)
-    if (length(fragment) == 1) {
-      fragment <- rep(1:fragment, each=ceiling(ncol/fragment))[1:ncol]
+    if (!is.integer(fragments)) fragments <- as.integer(fragments)
+    if (length(fragments) == 1) {
+      fragments <- rep(1:fragments, each=ceiling(ncol/fragments))[1:ncol]
     }
-    if (length(fragment) != ncol) stop('Argument `fragment` should be scalar or same length as number of loci.')
+    if (length(fragments) != ncol) stop('Argument `fragments` should be scalar or same length as number of loci.')
     
     
     if (is.function(fragmentfns)) {
       n <- length(formals(fragmentfns))
       if (n == 0) {
-        tmpfiles <- replicate(max(fragment), fragmentfns(), simplify=TRUE)
+        tmpfiles <- replicate(max(fragments), fragmentfns(), simplify=TRUE)
       } else if (n == 1) {
-        tmpfiles <- sapply(1:max(fragment), fragmentfns)
+        tmpfiles <- sapply(1:max(fragments), fragmentfns)
       } else {
-        .outfn <- sapply( 1:max(fragment), fragmentfns, max(fragment))
+        .outfn <- sapply( 1:max(fragments), fragmentfns, max(fragments))
       }
     } else {
       tmpfiles <- as.character(fragmentfns)
-      tmpfiles <- c(tmpfiles, as.character(replicate(2*max(fragment)-length(tmpfiles), tempfile())))
+      tmpfiles <- c(tmpfiles, as.character(replicate(2*max(fragments)-length(tmpfiles), tempfile())))
     }
     
   }  
   
   if (use.method == 1) {
-    #subroutine readplinksimple(bed, fnout, ncol, nlines, na, newID, status)
+    #subroutine readplinksimple(bed, fnout, ncol, nlines, na, newID, minor, maf, extract, keep, status)
     res <- .Fortran('readplinksimple', bed=as.character(bed), fnout=as.character(outfn), 
                     ncol=as.integer(ncol), nlines=as.integer(nlines), na=as.integer(na), newID=as.integer(newID$newID), minor=as.integer(countminor), 
                     maf=as.numeric(maf), extract=as.integer(.extract), keep=as.integer(.keep), 
@@ -398,9 +401,9 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
     tmpfile <- tempfile()
     writeLines(tmpfiles, tmpfile)
     
-    #subroutine convertplinkrwrapper(listfn, n, remerge, fragment,
-    #                                bed, fnout, ncol, nlines, na, newID, minor, maf, extract, keep, status)
-    res <- .Fortran('convertplinkrwrapper', listfn=as.character(tmpfile), n=as.integer(length(tmpfiles)), remerge=as.integer(remerge), snpset=as.integer(fragment),
+    #subroutine convertplinkrwrapper(listfn, n, remerge, fragments, &
+    #                       bed, fnout, ncol, nlines, na, newID, minor, maf, extract, keep, status)
+    res <- .Fortran('convertplinkrwrapper', listfn=as.character(tmpfile), n=as.integer(length(tmpfiles)), remerge=as.integer(remerge), fragments=as.integer(fragments),
                     bed=as.character(bed), fnout=as.character(outfn), 
                     ncol=as.integer(ncol), nlines=as.integer(nlines), na=as.integer(na), newID=as.integer(newID$newID),
                     minor=as.integer(countminor), maf=as.numeric(maf), extract=as.integer(.extract), keep=as.integer(.keep),
@@ -411,7 +414,7 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
     return(list(bed=as.character(bed), fnout=as.character(outfn), 
                 ncol=as.integer(ncol), nlines=as.integer(nlines), na=as.integer(na), newID=as.integer(newID$newID), minor=as.integer(countminor), 
                 maf=as.numeric(maf), extract=as.integer(.extract), keep=as.integer(.keep),
-                fragment=as.integer(fragment), fragmentfns=as.character(fragmentfns)))
+                fragments=as.integer(fragments), fragmentfns=as.character(fragmentfns)))
   } 
   res$newID=newID
   res

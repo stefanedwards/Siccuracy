@@ -17,10 +17,18 @@ subroutine readplinksimple(bed, fnout, ncol, nlines, na, newID, minor, maf, extr
   logical, dimension(ncol) :: masksnps
   integer :: stat, i, j, pos, k, snpcount, majorcount
   integer, dimension(4) :: codes
-  integer, dimension(:), allocatable :: domasksnps
+  !integer, dimension(:), allocatable :: domasksnps
   integer, dimension(:,:), allocatable :: snps
   real :: allelefreq
   character(100) :: nChar, fmt
+  
+  !print *, 'bed:', bed
+  !print *, 'fnout:', fnout
+  !print *, 'ncol, nlines, na:', ncol, nlines, na
+  !print *, 'newID(len=nlines):', size(newID), newID
+  !print *, 'maf:', maf
+  !print *, 'extract:', size(extract), extract
+  !print *, 'keep:', size(keep), keep
   
   ! Supported formats as per plink 1.9.
   data magicnumber/X'6c',X'1b'/,  plinkmode/X'01'/
@@ -57,8 +65,6 @@ subroutine readplinksimple(bed, fnout, ncol, nlines, na, newID, minor, maf, extr
   outer: do 
     read(15, iostat=stat) element
     if (stat /= 0) exit
-    !print '(B10.8,B10.8,I3)', element, not(element), BIT_SIZE(element)
-    !print *, IBITS(element, 0, 2), IBITS(element, 2, 2), IBITS(element, 4, 2), IBITS(element, 6, 2)
     inner: do i=0,6,2
       j = j + 1
       snpcount = snpcount + 1
@@ -95,6 +101,7 @@ subroutine readplinksimple(bed, fnout, ncol, nlines, na, newID, minor, maf, extr
   ! Write output
   write(nChar,*) count(masksnps)
   fmt='(i20,'//trim(adjustl(nChar))//'I2)'
+  !print *, fmt
   
   open(16, file=fnout)
   do i=1,nlines
@@ -103,6 +110,9 @@ subroutine readplinksimple(bed, fnout, ncol, nlines, na, newID, minor, maf, extr
   close(16)
 
   deallocate(snps)
+  status=stat
+  
+  !print *, 'readplinksimple is done.'
   
 end subroutine readplinksimple
 

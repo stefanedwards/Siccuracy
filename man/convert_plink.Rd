@@ -7,7 +7,7 @@
 convert_plink(bfile, outfn, na = 9, newID = 0, nlines = NULL,
   fam = NULL, bim = NULL, bed = NULL, countminor = TRUE, maf = 0,
   extract = NULL, exclude = NULL, keep = NULL, remove = NULL,
-  method = "simple", fragment = "chr", remerge = TRUE,
+  method = "simple", fragments = "chr", remerge = TRUE,
   fragmentfns = NULL)
 }
 \arguments{
@@ -41,7 +41,7 @@ convert_plink(bfile, outfn, na = 9, newID = 0, nlines = NULL,
 
 \item{method}{Character, which of following methods to use: \code{simple}, \code{lowmem}, or \code{drymem}. See Details.}
 
-\item{fragment}{\code{"chr"} or integer vector. Only used when \code{method='lowmem'}.}
+\item{fragments}{\code{"chr"} or integer vector. Only used when \code{method='lowmem'}.}
 
 \item{remerge}{Logical, whether to re-merge fragmented blocks. Only used when \code{method='lowmem'}.}
 
