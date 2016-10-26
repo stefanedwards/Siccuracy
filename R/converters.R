@@ -34,7 +34,7 @@
 #' @param nlines Integer, maximum number of pairs of lines to convert.
 #' @param na Missing value.
 #' @param int Logical (default \code{TRUE}), read and write integers.
-#' @param format Character, Fortran edit descriptors for output. See \link{parse.format}.
+#' @param format Character, Fortran edit descriptors for output. See \link{parseformat}.
 #' @return Number of rows written.
 #' @export
 convert_phases <- function(fn, outfn, ncol=NULL, nlines=NULL, na=9, int=TRUE, format=NULL) {

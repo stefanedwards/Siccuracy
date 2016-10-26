@@ -147,7 +147,7 @@ read.snps <- function(file, ncols=NULL, na=NA, what=integer(), extractIDs=TRUE, 
   if (nrow(M) == 0) return(M)
   if (extractIDs) {
     rownames(M) <- M[,1]
-    M <- M[,-1]
+    M <- M[,-1,drop=FALSE]
   }
   if (!is.na(na)) M[M==na] <- NA
   M

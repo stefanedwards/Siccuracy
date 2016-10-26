@@ -8,7 +8,7 @@
 #' @param skiplines Integer, number of lines to skip before outputting. \code{nlines} counts towards total number of lines, i.e. both skipped and outputted.
 #' @param excludeids Integer vector of first column id's to \emph{exclude} from the output. \code{nlines} also counts towards excluded lines.
 #' @param int Logical (default \code{TRUE}), read and write integers.
-#' @param format Character, Fortran edit descriptors for output. See \link{parse.format}.
+#' @param format Character, Fortran edit descriptors for output. See \link{parseformat}.
 #' @return Exit status, invisible.
 #' @export
 # subroutine rowconcatenate(files, fns, fnout, nlines, ncols, result)
@@ -79,7 +79,7 @@ rowconcatenate <- function(fns, fnout, nlines=NULL, ncols=NULL, skiplines=0, exc
 #' @param outpos Integer vector of collective SNP positions. Default to sorted, union of \code{hdpos} and \code{ldpos}. Make it anything else and you get?
 #' @param na Missing values.
 #' @param int Logical (default \code{TRUE}), read and write integers.
-#' @param format Character, Fortran edit descriptors for output. See \link{parse.format}.
+#' @param format Character, Fortran edit descriptors for output. See \link{parseformat}.
 #' @seealso \code{\link{get_ncols}}
 #' @export
 rbind_SNPs <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outpos=NULL, na=9, format=NULL, int=TRUE) {

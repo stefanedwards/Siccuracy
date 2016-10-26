@@ -20,7 +20,7 @@ convert_phases(fn, outfn, ncol = NULL, nlines = NULL, na = 9,
 
 \item{int}{Logical (default \code{TRUE}), read and write integers.}
 
-\item{format}{Character, Fortran edit descriptors for output. See \link{parse.format}.}
+\item{format}{Character, Fortran edit descriptors for output. See \link{parseformat}.}
 }
 \value{
 Number of rows written.

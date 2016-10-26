@@ -18,9 +18,9 @@ where \code{w} describes the width of the column (in characters) and \code{d} th
 
 The type of accepted values for \code{format} are:
 \describe{
- \item{integer} If a scalar integer, it specifies the width. Other integer vectors default to \code{I2}.
- \item{numeric} If a scalar numeric, the integer-part is used for width and the first decimal specifies the number of decimales. Other numeric vectors default to \code{F5.2}.
- \item{character} Used as-is, but prepended if necessary with either \code{I} or \code{F}.
+ \item{integer}{If a scalar integer, it specifies the width. Other integer vectors default to \code{I2}.}
+ \item{numeric}{If a scalar numeric, the integer-part is used for width and the first decimal specifies the number of decimales. Other numeric vectors default to \code{F5.2}.}
+ \item{character}{Used as-is, but prepended if necessary with either \code{I} or \code{F}.}
 }
 \strong{Note:} No checks are performed on the width and number of decimals.
 }

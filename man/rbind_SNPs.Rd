@@ -26,7 +26,7 @@ rbind_SNPs(hdid, ldid, hdpos, ldpos, hdfn, ldfn, fnout, outpos = NULL,
 
 \item{na}{Missing values.}
 
-\item{format}{Character, Fortran edit descriptors for output. See \link{parse.format}.}
+\item{format}{Character, Fortran edit descriptors for output. See \link{parseformat}.}
 
 \item{int}{Logical (default \code{TRUE}), read and write integers.}
 }

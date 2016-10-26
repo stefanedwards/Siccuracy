@@ -5,15 +5,18 @@ context('Converting plink binary format to AlphaImpute format')
 
 # Requires test files in ../..(/inst)/extdata/testdata, which can be constructed using ../../tools/make_plink_test_files.R
 
+BASEDIR <- 'C:/Users/shojedw/Documents/Projects/Siccuracy/Siccuracy' #getwd()
 .datadir <- function(...) {
   # Find basedirectory
-  BASEDIR <- getwd()
-  cat(BASEDIR)
-  while (basename(BASEDIR) != 'Siccuracy') BASEDIR <- dirname(BASEDIR)
+  #cat(BASEDIR, '\n')
+  #while (!(basename(BASEDIR) == 'Siccuracy' | basename(BASEDIR) == 'Siccuracy.Rcheck') & nchar(BASEDIR) > 0 ) BASEDIR <- dirname(BASEDIR)
+  #cat(BASEDIR, '\n')
+  if (basename(BASEDIR) == 'Siccuracy.Rcheck') BASEDIR <- file.path(BASEDIR, 'Siccuracy')
   if (file.exists(file.path(BASEDIR, 'inst'))) BASEDIR <- file.path(BASEDIR, 'inst')
   file.path(BASEDIR, 'extdata', 'testdata', c(...))
 }
 
+cat(.datadir(''), '\n')
 
 expect_equal(file.exists(.datadir('')), TRUE, info=paste0('Run tools/make_plink_test_files.R to create `', .datadir(''), '`.'))
        

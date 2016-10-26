@@ -20,7 +20,7 @@ cbind_SNPs(fns, fnout, ncols = NULL, nlines = NULL, skiplines = 0,
 
 \item{excludeids}{Integer vector of first column id's to \emph{exclude} from the output. \code{nlines} also counts towards excluded lines.}
 
-\item{format}{Character, Fortran edit descriptors for output. See \link{parse.format}.}
+\item{format}{Character, Fortran edit descriptors for output. See \link{parseformat}.}
 
 \item{int}{Logical (default \code{TRUE}), read and write integers.}
 }
