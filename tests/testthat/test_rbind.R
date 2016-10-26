@@ -23,7 +23,7 @@ test_that('Two, partially overlapping SNP chips can be merged.', {
   
   mergedfn <- tempfile()
   #mergedfn <- 'merged.txt'
-  res <- rbind_SNPS(hdid=c(0, hd.id, 7), ldid=ld.id, hdpos=hd.snps, ldpos=ld.snps, hdfn=hd, ldfn=ld, fnout=mergedfn, missing=9)
+  res <- rbind_SNPs(hdid=c(0, hd.id, 7), ldid=ld.id, hdpos=hd.snps, ldpos=ld.snps, hdfn=hd, ldfn=ld, fnout=mergedfn, na=9)
   
   unique.cols <- sort(unique(c(hd.snps, ld.snps)))
   animals <- sort(unique(c(hd.id, ld.id)))
@@ -52,7 +52,7 @@ test_that('Order of ID\' doesn\'t matter.', {
   ld.fn <- tempfile()
   write.snps(snps[as.character(ld),,drop=FALSE], ld.fn)
   merged.fn <- tempfile()
-  res <- rbind_SNPS(hdid=hd, ldid=ld, hdpos=1, ldpos=1, hdfn=hd.fn, ldfn=ld.fn, fnout=merged.fn)
+  res <- rbind_SNPs(hdid=hd, ldid=ld, hdpos=1, ldpos=1, hdfn=hd.fn, ldfn=ld.fn, fnout=merged.fn)
   
   merged <- read.snps(merged.fn, what=numeric(), quiet=TRUE)
   expect_true(all(names(merged) %in% as.character(both)))
@@ -68,7 +68,7 @@ test_that('Merging doesn\'t skip first row when starting in middle of ID list.',
   write.snps(snps, hd.fn)
   write.snps(snps, ld.fn)
   merged.fn <- tempfile()
-  res <- rbind_snps(hdid=hd, ldid=ld, hdpos=1, ldpos=1, hdfn=hd.fn, ldfn=ld.fn, fnout=merged.fn)
+  res <- rbind_SNPs(hdid=hd, ldid=ld, hdpos=1, ldpos=1, hdfn=hd.fn, ldfn=ld.fn, fnout=merged.fn)
   merged <- read.snps(merged.fn, what=numeric(), quiet=TRUE)
   expect_true(all(names(merged) %in% as.character(both)))
 })
@@ -112,7 +112,7 @@ test_that('Order of columns can be randomised.', {
   write.snps(snps[ldid, ld.pos, drop=FALSE], ldfn)
   
   merged <- tempfile()
-  res <- rbind_SNPs(hdid=hdid, ldid=ldid, hdpos=hd.pos, ldpos=ld.pos, hdfn=hdfn, ldfn=ldfn, fnout=merged, missing=9)
+  res <- rbind_SNPs(hdid=hdid, ldid=ldid, hdpos=hd.pos, ldpos=ld.pos, hdfn=hdfn, ldfn=ldfn, fnout=merged, na=9)
   merged <- read.snps(merged, what=numeric(), na = 9)
   
   for (i in 1:ncol(snps)) {
