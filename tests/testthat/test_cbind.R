@@ -7,7 +7,7 @@ test_that('cbind_SNPs binds columns correctly', {
   # Different columns per SNP file.
   cols <- sample.int(10, size=nchr) + 10
   SNPs <- sapply(cols, Siccuracy:::make.true, n =8)
-  null <- mapply(write.snps, fn=fns, x=SNPs)
+  null <- mapply(write.snps, file=fns, x=SNPs)
   
   total <- do.call(cbind, SNPs)
   
@@ -27,7 +27,7 @@ test_that('Skiplines skip lines', {
   # Different columns per SNP file.
   cols <- sample.int(10, size=nchr) + 10
   SNPs <- sapply(cols, Siccuracy:::make.true, n =16)
-  null <- mapply(write.snps, fn=fns, x=SNPs)
+  null <- mapply(write.snps, file=fns, x=SNPs)
   
   total <- do.call(cbind, SNPs)
   
@@ -43,7 +43,7 @@ test_that('Excluded IDs are not outputted',{
   # Different columns per SNP file.
   cols <- sample.int(10, size=nchr) + 10
   SNPs <- sapply(cols, Siccuracy:::make.true, n =16)
-  null <- mapply(write.snps, fn=fns, x=SNPs)
+  null <- mapply(write.snps, file=fns, x=SNPs)
   
   total <- do.call(cbind, SNPs)
   
@@ -60,7 +60,7 @@ test_that('Numerical formats are respected',{
   # Different columns per SNP file.
   cols <- sample.int(10, size=nchr) + 10
   SNPs <- sapply(cols, Siccuracy:::make.true, n =16)
-  null <- mapply(write.snps, fn=fns, x=SNPs)
+  null <- mapply(write.snps, file=fns, x=SNPs)
   
   total <- do.call(cbind, SNPs)
   
