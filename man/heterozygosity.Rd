@@ -11,9 +11,9 @@ heterozygosity(fn, population = NULL, ncols = NULL, nlines = NULL)
 
 \item{population}{Vector of same length as rows in \code{fn}; defaults to \code{1}, coerced from factor to integer.}
 
-\item{ncols}{Number of SNP columns in \code{fn}; if \code{NULL} (default), number is retrieved with \code{\link{get_ncols}}.}
+\item{nlines}{Integer, number of lines in \code{fn}. When \code{NULL}, automagically detected with \code{gen_nlines(fn)}.}
 
-\item{nlines}{Lines in \code{fn}; if \code{NULL} (default), number is retrieved with \code{\link{get_nlines}}.}
+\item{ncol}{Integer, number of SNP columns in \code{fn} When \code{NULL}, automagically detected with \code{get_ncols(fn)-1}.}
 }
 \value{
 Data frame with columns

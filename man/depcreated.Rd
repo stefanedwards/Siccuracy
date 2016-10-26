@@ -5,7 +5,7 @@
 \alias{imputation_accuracy3}
 \alias{phasotogeno}
 \alias{phasotogeno_int}
-\title{Deprecated function names}
+\title{Deprecated functions}
 \usage{
 phasotogeno(phasefn, genofn, ncol = NULL, nrow = NULL)
 
@@ -26,17 +26,15 @@ imputation_accuracy1(truefn, imputefn, nSNPs = NULL, nAnimals = NULL,
 
 \item{nrow}{Number of rows to maximally read from \code{phasefn}. If \code{NULL}, no limit is used.}
 
-\item{truefn}{Filename to true matrix. NB! Max. 255 characters!}
+\item{truefn}{Filename of \emph{true} matrix.}
 
-\item{imputefn}{Filename to imputed matrix.}
+\item{imputefn}{Filename of \emph{imputed} matrix.}
 
-\item{nSNPs}{Integer, number of snps (i.e. number of columns minus 1).
-If \code{NULL} (default), detected from \code{truefn}.}
+\item{nSNPs}{Deprecated, use \code{ncol}.}
 
-\item{nAnimals}{Integer, number of rows.
-If \code{NULL} (default), detected from \code{truefn}.}
+\item{nAnimals}{Deprecated, use \code{nlines}.}
 
-\item{NAval}{Integer, value of missing genotype.}
+\item{NAval}{Deprecated, use \code{na}.}
 
 \item{standardized}{Logical, whether to center and scale genotypes by dataset in \code{true}-matrix.
 Currently by subtracting column mean and dividing by column standard deviation.}
@@ -45,8 +43,10 @@ Currently by subtracting column mean and dividing by column standard deviation.}
 Number of rows written.
 }
 \description{
-Deprecated function names
+\code{phasotogeno} and \code{phasotogeno_int} has been replaced by \code{\link{convert_phases}}. 
+The difference between the two former functions is covered by the \code{int} argument in the new function.
 
-Deprecated function names
+\code{imputation_accuracy1} and \code{imputation_accuracy3} has been replaced by \code{\link{imputation_accuracy}}.
+The difference between the two former functions is now covered by the \code{adaptive}-argument of the latter.
 }
 
