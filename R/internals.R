@@ -26,7 +26,8 @@ sans_ext <- function (x, compression = FALSE) {
 }
 
 
-#' @rdname parseformat
+# @noRd
+# @rdname parseformat
 #'  Format descriptors
 #'
 #' Some functions allow the user to alter the output format by using arguments \code{int} and \code{format}.
