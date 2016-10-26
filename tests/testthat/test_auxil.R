@@ -8,17 +8,6 @@ test_that('`get_nlines` works', {
    write.snps(r, fn)
    res <- get_nlines(fn)
    expect_equal(res, n)
-   expect_that(get_nlines(fn, showWarning = TRUE), not(gives_warning()))
-
-   # Cause errors.
-   rownames(r) <- sample(combn(letters, 4, FUN=paste, collapse=''), n)
-   fn <- tempfile(fileext='.txt')
-   write.snps(r, fn, row.names=TRUE)
-   expect_that(get_nlines(fn, showWarning=TRUE), gives_warning())
-   expect_that(get_nlines(fn, showWarning=FALSE), not(gives_warning()))
-   expect_error(get_nlines(fn, doError=TRUE))
-   expect_that(get_nlines(fn, showWarning=FALSE, doError=FALSE), not(gives_warning()))
-   expect_equal(get_nlines(fn, showWarning=FALSE, doError=FALSE), 0)
 })
 
 test_that('`get_ncolumns works', {
