@@ -14,10 +14,10 @@ NULL
 #' @return \code{get_ncols}: Number of read fields, including ID columns.
 #' @export
 #' @rdname auxfunc
-get_ncols <- function(fn) {
+get_ncols <- function(file) {
   #on.exit(try(close(f), silent=TRUE))
   #f <- gzfile(fn, 'r')
-  s <- scan(fn, what=character(), quiet=TRUE, nlines=1)
+  s <- scan(file, what=character(), quiet=TRUE, nlines=1)
   #close(f)
   length(s)
 }
@@ -29,15 +29,21 @@ get_ncols <- function(fn) {
 #'
 #' @param fn Filename.
 #' @export
-#' @return \code{get_nlines}: Number of lines.
+#' @return \code{get_nlines}: Number of lines, or \code{NA} on error.
 #' @rdname auxfunc
+#' @section Error messages:
+#' \code{get_nlines} is implemented in Fortran and may return \code{NA} with an error message, if an error is encountered.
+#' 
+#' IOSTAT errors:
+#' \describe{
+#'  \item{5010}{The first column most likely contains non-integer or non-numeric elements.}
+#' }
 get_nlines <- function(fn) {
   stopifnot(file.exists(fn))
   res <- .Fortran('get_nlines', fn=as.character(fn), nlines=integer(1), stat=integer(1))
   if (res$nlines == 0 & res$stat != 0) {
-    msg <- paste0('get_nlines did not read lines; IOSTAT error ', res$stat, '.')
-    warning(msg)
-    return(NULL)
+    warning(paste0('get_nlines did not read lines; IOSTAT error ', res$stat, '.'))
+    return(structure(NA, code=res$stat))
   }
   res$nlines
 }
@@ -83,14 +89,14 @@ NULL
 #' For file format see \link{Siccuracy}.
 #' 
 #' @param x The matrix to write.
-#' @param file Filename or connection.
+#' @param file Filename or connection to write to.
 #' @param row.names If genotype matrix is "raw" and has first column with animals IDs, set this to \code{FALSE}.
 #' @param na The string to use for \code{NA} in the data.
 #' @param ... Passed on to write.table.
 #' @seealso \code{\link[utils]{write.table}}, \link[base]{connections}
 #' @export
 write.snps <- function(x, file, row.names=TRUE, na='9', ...) {
-  write.table(x, fn, col.names=FALSE, row.names=row.names, quote=FALSE, na=na, ...)
+  write.table(x, file, col.names=FALSE, row.names=row.names, quote=FALSE, na=na, ...)
 }
 
 #' Read genotype matrix from file.
@@ -110,6 +116,7 @@ write.snps <- function(x, file, row.names=TRUE, na='9', ...) {
 #' @param na Missing values; entries with this value are replaced with \code{NA}..
 #' @param what The \link[base]{typeof} of data to be read, e.g. \code{integer()},  \code{numeric()}, or \code{character()}.
 #' @param extractIDs Logical, default \code{TRUE}, trim of first column and use as rownames.
+#' @param quiet logical: if \code{FALSE}, \code{scan()} will print a line, saying how many items have been read.
 #' @param ... Passed on to \code{\link[base]{scan}}.
 #' @return Native \link[base]{matrix}.
 #' @export
@@ -130,13 +137,13 @@ write.snps <- function(x, file, row.names=TRUE, na='9', ...) {
 #'   if (nrow(M) == 0) break
 #' }
 #' close(f)
-read.snps <- function(file, ncols=NULL, na=NA, what=integer(), extractIDs=TRUE, ...) {
+read.snps <- function(file, ncols=NULL, na=NA, what=integer(), extractIDs=TRUE, quiet=TRUE, ...) {
   if (is.null(ncols) & is.character(file)) {
     ncols <- get_ncols(file)
   }
   if (is.null(ncols)) stop('Cannot automagically detect number of columns to read as input file is a connection, not a character.')
 
-  M <- matrix(scan(file, nlines=nlines, what=what, ...), ncol=ncols, byrow=TRUE)
+  M <- matrix(scan(file, what=what, quiet=quiet, ...), ncol=ncols, byrow=TRUE)
   if (nrow(M) == 0) return(M)
   if (extractIDs) {
     rownames(M) <- M[,1]

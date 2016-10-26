@@ -136,23 +136,26 @@ end subroutine
 
 !! Converting plink --recode A
 
-subroutine convertplinka(rawfn, outputfn, newID, ncol, nrow, naval, stat) 
+subroutine convertplinka(rawfn, outputfn, newID, ncol, nrow, naval, header, stat) 
 
   implicit none
   
   !! Arguments
   character(255), intent(in) :: rawfn, outputfn
-  integer, intent(in) :: ncol, nrow, naval
+  integer, intent(in) :: ncol, nrow, naval, header
   integer, dimension(nrow) :: newID
   integer, intent(out) :: stat
   
   !! Local variables
+  logical :: hasheader
   integer :: i
   integer, dimension(ncol) :: iSNPs
   character(3) :: chrNA
   character(100) :: nChar, fmt
   character(3), dimension(ncol) :: SNPs
   character(5), dimension(6) :: sixcolumns
+
+  hasheader=header==1
 
   !! Set output format
   write(nChar,*) ncol
@@ -162,6 +165,10 @@ subroutine convertplinka(rawfn, outputfn, newID, ncol, nrow, naval, stat)
   
   i = 0
   open(90, file=rawfn, status='OLD')
+  if (hasheader .eqv. .true.) then
+    read(90, *, iostat=stat) sixcolumns, SNPs ! formatted splits also at underscores(!) !!
+  endif
+  
   open(91, file=outputfn, status='UNKNOWN')
   do while (.TRUE.)
     read(90, *, iostat=stat) sixcolumns, SNPs

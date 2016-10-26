@@ -2,6 +2,7 @@
 
 export(cbind_SNPs)
 export(convert_phases)
+export(convert_plink)
 export(convert_plinkA)
 export(get_firstcolumn)
 export(get_ncols)

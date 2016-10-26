@@ -5,7 +5,7 @@
 \title{Read genotype matrix from file.}
 \usage{
 read.snps(file, ncols = NULL, na = NA, what = integer(),
-  extractIDs = TRUE, ...)
+  extractIDs = TRUE, quiet = TRUE, ...)
 }
 \arguments{
 \item{file}{Filename or connection.}
@@ -17,6 +17,8 @@ read.snps(file, ncols = NULL, na = NA, what = integer(),
 \item{what}{The \link[base]{typeof} of data to be read, e.g. \code{integer()},  \code{numeric()}, or \code{character()}.}
 
 \item{extractIDs}{Logical, default \code{TRUE}, trim of first column and use as rownames.}
+
+\item{quiet}{logical: if \code{FALSE}, \code{scan()} will print a line, saying how many items have been read.}
 
 \item{...}{Passed on to \code{\link[base]{scan}}.}
 }
