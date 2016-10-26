@@ -26,7 +26,32 @@ sans_ext <- function (x, compression = FALSE) {
 }
 
 
-#' Parses formatting string.
+#' @rdname parseformat
+#'  Format descriptors
+#'
+#' Some functions allow the user to alter the output format by using arguments \code{int} and \code{format}.
+#' The latter argument accepts a number of ways to define the output.
+#' 
+#' The output format is controlled by Fortran's format descriptiors; these usually take the form:
+#' \describe{
+#'  \item{Integers}{\code{Iw}}
+#'  \item{Numeric}{\code{Fw.d}}
+#' }
+#' where \code{w} describes the width of the column (in characters) and \code{d} the number of decimals.
+#' \strong{Note:} When using the \code{I} format code, you must specify \code{int=TRUE}. When using \code{int=TRUE}, real values are rounded to nearest integer.
+#' 
+#' The type of accepted values for \code{format} are:
+#' \describe{
+#'  \item{integer} If a scalar integer, it specifies the width. Other integer vectors default to \code{I2}.
+#'  \item{numeric} If a scalar numeric, the integer-part is used for width and the first decimal specifies the number of decimales. Other numeric vectors default to \code{F5.2}.
+#'  \item{character} Used as-is, but prepended if necessary with either \code{I} or \code{F}.
+#' }
+#' \strong{Note:} No checks are performed on the width and number of decimals.
+#' 
+#' @name parseformat
+#' 
+NULL
+
 #' @noRd
 parse.format <- function(format=NULL, int=TRUE) {
   if (is.null(format)) format <- ifelse(int, integer(1), numeric(1))

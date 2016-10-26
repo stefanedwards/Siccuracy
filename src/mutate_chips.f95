@@ -77,7 +77,7 @@ subroutine cbindsnps(files, fns, fnout, nlines, ncols, skiplines, idlength, excl
       endif
       if (i == 1) write(55, '(i20)', advance='no') id
       if (asint .eqv. .true.) then
-        rowint(1:ncols(i)) = rowreal(1:ncols(i))
+        rowint(1:ncols(i)) = NINT(rowreal(1:ncols(i)))
         write(55, fmt(i), advance=advance(i)) rowint(1:ncols(i))
       else
         write(55, fmt(i), advance=advance(i)) rowreal(1:ncols(i))
@@ -166,7 +166,7 @@ subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
     oldi = i
     if (foundID) then
       if (isint .eqv. .true.) then
-        intoutput(hdpos) = line(1:hdcols)
+        intoutput(hdpos) = NINT(line(1:hdcols))
         write(71, fmt) animalID, intoutput
       else
         realoutput(hdpos) = line(1:hdcols)
@@ -211,7 +211,7 @@ subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
     oldi = i
     if (foundID) then
       if (isint .eqv. .true.) then
-        intoutput(ldpos) = line(1:ldcols)
+        intoutput(ldpos) = NINT(line(1:ldcols))
         write(71, fmt) animalID, intoutput
       else
         realoutput(ldpos) = line(1:ldcols)

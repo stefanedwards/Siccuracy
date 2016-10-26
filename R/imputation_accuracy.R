@@ -80,7 +80,7 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
 #' @param NAval Deprecated, use \code{na}.
 #' 
 #' @export
-#' @rdname depcreated
+#' @rdname deprecated
 #' @inheritParams imputation_accuracy
 imputation_accuracy3 <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAval=9, standardized=TRUE) {
   .Deprecated('imputation_accuracy', package='Siccuracy')
@@ -88,7 +88,7 @@ imputation_accuracy3 <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NA
 }
 
 #' @export
-#' @rdname depcreated
+#' @rdname deprecated
 imputation_accuracy1 <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAval=9, standardized=TRUE) {
   .Deprecated('imputation_accuracy', package='Siccuracy')
   imputation_accuracy(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, adaptive=FALSE)

@@ -135,6 +135,7 @@ rbind_SNPs <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outpos=NULL, 
 #' @export
 #' @rdname deprecated
 #' @inheritParams rbind_SNPs
+#' @param missing Missing value.
 mergeChips <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outpos=NULL, missing=9) {
   .Deprecated('rbind_SNPs', package='Siccuracy')
 }

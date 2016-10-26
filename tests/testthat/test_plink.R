@@ -8,6 +8,7 @@ context('Converting plink binary format to AlphaImpute format')
 .datadir <- function(...) {
   # Find basedirectory
   BASEDIR <- getwd()
+  cat(BASEDIR)
   while (basename(BASEDIR) != 'Siccuracy') BASEDIR <- dirname(BASEDIR)
   if (file.exists(file.path(BASEDIR, 'inst'))) BASEDIR <- file.path(BASEDIR, 'inst')
   file.path(BASEDIR, 'extdata', 'testdata', c(...))
@@ -195,7 +196,9 @@ test_that('Filtering works', {
 
 
 test_that('Lowmem plink conversion does not blow up',{
+  tmpdir <- tempdir()
+  oldwd <- setwd(tmpdir)
   outfiles <- c(paste0('simple2_chr',1:3,'.txt'), paste0('bed',1:3))
   res <- convert_plink(.datadir('simple2'), outfn='eh', method='lowmem', fragment='chr', fragmentfns=outfiles)
-  res
+  setwd(oldwd)
 })

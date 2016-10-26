@@ -114,7 +114,7 @@ subroutine convert_phase(phasefn, genofn, ncol, nrow, na, int, lenfmt, userfmt)
     summ = linea + lineb
     where (summ > 2.000 .or. summ < 0.000) summ = na
     if (isint .eqv. .true.) then
-      summint = summ
+      summint = NINT(summ)
       write(98, fmt) animalid, summint
     else 
       write(98, fmt) animalid, summ
