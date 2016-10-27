@@ -165,11 +165,13 @@ subroutine convertplinkfragment(bedfilenames, flatfilenames, n, remerge, fragmen
   ! Local variables
   byte :: readplinkmode, element, plinkmode
   byte, dimension(2) :: readmagicnumber, magicnumber
-  integer :: i,j,k,stat,ncoli
-  integer, dimension(n) :: bedcons, flatcons
+  integer :: i,j,k,stat
+  integer, dimension(0) :: excludeIDs
+  integer, dimension(n) :: bedcons, flatcons, ncols
   integer, dimension(ncol) :: allpos
   integer, dimension(:), allocatable :: subset
   logical, dimension(ncol) :: mask
+  logical, dimension(n) :: empties
   
 
   ! Supported formats as per plink 1.9.
@@ -217,13 +219,25 @@ subroutine convertplinkfragment(bedfilenames, flatfilenames, n, remerge, fragmen
   enddo
   
   forall(i=1:ncol) allpos(i)=i
+  empties= .false.
+  ncols(:)=0
   do i=1,n
     mask=fragments==i
-    ncoli=count(mask)
-    allocate(subset(ncoli))
+    ncols(i)=count(mask)
+    allocate(subset(ncols(i)))
     subset = extract(pack(allpos,mask))
         !readplinksimple(bed, fnout, ncol, nlines, na, newID, minor, maf, extract, keep, status)
-    call readplinksimple(bedfilenames(i), flatfilenames(i), ncoli, nlines, na, newID, minor, maf, subset, keep, stat)
+    if (sum(subset) > 0) then
+      call readplinksimple(bedfilenames(i), flatfilenames(i), ncols(i), nlines, na, newID, minor, maf, subset, keep, stat)
+      empties(i) = .true.
+    endif
     deallocate(subset)
   enddo
+  
+  
+  if (remerge) then
+    excludeIDs(:) = 0
+    call cbindsnps(count(empties), pack(flatfilenames, empties), fnout, nlines, pack(ncols, empties), 0, &
+      0, excludeIDs, status, 2, 'I2', .TRUE.)
+  endif
 end subroutine 

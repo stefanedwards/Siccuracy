@@ -5,15 +5,15 @@ context('Converting plink binary format to AlphaImpute format')
 
 # Requires test files in ../..(/inst)/extdata/testdata, which can be constructed using ../../tools/make_plink_test_files.R
 
-BASEDIR <- 'C:/Users/shojedw/Documents/Projects/Siccuracy/Siccuracy' #getwd()
+v <- mget('.extdata.dir', ifnotfound=NA)  # variable given in .Rprofile
+if (is.na(v$`.extdata.dir`)) {
+  .extdata.dir <- system.file('extdata/testdata', package='Siccuracy', mustWork=TRUE)
+} else {
+  .extdata.dir <- v$`.extdata.dir`
+}
+
 .datadir <- function(...) {
-  # Find basedirectory
-  #cat(BASEDIR, '\n')
-  #while (!(basename(BASEDIR) == 'Siccuracy' | basename(BASEDIR) == 'Siccuracy.Rcheck') & nchar(BASEDIR) > 0 ) BASEDIR <- dirname(BASEDIR)
-  #cat(BASEDIR, '\n')
-  if (basename(BASEDIR) == 'Siccuracy.Rcheck') BASEDIR <- file.path(BASEDIR, 'Siccuracy')
-  if (file.exists(file.path(BASEDIR, 'inst'))) BASEDIR <- file.path(BASEDIR, 'inst')
-  file.path(BASEDIR, 'extdata', 'testdata', c(...))
+  file.path(.extdata.dir, c(...))
 }
 
 cat(.datadir(''), '\n')
@@ -199,9 +199,60 @@ test_that('Filtering works', {
 
 
 test_that('Lowmem plink conversion does not blow up',{
-  tmpdir <- tempdir()
-  oldwd <- setwd(tmpdir)
-  outfiles <- c(paste0('simple2_chr',1:3,'.txt'), paste0('bed',1:3))
-  res <- convert_plink(.datadir('simple2'), outfn='eh', method='lowmem', fragment='chr', fragmentfns=outfiles)
-  setwd(oldwd)
+  bim <- get_firstcolumn(.datadir('simple2.bim'), col.names=c('chr','rs'), class=c('integer','character'))
+  fam <- get_firstcolumn(.datadir('simple2.fam'), class=c('character','character'))
+  
+  fn <- tempfile()
+  res <- convert_plink(.datadir('simple2'), outfn=fn, method='lowmem', fragments='chr', countminor=FALSE)
+  fnraw <- tempfile()
+  w <- convert_plinkA(.datadir('simple2.raw'), fnraw, newID=res$newID)
+  raw <- read.snps(fnraw)
+  
+  expect_equal(res$fragments, bim$chr)
+  fr <- table(res$fragments)
+  snps <- sapply(res$fragmentfns[unique(bim$chr)], read.snps)
+  expect_equivalent(sapply(snps, ncol), as.integer(fr))
+  for (i in unique(bim$chr)) {
+    co <- which(bim$chr == i)
+    expect_equal(snps[[i]], raw[,co,drop=FALSE])
+  }
+  expect_true(all(sapply(snps, nrow) == nrow(fam)))
+  
+  snps <- read.snps(fn)
+  expect_equal(raw, snps)
+})
+
+test_that('Lowmem plink conversion filters works', {
+  bim <- get_firstcolumn(.datadir('simple2.bim'), col.names=c('chr','rs'), class=c('integer','character'))
+  fam <- get_firstcolumn(.datadir('simple2.fam'), class=c('character','character'))
+  
+  fnraw <- tempfile()
+  w <- convert_plinkA(.datadir('simple2.raw'), fnraw, newID=res$newID)
+  raw <- read.snps(fnraw)
+  
+  extract <- bim$chr != 2
+  #extract[] <- TRUE
+  #extract[3] <- FALSE
+  fn <- tempfile()
+  res <- convert_plink(.datadir('simple2'), outfn=fn, method='lowmem', fragments='chr', extract=extract, countminor=FALSE, remerge=FALSE)
+  fr <- table(res$fragments)
+  snps <- sapply(res$fragmentfns[c(1,3)], read.snps)
+  expect_equivalent(sapply(snps, ncol, USE.NAMES = FALSE), as.integer(fr[-2]))
+  
+  context('Leaving out an entire fragment does not fail')
+  res <- convert_plink(.datadir('simple2'), outfn=fn, method='lowmem', fragments='chr', extract=extract, countminor=FALSE, remerge=TRUE)
+  snps <- sapply(res$fragmentfns[unique(res$fragments[res$extract==1])], read.snps)
+  expect_length(snps, 2)
+  expect_equal(raw[,res$extract==1,drop=FALSE], do.call(cbind,snps))
+  total <- read.snps(fn)
+  expect_equal(raw[,res$extract==1,drop=FALSE], total)
+  
+  context('Leaving out some samples does not fail')
+  remove <- sample(fam[,2], 3)
+  res <- convert_plink(.datadir('simple2'), outfn=fn, method='lowmem', fragments='chr', remove=remove, countminor=FALSE, remerge=TRUE)
+  snps <- sapply(res$fragmentfns[unique(res$fragments[res$extract==1])], read.snps)
+  expect_true(all(sapply(snps, nrow)==sum(res$newID$keep)))
+  expect_equal(raw[res$newID$keep,,drop=FALSE], do.call(cbind, snps))
+  total <- read.snps(fn)
+  expect_equal(raw[res$newID$keep,,drop=FALSE], total)
 })

@@ -325,8 +325,9 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
   
   # Decide upon exclude/include
   if (!is.null(extract) | !is.null(exclude)) {
-    if (is.logical(extract) & sum(!is.na(extract)) < ncol) stop('`extract` as logical must be same length as SNPs in input file and without NA\'s.')
-    if (is.logical(exclude) & sum(!is.na(exclude)) < ncol) stop('`exclude` as logical must be same length as SNPs in input file and without NA\'s.')
+    .is.na <- function(x) {if (is.null(x)) return(logical(0)); is.na(x)}
+    if (is.logical(extract) & sum(!.is.na(extract)) < ncol) stop('`extract` as logical must be same length as SNPs in input file and without NA\'s.')
+    if (is.logical(exclude) & sum(!.is.na(exclude)) < ncol) stop('`exclude` as logical must be same length as SNPs in input file and without NA\'s.')
     
     if (is.numeric(extract)) extract <- as.integer(extract)
     if (is.numeric(exclude)) exclude <- as.integer(exclude)
@@ -409,12 +410,14 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
                     minor=as.integer(countminor), maf=as.numeric(maf), extract=as.integer(.extract), keep=as.integer(.keep),
                     status=as.integer(0))
     
-    
+    res$listfn <- NULL
+    res$n <- NULL
+    res$fragmentfns <- tmpfiles
   } else if (use.method == 3) {
-    return(list(bed=as.character(bed), fnout=as.character(outfn), 
+    res <- list(bed=as.character(bed), fnout=as.character(outfn), 
                 ncol=as.integer(ncol), nlines=as.integer(nlines), na=as.integer(na), newID=as.integer(newID$newID), minor=as.integer(countminor), 
                 maf=as.numeric(maf), extract=as.integer(.extract), keep=as.integer(.keep),
-                fragments=as.integer(fragments), fragmentfns=as.character(fragmentfns)))
+                fragments=as.integer(fragments), fragmentfns=as.character(fragmentfns))
   } 
   res$newID=newID
   res
