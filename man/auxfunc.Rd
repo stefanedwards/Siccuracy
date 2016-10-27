@@ -7,18 +7,16 @@
 \alias{get_nlines}
 \title{Auxiliary functions}
 \usage{
-get_ncols(fn)
+get_ncols(file)
 
-get_nlines(fn, showWarning = TRUE, doError = FALSE)
+get_nlines(fn)
 
 get_firstcolumn(fn, class = "integer", ...)
 }
 \arguments{
-\item{fn}{Filename to read from. May be text, gz, or bz2.}
+\item{file}{Filename or connection to read from.}
 
-\item{showWarning}{Logical, whether to display a warning if reading file is erroneous.}
-
-\item{doError}{Logical, if error occured while reading file, will it stop}
+\item{fn}{Filename.}
 
 \item{class}{Character vector of classes to use for column(s), see \code{colClasses} in \code{\link[utils]{read.table}}.}
 
@@ -27,20 +25,29 @@ get_firstcolumn(fn, class = "integer", ...)
 \value{
 \code{get_ncols}: Number of read fields, including ID columns.
 
-\code{get_nlines}: Number of lines.
+\code{get_nlines}: Number of lines, or \code{NA} on error.
 
 \code{get_firstcolumn}: Vector with elements of first column, or \code{data.frame} if \code{class} contains multiple not-\code{"NULL"} elements.
 }
 \description{
 Short-hand functions for retriving file information such as number of columns or rows,
-or picking the first column (relevant if this contains animal IDs).
+or picking the first column (relevant if this contains IDs).
 
-\code{get_ncols} works only with numeric values.
+\code{get_ncols} returns number of columns.
 
-\code{get_nlines} works only with numeric values.
+\code{get_nlines} returns number of lines. **Requires first column to be numeric**.
 
 \code{get_firstcolumn} is a wrapper for \code{read.table} that allows the user
 to easily get the first column(s) by padding \code{colClasses} with \code{"NULL"} character elements to
 skip columns.
+}
+\section{Error messages}{
+
+\code{get_nlines} is implemented in Fortran and may return \code{NA} with an error message, if an error is encountered.
+
+IOSTAT errors:
+\describe{
+ \item{5010}{The first column most likely contains non-integer or non-numeric elements.}
+}
 }
 

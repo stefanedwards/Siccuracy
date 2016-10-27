@@ -5,20 +5,20 @@
 \title{Convert PLINK recoded A to SNP file.}
 \usage{
 convert_plinkA(rawfn, outfn, newID = 0, ncol = NULL, nlines = NULL,
-  naval = 9)
+  na = 9)
 }
 \arguments{
-\item{rawfn}{Output file from plink. Most likely \code{plink.raw} if PLINK command line argument \code{--output} is not used.}
+\item{rawfn}{Plink output filename. Most likely \code{plink.raw} if PLINK command line argument \code{--output} is not used.}
 
 \item{outfn}{Filename of new file.}
 
 \item{newID}{Integer scalar (default \code{0}) for automatically assigning new IDs. See description for more.}
 
-\item{ncol}{Number of \emph{SNP} columns in \code{rawfn}. Is total number of columns minus 6.}
+\item{ncol}{Integer,number of SNP columns in \code{rawfn}. When \code{NULL}, automagically detected with \code{get_ncols(rawfn)-6}.}
 
 \item{nlines}{Number of lines to process.}
 
-\item{naval}{Integer scalar to use for \code{NA} values.}
+\item{na}{Missing value,}
 }
 \value{
 Data.frame with columns \code{famID}, \code{sampID}, and \code{newID}.

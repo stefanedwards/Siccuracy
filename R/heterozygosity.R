@@ -36,8 +36,8 @@
 #' @export
 #' @param fn Filename of genotype matrix (0,1,2) with first column denoting ID.
 #' @param population Vector of same length as rows in \code{fn}; defaults to \code{1}, coerced from factor to integer.
-#' @param ncols Number of SNP columns in \code{fn}; if \code{NULL} (default), number is retrieved with \code{\link{get_ncols}}.
-#' @param nlines Lines in \code{fn}; if \code{NULL} (default), number is retrieved with \code{\link{get_nlines}}.
+#' @param ncol Integer, number of SNP columns in \code{fn} When \code{NULL}, automagically detected with \code{get_ncols(fn)-1}.
+#' @param nlines Integer, number of lines in \code{fn}. When \code{NULL}, automagically detected with \code{gen_nlines(fn)}.
 #' @return Data frame with columns
 #' \describe{
 #'   \item{\code{population}}{Population, as specified by argument \code{population}.}
@@ -52,11 +52,11 @@
 #' Bhatia, Patterson, Sankararaman, and Price. Estimating and interpreting FST: The impact of rare variants.
 #' \emph{Genome Research} (2013) 23: 1514-1521. \href{http://genome.cshlp.org/content/early/2013/07/16/gr.154831.113.full.pdf}{Preprint}
 #' \href{http://dx.doi.org/10.1101/gr.154831.113}{doi: 10.1101/gr.154831.113}.
-heterozygosity <- function(fn, population=NULL, ncols=NULL, nlines=NULL) {
+heterozygosity <- function(fn, population=NULL, ncol=NULL, nlines=NULL) {
   stopifnot(file.exists(fn))
 
   if (is.null(nlines)) nlines <- get_nlines(fn)  
-  if (is.null(ncols)) ncols <- get_ncols(fn) - 1
+  if (is.null(ncol)) ncol <- get_ncols(fn) - 1
 
   if (is.null(population)) {
     population <- integer(nlines)
@@ -64,12 +64,12 @@ heterozygosity <- function(fn, population=NULL, ncols=NULL, nlines=NULL) {
   pop <- as.factor(population)
   npop <- nlevels(pop)
 
-  res <- .Fortran('heterozygosity', fn=as.character(fn), ncols=as.integer(ncols), nlines=as.integer(nlines), 
+  res <- .Fortran('heterozygosity', fn=as.character(fn), ncols=as.integer(ncol), nlines=as.integer(nlines), 
                   populations=as.integer(pop), npop=as.integer(npop), 
-                  p=numeric(npop*ncols), Hobs=numeric(npop*ncols), Hexp=numeric(npop*ncols), n=integer(npop*ncols))
+                  p=numeric(npop*ncol), Hobs=numeric(npop*ncol), Hexp=numeric(npop*ncol), n=integer(npop*ncol))
   
-  # To do: res$populations is of length (nlines), while p, Hobs, etc. are of length npop*ncols.
-  res$populations <- factor(rep(1:npop, each=ncols), levels=1:npop, labels=levels(pop))
+  # To do: res$populations is of length (nlines), while p, Hobs, etc. are of length npop*ncol.
+  res$populations <- factor(rep(1:npop, each=ncol), levels=1:npop, labels=levels(pop))
   if (is.character(population)) res$populations <- as.character(res$populations)
   if (is.integer(population)) res$populations <- as.integer(as.character(res$populations))
   

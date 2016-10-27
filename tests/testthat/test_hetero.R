@@ -1,3 +1,6 @@
+library(testthat)
+library(Siccuracy)
+
 context('Testing calculation of heterozygosity')
 
 test_that('Heterozygosity works with a single population',{

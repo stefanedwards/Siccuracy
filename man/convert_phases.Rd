@@ -4,23 +4,23 @@
 \alias{convert_phases}
 \title{Convert phase files to genotype files.}
 \usage{
-convert_phases(phasefn, genofn, ncol = NULL, nrow = NULL, int = TRUE,
-  naval = 9, numeric.format = "5.2")
+convert_phases(fn, outfn, ncol = NULL, nlines = NULL, na = 9,
+  int = TRUE, format = NULL)
 }
 \arguments{
-\item{phasefn}{Filename of input file, every two rows are for same animal.}
+\item{fn}{Filename of input file, every two rows are for same animal.}
 
-\item{genofn}{Filename of intended output.}
+\item{outfn}{Filename of intended output.}
 
-\item{ncol}{Number of SNPs in file, if \code{NULL} (default), number is estimated from file.}
+\item{ncol}{Integer, number of SNP columns in files. When \code{NULL}, automagically detected with \code{get_ncols(phasefn)-1}.}
 
-\item{nrow}{Number of rows to maximally read from \code{phasefn}. If \code{NULL}, no limit is used.}
+\item{nlines}{Integer, maximum number of pairs of lines to convert.}
+
+\item{na}{Missing value.}
 
 \item{int}{Logical (default \code{TRUE}), read and write integers.}
 
-\item{naval}{Missing value, default \code{9}.}
-
-\item{numeric.format}{Character describing \code{<width>.<decimals>}. Default \code{'5.2'}. Has no effect when \code{int=TRUE}.}
+\item{format}{Character, Fortran edit descriptors for output. See \link{parseformat}.}
 }
 \value{
 Number of rows written.
@@ -48,9 +48,9 @@ Each individual has therefore two rows, one for each allele, see following examp
 
 By default assumes genotypes are whole integers (cf. \code{int} argument).
 If numeric values are required, e.g. gene dosages from imputation, use \code{int=FALSE}. 
-Use \code{numeric.format} to change from default 5 characters width and 2 decimals (\code{"5.2"}). 
+Use \code{format} to change from default 5 characters width and 2 decimals (\code{"5.2"}). 
 NB! Function does not test for validity of this argument, so change with caution!
 
-\strong{Missing values:} Values after summing less than 0 or greater than 2 are assumed as missing and replaced with \code{naval}.
+\strong{Missing values:} Values after summing less than 0 or greater than 2 are assumed as missing and replaced with \code{na}.
 }
 

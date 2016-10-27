@@ -1,3 +1,6 @@
+library(testthat)
+library(Siccuracy)
+
 test_that('convert_plinkA correctly reads and writes files', {
   context('No calling to PLINK is performed.')
   

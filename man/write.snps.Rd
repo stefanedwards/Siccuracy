@@ -4,16 +4,16 @@
 \alias{write.snps}
 \title{Write genotype matrices to file.}
 \usage{
-write.snps(x, fn, row.names = TRUE, na = "9", ...)
+write.snps(x, file, row.names = TRUE, na = "9", ...)
 }
 \arguments{
 \item{x}{The matrix to write.}
 
-\item{fn}{Filename or connection of file to write to.}
+\item{file}{Filename or connection to write to.}
 
-\item{row.names}{If genotype matrix is "raw" and has first column with animals IDs, set this to False.}
+\item{row.names}{If genotype matrix is "raw" and has first column with animals IDs, set this to \code{FALSE}.}
 
-\item{na}{Character to write in-place of missing values, defaults '9'.}
+\item{na}{The string to use for \code{NA} in the data.}
 
 \item{...}{Passed on to write.table.}
 }
