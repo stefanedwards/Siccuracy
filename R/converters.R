@@ -385,12 +385,12 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
       } else if (n == 1) {
         tmpfiles <- sapply(1:max(fragments), fragmentfns)
       } else {
-        .outfn <- sapply( 1:max(fragments), fragmentfns, max(fragments))
+        tmpfiles <- sapply( 1:max(fragments), fragmentfns, max(fragments))
       }
     } else {
       tmpfiles <- as.character(fragmentfns)
-      tmpfiles <- c(tmpfiles, as.character(replicate(2*max(fragments)-length(tmpfiles), tempfile())))
     }
+    tmpfiles <- c(tmpfiles, as.character(replicate(2*max(fragments)-length(tmpfiles), tempfile())))
     
   }  
   
@@ -402,7 +402,7 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
                     status=as.integer(0))
   } else if (use.method == 2) {
     # The not-so-simple complex way to do stuff. Boy, do we get to have fun now!
-    tmpfile <- tempfile()
+    tmpfile <- 'here.txt' #tempfile()
     writeLines(tmpfiles, tmpfile)
     
     #subroutine convertplinkrwrapper(listfn, n, remerge, fragments, &
@@ -420,7 +420,7 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
     res <- list(bed=as.character(bed), fnout=as.character(outfn), 
                 ncol=as.integer(ncol), nlines=as.integer(nlines), na=as.integer(na), newID=as.integer(newID$newID), minor=as.integer(countminor), 
                 maf=as.numeric(maf), extract=as.integer(.extract), keep=as.integer(.keep),
-                fragments=as.integer(fragments), fragmentfns=as.character(fragmentfns))
+                fragments=as.integer(fragments), fragmentfns=as.character(tmpfiles))
   } 
   res$newID=newID
   res

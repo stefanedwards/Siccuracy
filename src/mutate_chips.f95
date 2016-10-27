@@ -16,7 +16,7 @@ subroutine cbindsnpsrwrapper(files, fnin, fnout, nlines, ncols, skiplines, idlen
 
   open(64, file=fnin, status='OLD')
   do i=1,files
-    read(64, *, iostat=stat) fns(i)
+    read(64, '(A255)', iostat=stat) fns(i)
   end do
   close(64)
 

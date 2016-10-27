@@ -136,11 +136,13 @@ subroutine convertplinkrwrapper(listfn, n, remerge, fragments, &
   double precision, intent(in) :: maf
   
   ! Local variables
-  character(255), dimension(n) :: filelist
+  character(1000), dimension(n) :: filelist
   integer :: i
   
   open(77, file=listfn)
-  read(77, *) (filelist(i), i=1, n)
+  do i=1,n
+    read(77, '(A1000)') filelist(i)
+  enddo
   close(77)
   
   call convertplinkfragment(filelist((n/2+1):n), filelist(1:(n/2)), n/2, remerge==1, fragments,   &
@@ -155,7 +157,7 @@ subroutine convertplinkfragment(bedfilenames, flatfilenames, n, remerge, fragmen
   ! Arguments
   logical, intent(in) :: remerge
   character(255), intent(in) :: bed, fnout
-  character(255), dimension(n), intent(in) :: bedfilenames, flatfilenames
+  character(1000), dimension(n), intent(in) :: bedfilenames, flatfilenames
   integer, intent(in) :: ncol, nlines, na, minor, n
   integer, dimension(nlines), intent(in) :: newID, keep
   integer, dimension(ncol), intent(in) :: extract, fragments
