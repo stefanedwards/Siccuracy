@@ -40,4 +40,7 @@ If data.frame with columns \code{famID}, \code{sampID}, and \code{newID}, they w
  \item \href{http://www.gigasciencejournal.com/content/4/1/7}{Chang CC, Chow CC, Tellier LCAM, Vattikuti S, Purcell SM, Lee JJ (2015) Second-generation PLINK: rising to the challenge of larger and richer datasets. GigaScience, 4.}
 }
 }
+\seealso{
+\code{\link{convert_plink}} is a direct conversion that does not rely on PLINK.
+}
 

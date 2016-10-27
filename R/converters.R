@@ -103,6 +103,8 @@ phasotogeno_int <- function(phasefn, genofn, ncol=NULL, nrow=NULL) {
 #'  \item \href{http://www.gigasciencejournal.com/content/4/1/7}{Chang CC, Chow CC, Tellier LCAM, Vattikuti S, Purcell SM, Lee JJ (2015) Second-generation PLINK: rising to the challenge of larger and richer datasets. GigaScience, 4.}
 #' }
 #' @export
+#' @seealso 
+#' \code{\link{convert_plink}} is a direct conversion that does not rely on PLINK.
 convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) {
   stopifnot(file.exists(rawfn))
   
@@ -172,7 +174,6 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #' If \code{fragment} is a scalar integer, loci are split into this number of blocks.
 #' If an integer vector of same length as \code{ncol}, it directly specifies which block a locus is sent to. \code{max(fragment)} specifies the number of blocks.
 #' 
-#' If \code{remerge=FALSE}, \code{outfn} should be a vector of same length as number of blocks, and will be filenames of the formatted blocks.
 #'   
 #' @section Filtering loci or samples:
 #' Filters on loci or samples can be employed in a number of ways; filtering on loci and samples are handled independently.
@@ -218,7 +219,9 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #'  \item Shaun Purvell and Christopher Chang. \emph{PLINK v. 1.90} \url{https://www.cog-genomics.org/plink2}
 #'  \item Chang CC, Chow CC, Tellier LCAM, Vattikuti S, Purcell SM, Lee JJ (2015) \href{http://www.gigasciencejournal.com/content/4/1/7}{Second-generation PLINK: rising to the challenge of larger and richer datasets.} \emph{GigaScience}, 4.
 #' }
-#
+#' @seealso 
+#' \code{convert_plink} is a direct conversion that does not rely on PLINK.
+#' See the alternate \code{\link{convert_plinkA}} which re-formats the output from \code{plink --recode A}.
 convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bim=NULL, bed=NULL, countminor=TRUE, maf=0.0, extract=NULL, exclude=NULL, keep=NULL, remove=NULL, method='simple', fragments="chr", remerge=TRUE, fragmentfns=NULL) {
   
   # Get filenames

@@ -21,7 +21,7 @@
 #' @section Overview:
 #' 
 #' \itemize{
-#'   \item \strong{Converters} \code{\link{convert_phases}}, \code{\link{convert_plinkA}}
+#'   \item \strong{Converters} \code{\link{convert_phases}}, \code{\link{convert_plink}}, \code{\link{convert_plinkA}}
 #'   \item \strong{File info} \code{\link{get_nlines}}, \code{\link{get_firstcolumn}}, \code{\link{get_ncols}}
 #'   \item \strong{Imputation accuracies} \code{\link{imputation_accuracy}} correlations between matrices
 #'   \item \strong{Heterozygosity} \code{\link{heterozygosity}} counting alleles

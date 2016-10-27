@@ -65,8 +65,6 @@ For \code{method='lowmem'} use argument \code{fragment} to indicate how the loci
 When \code{fragment='chr'} (case unsensitive), loci are split according to 1st column of .bim file.
 If \code{fragment} is a scalar integer, loci are split into this number of blocks.
 If an integer vector of same length as \code{ncol}, it directly specifies which block a locus is sent to. \code{max(fragment)} specifies the number of blocks.
-
-If \code{remerge=FALSE}, \code{outfn} should be a vector of same length as number of blocks, and will be filenames of the formatted blocks.
 }
 \section{Filtering loci or samples}{
 
@@ -93,5 +91,9 @@ Exclusion criteria (\code{exclude} and \code{remove}) are applied \emph{after} i
  \item Shaun Purvell and Christopher Chang. \emph{PLINK v. 1.90} \url{https://www.cog-genomics.org/plink2}
  \item Chang CC, Chow CC, Tellier LCAM, Vattikuti S, Purcell SM, Lee JJ (2015) \href{http://www.gigasciencejournal.com/content/4/1/7}{Second-generation PLINK: rising to the challenge of larger and richer datasets.} \emph{GigaScience}, 4.
 }
+}
+\seealso{
+\code{convert_plink} is a direct conversion that does not rely on PLINK.
+See the alternate \code{\link{convert_plinkA}} which re-formats the output from \code{plink --recode A}.
 }
 
