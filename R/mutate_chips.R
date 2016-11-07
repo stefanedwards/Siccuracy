@@ -61,28 +61,36 @@ rowconcatenate <- function(fns, fnout, nlines=NULL, ncols=NULL, skiplines=0, exc
 
 # Combine chips ####
 
-#' Combines two SNP chip files
+#' Combines two SNP chip files and provides masking.
 #'
-#' Combines two SNP chip files into one. The two files may be the same, and 
-#' the result will be 
 #'
 #' We distinguish between \code{HD} and \code{LD} (high and low density) SNP chips,
 #' were HD chips have priority over LD.
+#' 
+#' \strong{\code{hdpos} and \code{ldpos}:}
+#' The output file is created with \code{outcol} columns. 
+#' First, rows from \code{hdfn} are added to the file with positions described in \code{hdpos}. The first column is ignored as this is the ID column.
+#' If \code{hdpos=c(2,3,NA,NA,4)}, the first two columns of \code{hdfn} are used for column 2 and 3 in the output, and the last column of \code{hdfn} is used as the 4th.
+#' The 3rd and 4th column in \code{hdfn} are ignored. This allows masking of genotypes.
+#' After \code{hdfn} is processed for rows in \code{hdid}, the same is repeated for \code{ldfn}. There is no restriction for \code{hdfn=ldfn}.
+#' The columns of the output file is prepopulated with \code{na}.
+#' 
 #'
 #' @param hdid IDs of HD genotyped individuals. Corresponds to (subset of) first column of \code{hdfn}.
 #' @param ldid IDs of LD genotyped individuals. Corresponds to (subset of) first column of \code{ldfn}.
-#' @param hdpos Integer positions of HD genotyped SNPs. Length must correspond to number of columns in \code{hdfn}, excluding ID column (first column).
-#' @param ldpos Integer positions of LD genotyped SNPs. Length must correspond to number of columns in \code{hdfn}, excluding ID column (first column).
+#' @param hdpos Integer vector of where columns in \code{hdfn} are positioned in output file. Coerced to same length as columns in \code{hdfn}.
+#' @param ldpos Integer vector of where columns in \code{ldfn} are positioned in output file. Coerced to same length as columns in \code{ldfn}.
 #' @param hdfn Filename of HD genotypes.
 #' @param ldfn Filename of LD genotypes.
 #' @param fnout Filename to write merged genotypes to.
-#' @param outpos Integer vector of collective SNP positions. Default to sorted, union of \code{hdpos} and \code{ldpos}. Make it anything else and you get?
+#' @param outcol Integer, number of columns in output file. When \code{NULL} (default), uses max value of \code{hdpos} and \code{ldpos}.
 #' @param na Missing values.
 #' @param int Logical (default \code{TRUE}), read and write integers.
 #' @param format Character, Fortran edit descriptors for output. See \link{parseformat}.
 #' @seealso \code{\link{get_ncols}}
+#' @return Number of lines written, with attribute 'stat' specifying last IO status.
 #' @export
-rbind_SNPs <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outpos=NULL, na=9, format=NULL, int=TRUE) {
+rbind_SNPs <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outcol=NULL, na=9, format=NULL, int=TRUE) {
   
   if (!file.exists(hdfn)) stop('`hdid` file was not found.')
   if (!file.exists(ldfn)) stop('`ldid` file was not found.')
@@ -91,35 +99,36 @@ rbind_SNPs <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outpos=NULL, 
   
   hdid <- as.integer(hdid)
   ldid <- as.integer(ldid)
+
+  hdcols <- get_ncols(hdfn)-1
+  ldcols <- get_ncols(ldfn)-1
   
-  ldid <- setdiff(ldid, hdid)
+  hdpos <- as.integer(hdpos[1:hdcols])
+  ldpos <- as.integer(ldpos[1:ldcols])
+
+  if (is.null(outcol)) outcol <- max(hdpos, ldpos, na.rm=TRUE)
   
-  if (is.null(outpos)) outpos <- sort(unique(c(as.integer(hdpos),as.integer(ldpos))))
-  hdpos <- match(hdpos, outpos)
-  ldpos <- match(ldpos, outpos)
+  hdpos[hdpos > outcol] <- 0
+  ldpos[ldpos > outcol] <- 0
   
+  hdpos[is.na(hdpos)] <- 0
+  ldpos[is.na(ldpos)] <- 0
   
-  #subroutine rbind_SNPs(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
-  #                          nhd, hdid, nld, ldid, hdpos, ldpos,  missing, lenfmt, userfmt, status, asint
+  format <- parse.format(format, int)
+  
+  #subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
+  #                       nhd, hdid, nld, ldid, hdpos, ldpos,  missing, lenfmt, userfmt, asint, stat)
   res <- .Fortran('rbindsnps', 
-                  fnhd=as.character(hdfn), 
-                  fnld=as.character(ldfn), 
-                  fnout=as.character(fnout),
-                  hdcols=as.integer(length(hdpos)),
-                  ldcols=as.integer(length(ldpos)), 
-                  outcols=as.integer(length(outpos)),
-                  nhd=as.integer(length(hdid)), 
-                  hdid=as.integer(hdid),
-                  nld=as.integer(length(ldid)), 
-                  ldid=as.integer(ldid),
-                  hdpos=as.integer(hdpos), 
-                  ldpos=as.integer(ldpos),
-                  missing=as.integer(na), 
-                  lenfmt=nchar(format), 
-                  userfmt=as.character(format),
-                  status=integer(1),
-                  int=as.integer(int))
-  res
+                  fnhd=as.character(hdfn), fnld=as.character(ldfn), fnout=as.character(fnout),
+                  hdcols=as.integer(hdcols), ldcols=as.integer(ldcols),
+                  outcols=as.integer(outcol), 
+                  nhd=as.integer(length(hdid)), hdid=as.integer(hdid),
+                  nld=as.integer(length(ldid)), ldid=as.integer(ldid),
+                  hdpos=as.integer(hdpos), ldpos=as.integer(ldpos),
+                  missing=as.integer(na),
+                  lenfmt=as.integer(nchar(format)), userfmt=as.character(format), asint=as.integer(int),
+                  stat=integer(1), n=integer(1))
+  structure(res$n, stat=res$stat)
 }
 
 # #' @export

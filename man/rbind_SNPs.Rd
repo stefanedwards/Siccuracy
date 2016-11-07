@@ -2,9 +2,9 @@
 % Please edit documentation in R/mutate_chips.R
 \name{rbind_SNPs}
 \alias{rbind_SNPs}
-\title{Combines two SNP chip files}
+\title{Combines two SNP chip files and provides masking.}
 \usage{
-rbind_SNPs(hdid, ldid, hdpos, ldpos, hdfn, ldfn, fnout, outpos = NULL,
+rbind_SNPs(hdid, ldid, hdpos, ldpos, hdfn, ldfn, fnout, outcol = NULL,
   na = 9, format = NULL, int = TRUE)
 }
 \arguments{
@@ -12,9 +12,9 @@ rbind_SNPs(hdid, ldid, hdpos, ldpos, hdfn, ldfn, fnout, outpos = NULL,
 
 \item{ldid}{IDs of LD genotyped individuals. Corresponds to (subset of) first column of \code{ldfn}.}
 
-\item{hdpos}{Integer positions of HD genotyped SNPs. Length must correspond to number of columns in \code{hdfn}, excluding ID column (first column).}
+\item{hdpos}{Integer vector of where columns in \code{hdfn} are positioned in output file. Coerced to same length as columns in \code{hdfn}.}
 
-\item{ldpos}{Integer positions of LD genotyped SNPs. Length must correspond to number of columns in \code{hdfn}, excluding ID column (first column).}
+\item{ldpos}{Integer vector of where columns in \code{ldfn} are positioned in output file. Coerced to same length as columns in \code{ldfn}.}
 
 \item{hdfn}{Filename of HD genotypes.}
 
@@ -22,7 +22,7 @@ rbind_SNPs(hdid, ldid, hdpos, ldpos, hdfn, ldfn, fnout, outpos = NULL,
 
 \item{fnout}{Filename to write merged genotypes to.}
 
-\item{outpos}{Integer vector of collective SNP positions. Default to sorted, union of \code{hdpos} and \code{ldpos}. Make it anything else and you get?}
+\item{outcol}{Integer, number of columns in output file. When \code{NULL} (default), uses max value of \code{hdpos} and \code{ldpos}.}
 
 \item{na}{Missing values.}
 
@@ -30,13 +30,21 @@ rbind_SNPs(hdid, ldid, hdpos, ldpos, hdfn, ldfn, fnout, outpos = NULL,
 
 \item{int}{Logical (default \code{TRUE}), read and write integers.}
 }
-\description{
-Combines two SNP chip files into one. The two files may be the same, and 
-the result will be
+\value{
+Number of lines written, with attribute 'stat' specifying last IO status.
 }
-\details{
+\description{
 We distinguish between \code{HD} and \code{LD} (high and low density) SNP chips,
 were HD chips have priority over LD.
+}
+\details{
+\strong{\code{hdpos} and \code{ldpos}:}
+The output file is created with \code{outcol} columns. 
+First, rows from \code{hdfn} are added to the file with positions described in \code{hdpos}. The first column is ignored as this is the ID column.
+If \code{hdpos=c(2,3,NA,NA,4)}, the first two columns of \code{hdfn} are used for column 2 and 3 in the output, and the last column of \code{hdfn} is used as the 4th.
+The 3rd and 4th column in \code{hdfn} are ignored. This allows masking of genotypes.
+After \code{hdfn} is processed for rows in \code{hdid}, the same is repeated for \code{ldfn}. There is no restriction for \code{hdfn=ldfn}.
+The columns of the output file is prepopulated with \code{na}.
 }
 \seealso{
 \code{\link{get_ncols}}

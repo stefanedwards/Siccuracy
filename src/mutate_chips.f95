@@ -105,7 +105,7 @@ end subroutine cbindsnps
 !! Merges two SNP chips
 
 subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
-  nhd, hdid, nld, ldid, hdpos, ldpos,  missing, lenfmt, userfmt, stat, asint)
+  nhd, hdid, nld, ldid, hdpos, ldpos,  missing, lenfmt, userfmt, asint, stat, totallines)
 
   integer, intent(in) :: hdcols, ldcols, outcols, nhd, nld, missing, lenfmt, asint
   character(lenfmt), intent(in) :: userfmt
@@ -114,7 +114,7 @@ subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
   integer, intent(in), dimension(nld) :: ldid
   integer, intent(in), dimension(hdcols) :: hdpos
   integer, intent(in), dimension(ldcols) :: ldpos
-  integer, intent(out) :: stat
+  integer, intent(out) :: stat, totallines
 
   logical :: foundID, isint
   integer :: i, oldi, animalID
@@ -122,10 +122,11 @@ subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
   character(50)  :: fmt
   integer, allocatable :: intoutput(:)
   real, allocatable :: line(:), realoutput(:)
+  logical, dimension(:), allocatable :: mask
   
   isint = asint == 1
   
-  write(fmt, '(i5)') outcols
+  write(fmt, '(i20)') outcols
   fmt='(i20,'//trim(adjustl(fmt))//userfmt//')'
   
   if (isint .eqv. .true.) then
@@ -136,14 +137,17 @@ subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
     realoutput(:) = missing
   end if
 
-
   ! Open output file.
   open(71, file=fnout, status='UNKNOWN', iostat=stat)
   
   ! Read through HD file.
   allocate(line(hdcols))
+  allocate(mask(hdcols))
+  mask(:) = hdpos(:) /= 0
+  
   i = 0
   oldi = 0
+  totallines=0
   open(72, file=fnhd, status='OLD')
   do while (.TRUE.)
     read(72, *, iostat=stat) animalID, line
@@ -166,20 +170,25 @@ subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
     oldi = i
     if (foundID) then
       if (isint .eqv. .true.) then
-        intoutput(hdpos) = NINT(line(1:hdcols))
+        intoutput(hdpos) = NINT(PACK(line, mask))
         write(71, fmt) animalID, intoutput
       else
-        realoutput(hdpos) = line(1:hdcols)
+        realoutput(hdpos) = PACK(line, mask)
         write(71, fmt) animalID, realoutput
       end if
+      totallines = totallines+1
     end if
 
   end do
   close(72)
   deallocate(line)
+  deallocate(mask)
 
   ! Read through LD file.
   allocate(line(ldcols))
+  allocate(mask(ldcols))
+  mask(:) = ldpos(:) /= 0
+  
   if (isint .eqv. .true.) then
     intoutput(:) = missing
   else
@@ -211,12 +220,13 @@ subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
     oldi = i
     if (foundID) then
       if (isint .eqv. .true.) then
-        intoutput(ldpos) = NINT(line(1:ldcols))
+        intoutput(ldpos) = NINT(PACK(line, mask))
         write(71, fmt) animalID, intoutput
       else
-        realoutput(ldpos) = line(1:ldcols)
+        realoutput(ldpos) = PACK(line, mask)
         write(71, fmt) animalID, realoutput
       end if
+      totallines = totallines+1
     end if
 
   end do
@@ -224,6 +234,7 @@ subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
   close(71)
   
   deallocate(line)
+  deallocate(mask)
 
   if (isint .eqv. .true.) then
     deallocate(intoutput)
@@ -231,5 +242,6 @@ subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
     deallocate(realoutput)
   endif
 
+  if (stat == -1) stat = 0
 
 end subroutine rbindsnps
