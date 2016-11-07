@@ -6,8 +6,8 @@
 \usage{
 convert_plink(bfile, outfn, na = 9, newID = 0, nlines = NULL,
   fam = NULL, bim = NULL, bed = NULL, countminor = TRUE, maf = 0,
-  extract = NULL, exclude = NULL, keep = NULL, remove = NULL,
-  method = "simple", fragments = "chr", remerge = TRUE,
+  chr = NULL, extract = NULL, exclude = NULL, keep = NULL,
+  remove = NULL, method = "simple", fragments = "chr", remerge = TRUE,
   fragmentfns = NULL)
 }
 \arguments{
@@ -30,6 +30,8 @@ convert_plink(bfile, outfn, na = 9, newID = 0, nlines = NULL,
 \item{countminor}{Logical: Should the output count minor allele (default), or major allele as \code{plink --recode A}.}
 
 \item{maf}{Numeric, restrict SNPs to SNPs with this frequency.}
+
+\item{chr}{Vector of chromosomes to limit output to.}
 
 \item{extract}{Extract only these SNPs, see Details.}
 

@@ -1,3 +1,5 @@
+# Combine chromosome files #####
+
 #' Column bind files with genotype matrices
 #'
 #' Does row-wise concatenation of multiple genotype files, ignoring the first column.

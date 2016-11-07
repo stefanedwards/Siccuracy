@@ -63,15 +63,13 @@ Currently by subtracting column mean and dividing by column standard deviation.}
 
 \item{ldid}{IDs of LD genotyped individuals. Corresponds to (subset of) first column of \code{ldfn}.}
 
-\item{hdpos}{Integer positions of HD genotyped SNPs. Length must correspond to number of columns in \code{hdfn}, excluding ID column (first column).}
+\item{hdpos}{Integer vector of where columns in \code{hdfn} are positioned in output file. Coerced to same length as columns in \code{hdfn}.}
 
-\item{ldpos}{Integer positions of LD genotyped SNPs. Length must correspond to number of columns in \code{hdfn}, excluding ID column (first column).}
+\item{ldpos}{Integer vector of where columns in \code{ldfn} are positioned in output file. Coerced to same length as columns in \code{ldfn}.}
 
 \item{hdfn}{Filename of HD genotypes.}
 
 \item{ldfn}{Filename of LD genotypes.}
-
-\item{outpos}{Integer vector of collective SNP positions. Default to sorted, union of \code{hdpos} and \code{ldpos}. Make it anything else and you get?}
 
 \item{missing}{Missing value.}
 }

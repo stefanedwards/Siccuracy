@@ -204,6 +204,7 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #' @param bed See \code{fam}.
 #' @param countminor Logical: Should the output count minor allele (default), or major allele as \code{plink --recode A}.
 #' @param maf Numeric, restrict SNPs to SNPs with this frequency. 
+#' @param chr Vector of chromosomes to limit output to.
 #' @param extract Extract only these SNPs, see Details.
 #' @param exclude Do not extract these SNPs, see Details.
 #' @param keep Keep only these samples, see Details.
@@ -222,7 +223,7 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #' @seealso 
 #' \code{convert_plink} is a direct conversion that does not rely on PLINK.
 #' See the alternate \code{\link{convert_plinkA}} which re-formats the output from \code{plink --recode A}.
-convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bim=NULL, bed=NULL, countminor=TRUE, maf=0.0, extract=NULL, exclude=NULL, keep=NULL, remove=NULL, method='simple', fragments="chr", remerge=TRUE, fragmentfns=NULL) {
+convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bim=NULL, bed=NULL, countminor=TRUE, maf=0.0, chr=NULL, extract=NULL, exclude=NULL, keep=NULL, remove=NULL, method='simple', fragments="chr", remerge=TRUE, fragmentfns=NULL) {
   
   # Get filenames
   if (!(is.null(bfile) | is.na(bfile))) {
@@ -326,6 +327,11 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
   .extract <- rep(TRUE, ncol)
   snps <- NULL
   
+  if (!is.null(chr)) {
+    snps <- get_firstcolumn(bim, class=c('character','character'), col.names=c('chr','rs'), stringsAsFactors=FALSE)
+    .extract <- snps$chr %in% as.character(chr)
+  }
+  
   # Decide upon exclude/include
   if (!is.null(extract) | !is.null(exclude)) {
     .is.na <- function(x) {if (is.null(x)) return(logical(0)); is.na(x)}
@@ -338,7 +344,7 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
     if (!is.logical(extract) & !is.integer(extract)) extract <- as.character(extract)
     if (!is.logical(exclude) & !is.integer(exclude)) exclude <- as.character(exclude)
 
-    if (is.character(extract) | is.character(exclude)) {
+    if ((is.character(extract) | is.character(exclude)) & is.null(snps)) {
       snps <- get_firstcolumn(bim, class=c('character','character'), col.names=c('chr','rs'), stringsAsFactors=FALSE)
     }    
   
