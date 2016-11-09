@@ -25,7 +25,7 @@ cbind_SNPs <- function(fns, fnout, ncols=NULL, nlines=NULL, skiplines=0, exclude
   format <- parse.format(format, int)
   
   ftemp <- tempfile()
-  write.table(fns, file = ftemp, row.names = FALSE, col.names=FALSE)
+  write.table(fns, file = ftemp, row.names = FALSE, col.names=FALSE, quote=FALSE)
   
   res <- .Fortran('cbindsnpsrwrapper',
                   files=length(fns),
@@ -144,6 +144,7 @@ rbind_SNPs <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outcol=NULL, 
 #' Use \code{\link{rbind_SNPs}} instead.
 #' 
 #' @export
+#' @param outpos Integer vector of collective SNP positions. Default to sorted, union of \code{hdpos} and \code{ldpos}. Make it anything else and you get?
 #' @rdname deprecated
 #' @inheritParams rbind_SNPs
 #' @param missing Missing value.

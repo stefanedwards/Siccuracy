@@ -71,6 +71,8 @@ Currently by subtracting column mean and dividing by column standard deviation.}
 
 \item{ldfn}{Filename of LD genotypes.}
 
+\item{outpos}{Integer vector of collective SNP positions. Default to sorted, union of \code{hdpos} and \code{ldpos}. Make it anything else and you get?}
+
 \item{missing}{Missing value.}
 }
 \value{
