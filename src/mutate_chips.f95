@@ -245,3 +245,102 @@ subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
   if (stat == -1) stat = 0
 
 end subroutine rbindsnps
+
+
+!! Mask SNPs
+
+subroutine masksnps(fn, outfn, ncols, nlines, &
+    imaskIDs, imaskSNPs, idropIDs, idropSNPs,  &
+    na, userfmt, lenuserfmt, asint, &
+    stat)
+    
+    implicit none
+    
+    ! Arguments
+    character(255), intent(in) :: fn, outfn
+    character(lenuserfmt), intent(in) :: userfmt
+    integer, intent(in) :: ncols, nlines, lenuserfmt, asint
+    integer, dimension(ncols) :: imaskSNPs, idropSNPs
+    integer, dimension(nlines) :: imaskIDs, idropIDs
+    double precision, intent(in) :: na
+    integer, intent(out) :: stat
+    
+    ! Local variables
+    logical :: isint
+    integer :: i, animalID, ndropSNPs
+    character(50) :: fmt
+    logical, dimension(:), allocatable :: lmaskIDs, lmaskSNPs, ldropIDs, lkeepSNPs
+    integer, dimension(:), allocatable :: intoutput
+    real, dimension(:), allocatable :: realoutput, inputline
+    
+    allocate(inputline(ncols))
+    
+    !allocate(lmaskIDs(nlines))
+    !lmaskIDs(:) = imaskIDs(:) == 1
+    allocate(lmaskSNPs(ncols))
+    lmaskSNPs(:) = imaskSNPs(:) == 1
+    !allocate(ldropIDs(nlines))
+    !ldropIDs(:) = idropIDs(:) == 1
+    allocate(lkeepSNPs(ncols))
+    lkeepSNPs(:) = idropSNPs(:) == 0
+    
+    ndropSNPs = count(idropSNPs == 1)
+   
+    ! Construct output holders
+    isint = asint == 1
+    if (isint) then
+      allocate(intoutput(ncols-ndropSNPs))  
+    else
+      allocate(realoutput(ncols-ndropSNPs))
+    endif
+    
+    !print *, 'ncols:', ncols
+    !print *, 'ndropSNPs:', ndropSNPs
+    !print *, 'keepSNPs:', count(lkeepSNPs), lkeepSNPs
+    write(fmt, '(i10)') count(lkeepSNPs)
+    fmt='(i20,'//trim(adjustl(fmt))//userfmt//')'
+    
+    ! Loop: read, write, loop.
+    open(119, file=fn, status='OLD')
+    open(120, file=outfn, status='UNKNOWN')
+    do i=1,nlines
+      if (idropIDs(i) == 1) then
+        read(119, *, iostat=stat) animalID
+        cycle
+      endif
+      
+      read(119, *, iostat=stat) animalID, inputline
+      if (stat /= 0) exit
+      
+      if (imaskIDs(i) == 1) where (lmaskSNPs) inputline = na
+      
+      if (isint) then
+        intoutput = NINT(PACK(inputline, lkeepSNPs))
+        write(120, fmt) animalID, intoutput
+      else
+        realoutput = PACK(inputline, lkeepSNPs)
+        write(120, fmt) animalID, realoutput
+      endif
+      
+      
+    enddo
+    close(119)
+    close(120)
+    
+    
+    deallocate(inputline)
+    !deallocate(lmaskIDs)
+    deallocate(lmaskSNPs)
+    !deallocate(ldropIDs)
+    deallocate(lkeepSNPs)
+    if (isint) then
+      deallocate(intoutput)
+    else
+      deallocate(realoutput)
+    endif
+    
+    
+    if (stat == -1) stat=0
+end subroutine    
+    
+    

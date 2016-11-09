@@ -150,3 +150,56 @@ rbind_SNPs <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outcol=NULL, 
 mergeChips <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outpos=NULL, missing=9) {
   .Deprecated('rbind_SNPs', package='Siccuracy')
 }
+
+
+# Mask a single SNP chip ####
+
+#' Masks entries of a single SNP chip file.
+#' 
+#' This function runs through a single file and masks specified columns of specified rows.
+#' It is a simplified version of \code{\link{rbind_SNPs}}.
+#' 
+#' If \code{maskIDs} or \code{maskSNPs} are zero-length vectors, \code{dropIDs} and \code{dropSNPs} is still performed.
+#' 
+#' @param fn Input filename.
+#' @param outfn Output filename.
+#' @param maskIDs IDs of rows to mask.
+#' @param maskSNPs Integer indices of columns in \code{fn} to mask, i.e. before considering \code{dropSNPs}.
+#' @param dropIDs IDs to exclude from output.
+#' @param dropSNPs Integer indices of columns in \code{fn} to exclude from output.
+#' @param na Value to use for masking.
+#' @param ncol Integer, number of SNP columns in \code{fn}. When \code{NULL} (default), automagically detected with \code{get_ncols(fn)-1}.
+#' @param nlines Integer, number of lines to process.
+#' @param int Logical (default \code{TRUE}), read and write integers.
+#' @param format Character, Fortran edit descriptors for output. See \link{parseformat}.
+#' @export
+mask_SNPs <- function(fn, outfn, maskIDs, maskSNPs, dropIDs=NULL, dropSNPs=NULL, na=9, ncol=NULL, nlines=NULL, int=TRUE, format=NULL) {
+  if (!file.exists(fn)) stop('Input file was not found.')
+  
+  format <- parse.format(format, int)
+  
+  maskIDs <- as.integer(maskIDs)
+  maskSNPs <- as.integer(maskSNPs)
+  dropIDs <- as.integer(dropIDs)
+  dropSNPs <- as.integer(dropSNPs)
+  
+  IDs <- get_firstcolumn(fn)
+  if (!is.null(nlines)) IDs <- IDs[1:nlines]
+  maskIDs <- IDs %in% maskIDs
+  dropIDs <- IDs %in% dropIDs
+  
+  if (is.null(nlines)) nlines <- get_nlines(fn)
+  if (is.null(ncol)) ncol <- get_ncols(fn)-1
+  
+  maskSNPs <- c(1:ncol) %in% maskSNPs
+  dropSNPs <- c(1:ncol) %in% dropSNPs
+  
+  stopifnot(sum(dropSNPs) < ncol)
+  
+  res <- .Fortran('masksnps', fn=as.character(fn), outfn=as.character(outfn), ncol=as.integer(ncol), nlines=as.integer(nlines),
+                  imaskIDs=as.integer(maskIDs), imaskSNPs=as.integer(maskSNPs), 
+                  idropIDs=as.integer(dropIDs), idropSNPs=as.integer(dropSNPs),
+                  na=as.numeric(na), userfmt=as.character(format), lenuserfmt=nchar(format), asint=as.integer(int),
+                  stat=integer(1))
+  res
+}
