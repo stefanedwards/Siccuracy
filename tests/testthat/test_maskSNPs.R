@@ -51,6 +51,5 @@ test_that('Dropping SNPs works', {
   SNPs[maskIDs,maskSNPs] <- 9
   SNPs <- SNPs[,-dropSNPs]
   
-  expect_equal(ncol(m), ncol(SNPs) - length(dropSNPs))
   expect_equal(SNPs, m)
 })

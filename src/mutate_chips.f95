@@ -1,6 +1,7 @@
 
 ! Cannot pass character vector from R, so we use this wrapper.
-subroutine cbindsnpsrwrapper(files, fnin, fnout, nlines, ncols, skiplines, idlength, excludeids, result, lenfmt, userfmt, asint)
+subroutine cbindsnpsrwrapper(files, fnin, fnout, nlines, ncols, skiplines, & 
+    idlength, excludeids, result, lenfmt, userfmt, asint)
   implicit none
 
   integer, intent(in) :: files, nlines, skiplines, idlength, lenfmt, asint
@@ -12,31 +13,49 @@ subroutine cbindsnpsrwrapper(files, fnin, fnout, nlines, ncols, skiplines, idlen
 
   logical :: alsoasint
   integer :: i, stat
-  character(255), dimension(files) :: fns
-
+  character(1000) :: ctag
+  character(1000), dimension(files) :: fns
+  
   open(64, file=fnin, status='OLD')
   do i=1,files
     read(64, '(A255)', iostat=stat) fns(i)
   end do
   close(64)
 
+
+  !open(27, file='C:\Users\shojedw\Documents\Projects\test1.txt')
+  !write(27, *) 'tag:', ctag
+  !write(27, '(A7,A255)') 'input:', trim(adjustl(fnin))
+  !write(27, *) 'files:', files
+  !do i=1,files
+  !  write(27, *) 'file:', i, '>>'//trim(adjustl(fns(i)))//'<<'
+  !enddo
+  !close(27)
+  
   alsoasint = asint==1
   
-  call cbindsnps(files, fns, fnout, nlines, ncols, skiplines, idlength, excludeids, result, lenfmt, userfmt, alsoasint)
-
+  ctag="Hello, is it me you're looking for?"
+  call cbindsnpscore(files, fns, fnout, nlines, ncols, skiplines, &
+      idlength, excludeids, result, lenfmt, userfmt, alsoasint, ctag)
+  
+  
 end subroutine cbindsnpsrwrapper
 
 
 ! Concatenates genotype matrices (from e.g. multiple chromosomes) into one.
 ! No row ID checking.
-subroutine cbindsnps(files, fns, fnout, nlines, ncols, skiplines, idlength, excludeids, result, lenfmt, userfmt, asint)
+! The argument ctag isn't really used for anything. It just somehow
+! fixes a bug where fns is not populated.
+subroutine cbindsnpscore(files, fns, fnout, nlines, ncols, skiplines, &
+    idlength, excludeids, result, lenfmt, userfmt, asint, ctag)
   implicit none
 
   logical, intent(in) :: asint
   integer, intent(in) :: files, nlines, skiplines, idlength, lenfmt
   character(lenfmt), intent(in) :: userfmt
+  character(1000), intent(in) :: ctag
   character(255), intent(in) :: fnout
-  character(255), dimension(files), intent(in) :: fns
+  character(1000), dimension(files), intent(in) :: fns
   integer, dimension(files), intent(in) :: ncols
   integer, dimension(idlength), intent(in) :: excludeids
   integer, intent(out) :: result
@@ -48,7 +67,7 @@ subroutine cbindsnps(files, fns, fnout, nlines, ncols, skiplines, idlength, excl
   character(50) :: fmt0
   character(50), dimension(files) :: fmt
   character(4), dimension(files) :: advance, formatprefix
-
+  
   if (asint .eqv. .true.) then
     allocate(rowint(maxval(ncols, 1)))
   end if
@@ -56,10 +75,19 @@ subroutine cbindsnps(files, fns, fnout, nlines, ncols, skiplines, idlength, excl
 
   advance(:) = 'no'
   advance(files) = 'yes'
+
+  !open(27, file='C:\Users\shojedw\Documents\Projects\test2.txt')  
+  !write(27, *) 'tag:', ctag  
+  !write(27, *) 'from cbindsnps:'
+  !write(27, *) 'files:', files
+  !do i=1,files
+  !  write(27, '(A6,I2,A70,A70)') 'file:', i, '>>'//trim(adjustl(fns(i)))//'<< ', fns(i)
+  !enddo
+  !close(27)
   
   do i=1,files
     units(i) = 200 + i
-    open(units(i), file=fns(i), status='OLD')
+    open(units(i), file=fns(i), status='UNKNOWN')
     write(fmt0, '(i5)') ncols(i)
     fmt(i)='('//trim(adjustl(fmt0))//trim(adjustl(userfmt))//')'
   end do
@@ -98,7 +126,7 @@ subroutine cbindsnps(files, fns, fnout, nlines, ncols, skiplines, idlength, excl
 
   result=stat
 
-end subroutine cbindsnps
+end subroutine cbindsnpscore
 
 
 
@@ -258,8 +286,8 @@ subroutine masksnps(fn, outfn, ncols, nlines, &
     
     ! Arguments
     character(255), intent(in) :: fn, outfn
-    character(lenuserfmt), intent(in) :: userfmt
     integer, intent(in) :: ncols, nlines, lenuserfmt, asint
+    character(lenuserfmt), intent(in) :: userfmt
     integer, dimension(ncols) :: imaskSNPs, idropSNPs
     integer, dimension(nlines) :: imaskIDs, idropIDs
     double precision, intent(in) :: na

@@ -408,7 +408,7 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
                     status=as.integer(0))
   } else if (use.method == 2) {
     # The not-so-simple complex way to do stuff. Boy, do we get to have fun now!
-    tmpfile <- 'here.txt' #tempfile()
+    tmpfile <- tempfile()
     writeLines(tmpfiles, tmpfile)
     
     #subroutine convertplinkrwrapper(listfn, n, remerge, fragments, &

@@ -4,6 +4,7 @@ library(testthat)
 context('Testing merging SNP chips.')
 
 test_that('Two, partially overlapping SNP chips can be merged.', {
+  set.seed(118)
   full.snps <- Siccuracy:::make.true(5, 18)
   rownames(full.snps) <- 1:nrow(full.snps)
   hd.snps <- c(1:3,5:9,11:12)
@@ -18,7 +19,8 @@ test_that('Two, partially overlapping SNP chips can be merged.', {
   
   ld <- tempfile()
   full.snps2 <- full.snps
-  full.snps2[5,1] <- 2
+  full.snps2[ld.id[1],setdiff(1:ncol(full.snps), ld.snps)[1]] <- 1.5 # change something that will be marked as missing
+  #full.snps[5,1] <- 2
   write.snps(full.snps2[ld.id, ld.snps, drop=FALSE], ld)
   
   mergedfn <- tempfile()

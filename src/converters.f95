@@ -6,8 +6,8 @@ subroutine convert_phase_num(phasefn, genofn, ncol, nrow, naval, numfmt, lennumf
 
   !! Arguments
   character(255), intent(in) :: phasefn, genofn
-  character(len=lennumfmt) :: numfmt
   integer, intent(in) :: ncol, naval, lennumfmt
+  character(len=lennumfmt) :: numfmt
   integer, intent(inout) :: nrow
 
   !! Local variables
@@ -45,8 +45,8 @@ subroutine convert_phase_int(phasefn, genofn, ncol, nrow, naval, numfmt, lennumf
 
   !! Arguments
   character(255), intent(in) :: phasefn, genofn
-  character(len=lennumfmt) :: numfmt
   integer, intent(in) :: ncol, naval, lennumfmt
+  character(len=lennumfmt) :: numfmt
   integer, intent(inout) :: nrow
 
   !! Local variables
@@ -84,8 +84,8 @@ subroutine convert_phase(phasefn, genofn, ncol, nrow, na, int, lenfmt, userfmt)
   
   !! Arguments
   character(255), intent(in) :: phasefn, genofn
-  character(len=lenfmt) :: userfmt
   integer, intent(in) :: ncol, na, int, lenfmt
+  character(len=lenfmt) :: userfmt
   integer, intent(inout) :: nrow
 
   !! Local variables
