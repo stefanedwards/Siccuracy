@@ -186,11 +186,12 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #'  \item{Integer or numeric}{Indicates positional which loci to include or exclude. Numeric vectors are coerced to integer vectors.}
 #'  \item{Character}{Matched against probe IDs, i.e. 2nd column of .bim file.}
 #' }
+#' For restricting the output to certain chromosomes, use \code{extract_chr}. The output is the intersect of \code{extract} and \code{exctract_chr}.
 #' 
 #' \code{keep} and \code{remove} are as \code{exctract} and \code{exclude} above, can be a combination of, and can additionally be:
 #' \describe{
 #'  \item{Character}{Matched against both famID or sampID, i.e. 1st and 2nd column of .fam file.}
-#'  \item{List with named elements \code{famID} and/or \code{sampID}}{The named elements are matches against, respectively, the 1st and 2nd column of the .fam file.}
+#'  \item{List with named elements \code{famID} and/or \code{sampID}}{The named elements are matched against, respectively, the 1st and 2nd column of the .fam file.}
 #' }
 #' 
 #' 
@@ -207,6 +208,7 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #' @param chr Vector of chromosomes to limit output to.
 #' @param extract Extract only these SNPs, see Details.
 #' @param exclude Do not extract these SNPs, see Details.
+#' @param extract_chr Extract only these chromosomes, see Details.
 #' @param keep Keep only these samples, see Details.
 #' @param remove Removes these samples from output, see Details.
 #' @param fragments \code{"chr"} or integer vector. Only used when \code{method='lowmem'}.
@@ -223,7 +225,7 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #' @seealso 
 #' \code{convert_plink} is a direct conversion that does not rely on PLINK.
 #' See the alternate \code{\link{convert_plinkA}} which re-formats the output from \code{plink --recode A}.
-convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bim=NULL, bed=NULL, countminor=TRUE, maf=0.0, chr=NULL, extract=NULL, exclude=NULL, keep=NULL, remove=NULL, method='simple', fragments="chr", remerge=TRUE, fragmentfns=NULL) {
+convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bim=NULL, bed=NULL, countminor=TRUE, maf=0.0, chr=NULL, extract=NULL, exclude=NULL, extract_chr=NULL, keep=NULL, remove=NULL, method='simple', fragments="chr", remerge=TRUE, fragmentfns=NULL) {
   
   # Get filenames
   if (!(is.null(bfile) | is.na(bfile))) {
@@ -333,7 +335,7 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
   }
   
   # Decide upon exclude/include
-  if (!is.null(extract) | !is.null(exclude)) {
+  if (!is.null(extract) | !is.null(exclude) | !is.null(extract_chr)) {
     .is.na <- function(x) {if (is.null(x)) return(logical(0)); is.na(x)}
     if (is.logical(extract) & sum(!.is.na(extract)) < ncol) stop('`extract` as logical must be same length as SNPs in input file and without NA\'s.')
     if (is.logical(exclude) & sum(!.is.na(exclude)) < ncol) stop('`exclude` as logical must be same length as SNPs in input file and without NA\'s.')
@@ -344,7 +346,7 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
     if (!is.logical(extract) & !is.integer(extract)) extract <- as.character(extract)
     if (!is.logical(exclude) & !is.integer(exclude)) exclude <- as.character(exclude)
 
-    if ((is.character(extract) | is.character(exclude)) & is.null(snps)) {
+    if ((is.character(extract) | is.character(exclude) | !is.null(extract_chr)) & is.null(snps)) {
       snps <- get_firstcolumn(bim, class=c('character','character'), col.names=c('chr','rs'), stringsAsFactors=FALSE)
     }    
   
@@ -357,6 +359,11 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
       } else {
         .extract[snps$rs %in% extract] <- TRUE
       }
+    }
+    
+    if (!is.null(extract_chr)) {
+      extract_chr <- as.character(extract_chr)
+      .extract <- .extract & snps$chr %in% extract_chr
     }
     
     if (is.logical(exclude)) {

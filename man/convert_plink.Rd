@@ -6,9 +6,9 @@
 \usage{
 convert_plink(bfile, outfn, na = 9, newID = 0, nlines = NULL,
   fam = NULL, bim = NULL, bed = NULL, countminor = TRUE, maf = 0,
-  chr = NULL, extract = NULL, exclude = NULL, keep = NULL,
-  remove = NULL, method = "simple", fragments = "chr", remerge = TRUE,
-  fragmentfns = NULL)
+  chr = NULL, extract = NULL, exclude = NULL, extract_chr = NULL,
+  keep = NULL, remove = NULL, method = "simple", fragments = "chr",
+  remerge = TRUE, fragmentfns = NULL)
 }
 \arguments{
 \item{bfile}{Filename of PLINK binary files, i.e. without extension.}
@@ -36,6 +36,8 @@ convert_plink(bfile, outfn, na = 9, newID = 0, nlines = NULL,
 \item{extract}{Extract only these SNPs, see Details.}
 
 \item{exclude}{Do not extract these SNPs, see Details.}
+
+\item{extract_chr}{Extract only these chromosomes, see Details.}
 
 \item{keep}{Keep only these samples, see Details.}
 
@@ -80,11 +82,12 @@ Exclusion criteria (\code{exclude} and \code{remove}) are applied \emph{after} i
  \item{Integer or numeric}{Indicates positional which loci to include or exclude. Numeric vectors are coerced to integer vectors.}
  \item{Character}{Matched against probe IDs, i.e. 2nd column of .bim file.}
 }
+For restricting the output to certain chromosomes, use \code{extract_chr}. The output is the intersect of \code{extract} and \code{exctract_chr}.
 
 \code{keep} and \code{remove} are as \code{exctract} and \code{exclude} above, can be a combination of, and can additionally be:
 \describe{
  \item{Character}{Matched against both famID or sampID, i.e. 1st and 2nd column of .fam file.}
- \item{List with named elements \code{famID} and/or \code{sampID}}{The named elements are matches against, respectively, the 1st and 2nd column of the .fam file.}
+ \item{List with named elements \code{famID} and/or \code{sampID}}{The named elements are matched against, respectively, the 1st and 2nd column of the .fam file.}
 }
 }
 \references{
