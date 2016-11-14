@@ -21,12 +21,12 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
   real(r8_kind), intent(out) :: matcor
 
   !! Private variables
-  integer :: stat, animalID, nLines, i, j, nn
+  integer :: stat, animalID, i, j, nn
   real(r8_kind) :: t, t2, imp, imp2, tim, nan
   real(r8_kind), dimension(nSNPs) :: M, S, Mold, Sold
   real, dimension(nSNPs) :: genoin, true, imputed
   !! For running correlation on columns
-  integer, dimension(nSNPs) :: cNA, nnn
+  integer, dimension(nSNPs) :: cNA, nnn, nLines
   real(r8_kind), dimension(nSNPs) :: cx, cy, cx2, cxy, cy2
   !! For matrix
   real(r8_kind) :: mx, my, mx2, mxy, my2
@@ -42,20 +42,28 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
   !! Read through true genotype file and get column-wise mean and variance
   if (standardized == 1) then
     open(10, file=truefn, status='OLD')
-    read(10, *, iostat=stat) animalID, genoin
-    nLines = 1
-    M(:) = genoin(:)
+    nLines(:) = 0
     S(:) = 0
+    M(:) = -9
+    Mold(:) = 0
+    i = 0
     do
       read(10, *, iostat=stat) animalID, genoin
       if (stat /= 0) exit
- 
-      nLines = nLines + 1
-      Mold(:) = M(:)
-      Sold(:) = S(:)
-      M = M + (genoin - Mold)/nLines
-      S = S + (genoin - Mold) * (genoin - M)
-
+      i = i + 1
+  
+      WHERE (genoin /= NAval)
+        nLines = nLines + 1
+        WHERE (nLines .eq. 1)
+          M = genoin
+        ENDWHERE
+        WHERE (nLines .gt. 1 .and. M .gt. -9)
+          Mold = M
+          Sold = S
+          M = M + (genoin - Mold)/nLines
+          S = S + (genoin - Mold) * (genoin - M)
+        ENDWHERE
+      ENDWHERE
     enddo
     close(10)
     means = M

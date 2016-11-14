@@ -63,6 +63,8 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
   res$colcors[is.nan(res$colcors)] <- NA
   res$rowcors[is.infinite(res$rowcors)] <- NA
   res$rowcors[is.nan(res$rowcors)] <- NA
+  if (standardized) res$means[(res$means- -9) < 1e-8] <- NA
+  res$sds[res$sds == 0.0] <- NA
   
   if (adaptive & any(is.na(res$rowcors))) {
     res$rowcors <- res$rowcors[!is.na(res$rowcors)]
