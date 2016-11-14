@@ -163,6 +163,85 @@ test_that('Non-adaptive handles missing SNPs in true files',{
   
 })
 
+test_that('Adaptive handles missing SNPs in true files (exact match btw. true and genotyped)',{
+  ts <- Siccuracy:::make.test(15, 21)
+  imputed <- ts$imputed
+  
+  true <- ts$imputed
+  true[,3] <- NA 
+  true[1,4] <- NA
+  true[1:2,5] <- NA
+  write.snps(true, ts$truefn)
+  
+  results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized = FALSE, adaptive = TRUE)
+  
+  mat1 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row1 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  
+  expect_equal(results$matcor, mat1, tolerance=1e-9)
+  expect_equal(results$rowcors, row1, tolerance=1e-9)
+  expect_equal(results$colcors, col1, tolerance=1e-9)
+  
+  context('Standardized')
+  results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized = TRUE, adaptive = TRUE)
+  
+  m <- apply(true, 2, mean, na.rm=TRUE)
+  v <- apply(true, 2, sd, na.rm=TRUE)
+  true <- scale(true, m, v)
+  imputed <- scale(imputed, m, v)
+  mat1 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row1 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  
+  expect_equal(results$matcor, mat1, tolerance=1e-9)
+  expect_equal(results$rowcors, row1, tolerance=1e-9)
+  expect_equal(results$colcors, col1, tolerance=1e-9)
+  expect_equal(results$means, m)
+  expect_equal(results$sds, v)
+  
+})
+
+test_that('Adaptive handles missing SNPs in true files',{
+  ts <- Siccuracy:::make.test(15, 21)
+  imputed <- ts$imputed
+  
+  true <- ts$true
+  true[,3] <- NA 
+  true[1,4] <- NA
+  true[1:2,5] <- NA
+  write.snps(true, ts$truefn)
+  
+  results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized = FALSE, adaptive = TRUE)
+  
+  mat1 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row1 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  
+  expect_equal(results$matcor, mat1, tolerance=1e-9)
+  expect_equal(results$rowcors, row1, tolerance=1e-9)
+  expect_equal(results$colcors, col1, tolerance=1e-9)
+  
+  context('Standardized')
+  results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized = TRUE, adaptive = TRUE)
+  
+  m <- apply(true, 2, mean, na.rm=TRUE)
+  v <- apply(true, 2, sd, na.rm=TRUE)
+  true <- scale(true, m, v)
+  imputed <- scale(imputed, m, v)
+  mat1 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row1 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  
+  v[v==0] <- NA
+  expect_equal(results$matcor, mat1, tolerance=1e-9)
+  expect_equal(results$rowcors, row1, tolerance=1e-9)
+  expect_equal(results$colcors, col1, tolerance=1e-9)
+  expect_equal(results$means, m)
+  expect_equal(results$sds, v)
+  
+})
+
 test_that("Adaptive works with more true rows, and imputed are shuffled",{
   ts <- Siccuracy:::make.test(15, 21)
   true <- ts$true

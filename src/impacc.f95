@@ -50,7 +50,6 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
     do
       read(10, *, iostat=stat) animalID, genoin
       if (stat /= 0) exit
-      i = i + 1
   
       WHERE (genoin /= NAval)
         nLines = nLines + 1
@@ -172,14 +171,14 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
   real(r8_kind), intent(out) :: matcor
 
   !! Private variables
-  logical, dimension(nAnimals) :: foundID
+  logical, dimension(nAnimals) :: foundID, notMasked
   integer :: stat, start, animalID, commonrows, i, j, k, nn, maxanimal, minanimal, ianimalID
   real(r8_kind) :: t, t2, imp, imp2, tim, nan
   real(r8_kind), dimension(nSNPs) :: M, S, Mold, Sold
   real(r8_kind), dimension(nSNPs) :: genoin, imputed
   real(r8_kind), dimension(nAnimals, nSnps) :: trueMat
   !! For running correlation on columns
-  integer, dimension(nSNPs) :: cNA, nnn
+  integer, dimension(nSNPs) :: cNA, nnn, nLines
   integer, dimension(nAnimals) :: animalIndex
   real(r8_kind), dimension(nSNPs) :: cx, cy, cx2, cxy, cy2
   !! For matrix
@@ -215,16 +214,38 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
 
   !! Calculate scaling parameters (mean and var)
   if (standardized == 1) then
-    M(:) = trueMat(1,:)
+    !means = 1/nan
+    !sds(i) = 0.0
+    !do i=1,nSNPs
+    !  notMasked = trueMat(:,i) /= NAval
+    !  if (all(.not. notMasked)) cycle
+    !  means(i) = sum(trueMat(:,i),MASK=notMasked) / count(notMasked)
+    !  sds(i) = sqrt(sum((trueMat(:,i) - means(i))**2,MASK=notMasked)  / count(notMasked) )
+    !enddo
+    nLines(:) = 0
     S(:) = 0
-    do i=2,nAnimals
-      Mold(:) = M(:)
-      Sold(:) = S(:)
-      M = M + (trueMat(i, :) - Mold)/i
-      S = S + (trueMat(i, :) - Mold) * (trueMat(i,:) - M)
-    end do
+    M(:) = -9
+    Mold(:) = 0
+    i = 0
+    do i=1,nAnimals
+      genoin = trueMat(i,:)
+
+      WHERE (genoin /= NAval)
+        nLines = nLines + 1
+        WHERE (nLines .eq. 1)
+          M = genoin
+        ENDWHERE
+        WHERE (nLines .gt. 1 .and. M .gt. -9)
+          Mold = M
+          Sold = S
+          M = M + (genoin - Mold)/nLines
+          S = S + (genoin - Mold) * (genoin - M)
+        ENDWHERE
+      ENDWHERE
+    enddo
+    close(10)
     means = M
-    sds = sqrt(S/(nAnimals - 1))
+    sds = sqrt(S/(nLines - 1))
   else
     means(:) = 0
     sds(:) = 1
