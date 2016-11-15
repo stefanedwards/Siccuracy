@@ -22,11 +22,11 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
 
   !! Private variables
   integer :: stat, animalID, i, j, mn
-  real(r8_kind) :: t, t2, imp, imp2, tim, nan, tru
+  real(r8_kind) :: tru, imp, nan
   real(r8_kind), dimension(nSNPs) :: M, S, Mold, Sold
   real, dimension(nSNPs) :: genoin, true, imputed
   !! For running correlation on columns
-  integer, dimension(nSNPs) :: cNA, nnn, nLines
+  integer, dimension(nSNPs) :: cNA, nLines
   real(r8_kind), dimension(nSNPs) :: cmp, cmq, cmt, cmi, csi, cst, csb
   !! For matrix
   real(r8_kind) :: mmp, mmq, mmt, mmi, msi, mst, msb
@@ -109,11 +109,9 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
       if (standardized == 1) then
         tru = (true(j)-means(j))/sds(j)
         imp = (imputed(j)-means(j))/sds(j)
-        t = tru
       else
         tru = true(j)
         imp = imputed(j)
-        t = tru
       endif
       
       ! rowcorrelation
