@@ -21,18 +21,17 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
   real(r8_kind), intent(out) :: matcor
 
   !! Private variables
-  integer :: stat, animalID, i, j, nn, mn
+  integer :: stat, animalID, i, j, mn
   real(r8_kind) :: t, t2, imp, imp2, tim, nan, tru
   real(r8_kind), dimension(nSNPs) :: M, S, Mold, Sold
   real, dimension(nSNPs) :: genoin, true, imputed
   !! For running correlation on columns
   integer, dimension(nSNPs) :: cNA, nnn, nLines
-  real(r8_kind), dimension(nSNPs) :: cx, cy, cx2, cxy, cy2, cmp, cmq, cmt, cmi, csi, cst, csb
+  real(r8_kind), dimension(nSNPs) :: cmp, cmq, cmt, cmi, csi, cst, csb
   !! For matrix
-  real(r8_kind) :: mx, my, mx2, mxy, my2, mmp, mmq, mmt, mmi, msi, mst, msb
+  real(r8_kind) :: mmp, mmq, mmt, mmi, msi, mst, msb
   !! For row
   integer :: rNA
-  real(r8_kind) :: rx, ry, rx2, rxy, ry2
   real(r8_kind) :: rmp, rmq, rmt, rmi, rsi, rst, rsb
 
   !! NAN
@@ -77,9 +76,7 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
   open(10, file=truefn, status='OLD')
   open(20, file=imputefn, status='OLD')
   i = 0
-  mx=0; my=0; mx2=0; mxy=0; my2=0
-  cx(:)=0; cy(:)=0; cx2(:)=0; cxy(:)=0; cy2(:)=0; cNA(:) = 0
-  cst(:)=0; csi(:)=0; csb(:)=0
+  cst(:)=0; csi(:)=0; csb(:)=0; cNA(:)=0
   mst=0; msi=0; msb=0; mn = 0
   rowID(:) = 0
   do
@@ -93,12 +90,6 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
     if (stat /= 0) then
       exit
     endif
-
-    rx = 0
-    ry = 0
-    rx2 = 0
-    rxy = 0
-    ry2 = 0
 
     rNA = 0
     
@@ -166,45 +157,14 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
         msi = msi + (imp - mmq) * (imp - mmi)
         msb = msb + (imp - mmi) * (tru - mmp)         
       endif
-      
-      t2 = t*t
-      imp2 = imp*imp
-      tim = t*imp
-
-      cx(j) = cx(j) + t
-      mx = mx + t
-      rx = rx + t
-
-      cy(j) = cy(j) + imp
-      my = my + imp
-      ry = ry + imp
-
-      cx2(j) = cx2(j) + t2
-      mx2 = mx2 + t2
-      rx2 = rx2 + t2
-
-      cy2(j) = cy2(j) + imp2
-      my2 = my2 + imp2
-      ry2 = ry2 + imp2
-
-      cxy(j) = cxy(j) + tim
-      mxy = mxy + tim
-      rxy = rxy + tim
     enddo
-    nn = j - 1 - rNA
-    !print *, animalID, nn, rx, ry, rx2, ry2, rxy, dummy
-    !rowcors(i) = (nn * rxy - rx * ry) / sqrt( (nn * rx2 - rx**2) * (nn*ry2 - ry**2 ) )
     rowcors(i) = rsb / (sqrt(rst) * sqrt(rsi))
   enddo
   close(10)
   close(20)
 
-  nn = (i-1) * nSNPs - sum(cNA)
-  !matcor = (nn * mxy - mx * my) / sqrt( (nn * mx2 - mx**2) * (nn*my2 - my**2) )
   matcor = msb / (sqrt(mst) * sqrt(msi))
-  nnn = i - 1  - cNA
-  
-  !colcors = (nnn * cxy - cx * cy) / sqrt( (nnn * cx2 - cx**2) * (nnn*cy2 - cy**2) )
+
   colcors = csb / (sqrt(cst) * sqrt(csi))
   if (standardized == 1) where (sds == 0) colcors = 1/nan
 
