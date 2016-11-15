@@ -24,6 +24,9 @@
 #' @param standardized Logical, whether to center and scale genotypes by dataset in \code{true}-matrix.
 #'        Currently by subtracting column mean and dividing by column standard deviation.
 #' @param adaptive Use adaptive method (default) that stores \code{truefn} in memory and compares rows by ID in first column.
+#' @param center Numeric vector of \code{ncol}-length to subtract with for standardization.
+#' @param scale Numeric vector of \code{ncol}-length to divide by for standardization.
+#' @param p Shortcut for \code{center} and \code{scale} when using allele frequencies. \code{center=2p} and \code{scale=2p(1-p)}.
 #' @return List with following elements:
 #' \describe{
 #'   \item{\code{means}}{Column means of true matrix.}
@@ -35,7 +38,7 @@
 #' }
 #' @export
 #' @seealso \code{\link{write.snps}} for writing SNPs to a file.
-imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, standardized=TRUE, adaptive=TRUE) {
+imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, standardized=TRUE, adaptive=TRUE, center=NULL, scale=NULL, p=NULL) {
   stopifnot(file.exists(truefn))
   stopifnot(file.exists(imputefn))
   
@@ -46,6 +49,17 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
   m <- as.integer(ncol)
   n <- as.integer(nlines)
   
+  usermeans <-  (!is.null(p) | !is.null(center) | !is.null(scale))
+  if (!is.null(p)) {
+    stopifnot(length(p)==m)
+    center <- 2*p
+    scale <- 2*p*(1-p)
+  }
+  if (is.null(center)) center=numeric(m)
+  if (is.null(scale)) {scale=numeric(m);scale[] <- 1}
+  if (usermeans) standardized=TRUE
+  
+  
   subroutine <- ifelse(adaptive, 'imp_acc', 'imp_acc_fast')
   
   res <- .Fortran(subroutine,
@@ -55,7 +69,8 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
                   nAnimals=as.integer(nlines),
                   NAval=as.integer(na),
                   standardized=as.integer(standardized),
-                  means=vector('numeric',m), sds=vector('numeric',m),  # Placeholders for return data.
+                  means=as.numeric(center), sds=as.numeric(scale),  # Placeholders for return data.
+                  usermeans=as.integer(usermeans),
                   rowcors=vector('numeric', n), matcor=numeric(1), colcors=vector('numeric',m),
                   rowID=vector('integer',n),
                   PACKAGE='Siccuracy')

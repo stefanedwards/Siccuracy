@@ -7,16 +7,16 @@
 !! standardized, boolean, whether to standardize genotypes based on entire true genotypes.
 !! rowcor, matcor, colcor, vector of results.
 subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means, sds, &
-    rowcors, matcor, colcors, rowID)
+    usermeans, rowcors, matcor, colcors, rowID)
   implicit none
   
   integer, parameter :: r8_kind = selected_real_kind(15, 307) ! double precision, 64-bit like, required for transferring to and fro R.
 
   !! Arguments
   character(255), intent(in) :: truefn, imputefn
-  integer, intent(in) :: nSNPs, NAval, standardized, nAnimals
+  integer, intent(in) :: nSNPs, NAval, standardized, nAnimals, usermeans
   integer, dimension(nAnimals), intent(out) :: rowID
-  real(r8_kind), dimension(nSnps), intent(out) :: means, sds, colcors
+  real(r8_kind), dimension(nSnps), intent(inout) :: means, sds, colcors
   real(r8_kind), dimension(nAnimals), intent(out) :: rowcors
   real(r8_kind), intent(out) :: matcor
 
@@ -40,7 +40,7 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
   nan = 0.
 
   !! Read through true genotype file and get column-wise mean and variance
-  if (standardized == 1) then
+  if (standardized == 1 .and. usermeans == 0) then
     open(10, file=truefn, status='OLD')
     nLines(:) = 0
     S(:) = 0
@@ -67,7 +67,7 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
     close(10)
     means = M
     sds = sqrt(S/(nLines - 1))
-  else
+  elseif (usermeans == 0) then
     means(:) = 0
     sds(:) = 1
   end if
@@ -178,14 +178,15 @@ end subroutine
 !! If it is, well, go develop imp_acc2.
 !!
 !! param nAnimals is the number of animals (rows) in the true file.
-subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means, sds, rowcors, matcor, colcors, rowID)
+subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means, sds, &
+  usermeans, rowcors, matcor, colcors, rowID)
   implicit none
   
   integer, parameter :: r8_kind = selected_real_kind(15, 150) ! double precision, 64-bit like, required for transferring to and fro R.
 
   !! Arguments
   character(255), intent(in) :: truefn, imputefn
-  integer, intent(in) :: nSNPs, NAval, standardized, nAnimals
+  integer, intent(in) :: nSNPs, NAval, standardized, nAnimals, usermeans
   real(r8_kind), dimension(nSnps), intent(out) :: means, sds, colcors
   real(r8_kind), dimension(nAnimals), intent(out) :: rowcors
   integer, dimension(nAnimals), intent(out) :: rowID
@@ -232,7 +233,7 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
   minanimal = minval(animalIndex)
 
   !! Calculate scaling parameters (mean and var)
-  if (standardized == 1) then
+  if (standardized == 1 .and. usermeans == 0) then
     !means = 1/nan
     !sds(i) = 0.0
     !do i=1,nSNPs
@@ -265,7 +266,7 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
     close(10)
     means = M
     sds = sqrt(S/(nLines - 1))
-  else
+  elseif (usermeans == 0) then
     means(:) = 0
     sds(:) = 1
   end if

@@ -5,7 +5,8 @@
 \title{Imputation accuracy, aka. correlations}
 \usage{
 imputation_accuracy(truefn, imputefn, ncol = NULL, nlines = NULL, na = 9,
-  standardized = TRUE, adaptive = TRUE)
+  standardized = TRUE, adaptive = TRUE, center = NULL, scale = NULL,
+  p = NULL)
 }
 \arguments{
 \item{truefn}{Filename of \emph{true} matrix.}
@@ -22,6 +23,12 @@ imputation_accuracy(truefn, imputefn, ncol = NULL, nlines = NULL, na = 9,
 Currently by subtracting column mean and dividing by column standard deviation.}
 
 \item{adaptive}{Use adaptive method (default) that stores \code{truefn} in memory and compares rows by ID in first column.}
+
+\item{center}{Numeric vector of \code{ncol}-length to subtract with for standardization.}
+
+\item{scale}{Numeric vector of \code{ncol}-length to divide by for standardization.}
+
+\item{p}{Shortcut for \code{center} and \code{scale} when using allele frequencies. \code{center=2p} and \code{scale=2p(1-p)}.}
 }
 \value{
 List with following elements:

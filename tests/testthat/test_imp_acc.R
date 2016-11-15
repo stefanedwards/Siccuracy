@@ -287,3 +287,82 @@ test_that("Adaptive works with less true rows, and imputed are shuffled",{
   expect_length(results$means, ncol(true))
   expect_length(results$sds, ncol(true))
 })
+
+test_that('User-provided centering works',{
+  ts <- Siccuracy:::make.test(31, 87)
+
+  m <- runif(ncol(ts$true), 0, 2)
+  
+  results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized = TRUE, adaptive = FALSE, center=m)
+
+  true <- scale(ts$true, m, scale=FALSE)
+  imputed <- scale(ts$imputed, m, scale=FALSE)
+  mat1 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row1 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  
+  expect_equal(results$matcor, mat1, tolerance=1e-9)
+  expect_equal(results$rowcors, row1, tolerance=1e-9)
+  expect_equal(results$colcors, col1, tolerance=1e-9)
+  
+  context('Adaptive')
+  results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized = TRUE, adaptive = TRUE, center=m)
+  
+  expect_equal(results$matcor, mat1, tolerance=1e-9)
+  expect_equal(results$rowcors, row1, tolerance=1e-9)
+  expect_equal(results$colcors, col1, tolerance=1e-9)
+  
+})
+
+test_that('User-provided scaling works',{
+  ts <- Siccuracy:::make.test(31, 87)
+  
+  v <- runif(ncol(ts$true), 0.1, 2)
+  
+  results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized = TRUE, adaptive = FALSE, scale=v)
+  
+  true <- scale(ts$true, center=FALSE, scale=v)
+  imputed <- scale(ts$imputed, center=FALSE, scale=v)
+  mat1 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row1 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  
+  expect_equal(results$matcor, mat1, tolerance=1e-9)
+  expect_equal(results$rowcors, row1, tolerance=1e-9)
+  expect_equal(results$colcors, col1, tolerance=1e-9)
+  
+  context('Adaptive')
+  results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized = TRUE, adaptive = TRUE, scale=v)
+  
+  expect_equal(results$matcor, mat1, tolerance=1e-9)
+  expect_equal(results$rowcors, row1, tolerance=1e-9)
+  expect_equal(results$colcors, col1, tolerance=1e-9)
+  
+})
+
+test_that('User-provided allele frequencies works:',{
+  ts <- Siccuracy:::make.test(31, 87)
+  
+  p <- runif(ncol(ts$true), 0.01, 0.5)
+  m <- 2*p
+  v <- 2*p*(1-p)
+  results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized = TRUE, adaptive = FALSE, p=p)
+  
+  true <- scale(ts$true, center=m, scale=v)
+  imputed <- scale(ts$imputed, center=m, scale=v)
+  mat1 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row1 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  
+  expect_equal(results$matcor, mat1, tolerance=1e-9)
+  expect_equal(results$rowcors, row1, tolerance=1e-9)
+  expect_equal(results$colcors, col1, tolerance=1e-9)
+  
+  context('Adaptive')
+  results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized = TRUE, adaptive = TRUE, p=p)
+  
+  expect_equal(results$matcor, mat1, tolerance=1e-9)
+  expect_equal(results$rowcors, row1, tolerance=1e-9)
+  expect_equal(results$colcors, col1, tolerance=1e-9)
+  
+})
