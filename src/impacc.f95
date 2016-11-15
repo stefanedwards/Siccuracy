@@ -21,18 +21,19 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
   real(r8_kind), intent(out) :: matcor
 
   !! Private variables
-  integer :: stat, animalID, i, j, nn
-  real(r8_kind) :: t, t2, imp, imp2, tim, nan
+  integer :: stat, animalID, i, j, nn, mn
+  real(r8_kind) :: t, t2, imp, imp2, tim, nan, tru
   real(r8_kind), dimension(nSNPs) :: M, S, Mold, Sold
   real, dimension(nSNPs) :: genoin, true, imputed
   !! For running correlation on columns
   integer, dimension(nSNPs) :: cNA, nnn, nLines
-  real(r8_kind), dimension(nSNPs) :: cx, cy, cx2, cxy, cy2
+  real(r8_kind), dimension(nSNPs) :: cx, cy, cx2, cxy, cy2, cmp, cmq, cmt, cmi, csi, cst, csb
   !! For matrix
-  real(r8_kind) :: mx, my, mx2, mxy, my2
+  real(r8_kind) :: mx, my, mx2, mxy, my2, mmp, mmq, mmt, mmi, msi, mst, msb
   !! For row
   integer :: rNA
   real(r8_kind) :: rx, ry, rx2, rxy, ry2
+  real(r8_kind) :: rmp, rmq, rmt, rmi, rsi, rst, rsb
 
   !! NAN
   !! Quiet NAN, double precision.
@@ -78,6 +79,8 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
   i = 0
   mx=0; my=0; mx2=0; mxy=0; my2=0
   cx(:)=0; cy(:)=0; cx2(:)=0; cxy(:)=0; cy2(:)=0; cNA(:) = 0
+  cst(:)=0; csi(:)=0; csb(:)=0
+  mst=0; msi=0; msb=0; mn = 0
   rowID(:) = 0
   do
     i = i + 1
@@ -96,18 +99,74 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
     rx2 = 0
     rxy = 0
     ry2 = 0
+
     rNA = 0
+    
+    rst = 0
+    rsi = 0
+    rsb = 0
+    
 
     do j=1,nSnps
       if (imputed(j) == NAval .or. true(j) == NAval .or. sds(j) == 0.) then
         rNA = rNA + 1
         cNA(j) = cNA(j) + 1
-        !print *, animalID, j
         cycle
       end if
+      mn = mn + 1
 
-      t = (true(j)-means(j))/sds(j)
-      imp = (imputed(j)-means(j))/sds(j)
+      if (standardized == 1) then
+        tru = (true(j)-means(j))/sds(j)
+        imp = (imputed(j)-means(j))/sds(j)
+        t = tru
+      else
+        tru = true(j)
+        imp = imputed(j)
+        t = tru
+      endif
+      
+      ! rowcorrelation
+      if (j - rNA .eq. 1) then
+        rmt = tru
+        rmi = imp
+      elseif (j - rNA .gt. 1) then
+        rmp = rmt  ! for X, m_n and m_{n_1}
+        rmt = rmt + (tru - rmt) / (j - rNA)
+        rst = rst + (tru - rmp) * (tru - rmt)
+        rmq = rmi  ! for Y, m_n and m_{n_1}
+        rmi = rmi + (imp - rmi) / (j - rNA)
+        rsi = rsi + (imp - rmq) * (imp - rmi)
+        rsb = rsb + (imp - rmi) * (tru - rmp)      
+      endif
+      
+      ! column correlation
+      if (i - cNA(j) .eq. 1) then
+        cmt(j) = tru
+        cmi(j) = imp
+      elseif (i - cNA(j) .gt. 1) then
+        cmp(j) = cmt(j)  ! for X, m_n and m_{n_1}
+        cmt(j) = cmt(j) + (tru - cmt(j)) / (i - cNA(j))
+        cst(j) = cst(j) + (tru - cmp(j)) * (tru - cmt(j))
+        cmq(j) = cmi(j)  ! for Y, m_n and m_{n_1}
+        cmi(j) = cmi(j) + (imp - cmi(j)) / (i - cNA(j))
+        csi(j) = csi(j) + (imp - cmq(j)) * (imp - cmi(j))
+        csb(j) = csb(j) + (imp - cmi(j)) * (tru - cmp(j))      
+      endif        
+      
+      ! matrix correlation
+      if (mn .eq. 1) then
+        mmt = tru
+        mmi = imp
+      elseif (mn .gt. 1) then
+        mmp = mmt  ! for X, m_n and m_{n_1}
+        mmt = mmt + (tru - mmt) / (mn)
+        mst = mst + (tru - mmp) * (tru - mmt)
+        mmq = mmi  ! for Y, m_n and m_{n_1}
+        mmi = mmi + (imp - mmi) / (mn)
+        msi = msi + (imp - mmq) * (imp - mmi)
+        msb = msb + (imp - mmi) * (tru - mmp)         
+      endif
+      
       t2 = t*t
       imp2 = imp*imp
       tim = t*imp
@@ -134,15 +193,19 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
     enddo
     nn = j - 1 - rNA
     !print *, animalID, nn, rx, ry, rx2, ry2, rxy, dummy
-    rowcors(i) = (nn * rxy - rx * ry) / sqrt( (nn * rx2 - rx**2) * (nn*ry2 - ry**2 ) )
+    !rowcors(i) = (nn * rxy - rx * ry) / sqrt( (nn * rx2 - rx**2) * (nn*ry2 - ry**2 ) )
+    rowcors(i) = rsb / (sqrt(rst) * sqrt(rsi))
   enddo
   close(10)
   close(20)
 
   nn = (i-1) * nSNPs - sum(cNA)
-  matcor = (nn * mxy - mx * my) / sqrt( (nn * mx2 - mx**2) * (nn*my2 - my**2) )
+  !matcor = (nn * mxy - mx * my) / sqrt( (nn * mx2 - mx**2) * (nn*my2 - my**2) )
+  matcor = msb / (sqrt(mst) * sqrt(msi))
   nnn = i - 1  - cNA
-  colcors = (nnn * cxy - cx * cy) / sqrt( (nnn * cx2 - cx**2) * (nnn*cy2 - cy**2) )
+  
+  !colcors = (nnn * cxy - cx * cy) / sqrt( (nnn * cx2 - cx**2) * (nnn*cy2 - cy**2) )
+  colcors = csb / (sqrt(cst) * sqrt(csi))
   if (standardized == 1) where (sds == 0) colcors = 1/nan
 
 end subroutine
