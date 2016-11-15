@@ -193,20 +193,21 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
 
   !! Private variables
   logical, dimension(nAnimals) :: foundID, notMasked
-  integer :: stat, start, animalID, commonrows, i, j, k, nn, maxanimal, minanimal, ianimalID
-  real(r8_kind) :: t, t2, imp, imp2, tim, nan
+  integer :: stat, start, animalID, commonrows, i, j, k, maxanimal, minanimal, ianimalID
+  real(r8_kind) :: tru, imp, nan
   real(r8_kind), dimension(nSNPs) :: M, S, Mold, Sold
   real(r8_kind), dimension(nSNPs) :: genoin, imputed
   real(r8_kind), dimension(nAnimals, nSnps) :: trueMat
   !! For running correlation on columns
-  integer, dimension(nSNPs) :: cNA, nnn, nLines
+  integer, dimension(nSNPs) :: cNA, nLines
   integer, dimension(nAnimals) :: animalIndex
-  real(r8_kind), dimension(nSNPs) :: cx, cy, cx2, cxy, cy2
+  real(r8_kind), dimension(nSNPs) :: cmp, cmq, cmt, cmi, csi, cst, csb
   !! For matrix
-  real(r8_kind) :: mx, my, mx2, mxy, my2
+  integer :: mn
+  real(r8_kind) :: mmp, mmq, mmt, mmi, msi, mst, msb
   !! For row
   integer :: rNA
-  real(r8_kind) :: rx, ry, rx2, rxy, ry2
+  real(r8_kind) :: rmp, rmq, rmt, rmi, rsi, rst, rsb  
 
   nan = 0.0
 
@@ -229,9 +230,6 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
   close(10)
   maxanimal = maxval(animalIndex)
   minanimal = minval(animalIndex)
-  !print *, 'Min, max:', minanimal, maxanimal
-  !print *, 'Index size', size(animalIndex)
-  !print *, 'Index:', animalIndex
 
   !! Calculate scaling parameters (mean and var)
   if (standardized == 1) then
@@ -295,8 +293,8 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
   !print *, 'Min, max, imp.a.ID', minanimal, maxanimal, animalID
 
   !! Go through imputed
-  mx=0; my=0; mx2=0; mxy=0; my2=0
-  cx(:)=0; cy(:)=0; cx2(:)=0; cxy(:)=0; cy2(:)=0; cNA(:) = 0
+  cst(:)=0; csi(:)=0; csb(:)=0; cNA(:)=0
+  mst=0; msi=0; msb=0; mn = 0
   i = 1
   k = 1
   commonrows = 0
@@ -330,15 +328,11 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
     commonrows = commonrows + 1
     rowID(i) = ianimalID
     foundID(i) = .true.
-    !print *, 'True:', trueMat(i,:)
-    !print *, 'Impu;', imputed(:)
-
-    rx = 0
-    ry = 0
-    rx2 = 0
-    rxy = 0
-    ry2 = 0
+    
     rNA = 0
+    rst = 0
+    rsi = 0
+    rsb = 0
 
     do j=1,nSnps
       if (imputed(j) == NAval .or. trueMat(i,j) == Naval .or. sds(j) == 0.) then
@@ -346,47 +340,70 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
         cNA(j) = cNA(j) + 1
         cycle
       end if
+      mn = mn + 1
 
-      t = (trueMat(i,j)-means(j))/sds(j)
-      imp = (imputed(j)-means(j))/sds(j)
-      t2 = t*t
-      imp2 = imp*imp
-      tim = t*imp
+      if (standardized == 1) then
+        tru = (trueMat(i,j)-means(j))/sds(j)
+        imp = (imputed(j)-means(j))/sds(j)
+      else
+        tru = trueMat(i,j)
+        imp = imputed(j)
+      endif
 
-      cx(j) = cx(j) + t
-      mx = mx + t
-      rx = rx + t
-
-      cy(j) = cy(j) + imp
-      my = my + imp
-      ry = ry + imp
-
-      cx2(j) = cx2(j) + t2
-      mx2 = mx2 + t2
-      rx2 = rx2 + t2
-
-      cy2(j) = cy2(j) + imp2
-      my2 = my2 + imp2
-      ry2 = ry2 + imp2
-
-      cxy(j) = cxy(j) + tim
-      mxy = mxy + tim
-      rxy = rxy + tim
-
+      ! rowcorrelation
+      if (j - rNA .eq. 1) then
+        rmt = tru
+        rmi = imp
+      elseif (j - rNA .gt. 1) then
+        rmp = rmt  ! for X, m_n and m_{n_1}
+        rmt = rmt + (tru - rmt) / (j - rNA)
+        rst = rst + (tru - rmp) * (tru - rmt)
+        rmq = rmi  ! for Y, m_n and m_{n_1}
+        rmi = rmi + (imp - rmi) / (j - rNA)
+        rsi = rsi + (imp - rmq) * (imp - rmi)
+        rsb = rsb + (imp - rmi) * (tru - rmp)      
+      endif
+      
+      ! column correlation
+      if (commonrows - cNA(j) .eq. 1) then
+        cmt(j) = tru
+        cmi(j) = imp
+      elseif (commonrows - cNA(j) .gt. 1) then
+        cmp(j) = cmt(j)  ! for X, m_n and m_{n_1}
+        cmt(j) = cmt(j) + (tru - cmt(j)) / (commonrows - cNA(j))
+        cst(j) = cst(j) + (tru - cmp(j)) * (tru - cmt(j))
+        cmq(j) = cmi(j)  ! for Y, m_n and m_{n_1}
+        cmi(j) = cmi(j) + (imp - cmi(j)) / (commonrows - cNA(j))
+        csi(j) = csi(j) + (imp - cmq(j)) * (imp - cmi(j))
+        csb(j) = csb(j) + (imp - cmi(j)) * (tru - cmp(j))      
+      endif        
+      
+      ! matrix correlation
+      if (mn .eq. 1) then
+        mmt = tru
+        mmi = imp
+      elseif (mn .gt. 1) then
+        mmp = mmt  ! for X, m_n and m_{n_1}
+        mmt = mmt + (tru - mmt) / (mn)
+        mst = mst + (tru - mmp) * (tru - mmt)
+        mmq = mmi  ! for Y, m_n and m_{n_1}
+        mmi = mmi + (imp - mmi) / (mn)
+        msi = msi + (imp - mmq) * (imp - mmi)
+        msb = msb + (imp - mmi) * (tru - mmp)         
+      endif
+      
     end do ! end of j=1,nSNPs
 
-    nn = j - 1 - rNA
-    !print *, animalID, nn, rx, ry, rx2, ry2, rxy, dummy
-    rowcors(i) = (nn * rxy - rx * ry) / sqrt( (nn * rx2 - rx**2) * (nn*ry2 - ry**2 ) )
+    rowcors(i) = rsb / (sqrt(rst) * sqrt(rsi))
     i = i + 1
   enddo
   close(10)
   close(20)
 
-  nn = commonrows * nSNPs - sum(cNA)
-  matcor = (nn * mxy - mx * my) / sqrt( (nn * mx2 - mx**2) * (nn*my2 - my**2) )
-  nnn = commonrows  - cNA
-  colcors = (nnn * cxy - cx * cy) / sqrt( (nnn * cx2 - cx**2) * (nnn*cy2 - cy**2) )
+  matcor = msb / (sqrt(mst) * sqrt(msi))
+  
+  colcors = csb / (sqrt(cst) * sqrt(csi))
+  
   if (standardized == 1)  where (sds == 0.) colcors = 1/nan
   where (foundID .eqv. .false.)
     rowcors = 1/nan
