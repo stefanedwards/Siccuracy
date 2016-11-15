@@ -39,9 +39,9 @@ test_that("Results matches R's correlations (standardized=FALSE)",{
 
   context('Fast')
   results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, na=9, standardized=FALSE, adaptive=FALSE)
-  expect_equal(results$matcor, mat1, tolerance=1e-9)
-  expect_equal(results$rowcors, row1, tolerance=1e-9)
-  expect_equal(results$colcors, col1, tolerance=1e-9)
+  expect_equal(results$matcor, mat1, tolerance=1e-15)
+  expect_equal(results$rowcors, row1, tolerance=1e-15)
+  expect_equal(results$colcors, col1, tolerance=1e-15)
   expect_equal(results$rowID, as.integer(rownames(true)))
   
   context('Adaptive')
@@ -68,9 +68,9 @@ test_that("Results matches R's correlations (standardized=TRUE)",{
   
   context('Fast')
   results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, na=9, standardized=TRUE, adaptive=FALSE)
-  expect_equal(results$matcor, mat1, tolerance=1e-9)
-  expect_equal(results$rowcors, row1, tolerance=1e-9)
-  expect_equal(results$colcors, col1, tolerance=1e-9)
+  expect_equal(results$matcor, mat1, tolerance=1e-15)
+  expect_equal(results$rowcors, row1, tolerance=1e-15)
+  expect_equal(results$colcors, col1, tolerance=1e-15)
   expect_equal(results$means, m, tolerance=1e-9)
   expect_equal(results$sds, v, tolerance=1e-9)
   
@@ -115,6 +115,7 @@ test_that('Non-adaptive handles missing SNPs in true files (exact match btw. tru
   row1 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
   col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
   
+  v[is.na(v)] <- 0.0
   expect_equal(results$matcor, mat1, tolerance=1e-9)
   expect_equal(results$rowcors, row1, tolerance=1e-9)
   expect_equal(results$colcors, col1, tolerance=1e-9)
@@ -154,7 +155,7 @@ test_that('Non-adaptive handles missing SNPs in true files',{
   row1 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
   col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
   
-  v[v==0] <- NA
+  v[is.na(v)] <- 0.0
   expect_equal(results$matcor, mat1, tolerance=1e-9)
   expect_equal(results$rowcors, row1, tolerance=1e-9)
   expect_equal(results$colcors, col1, tolerance=1e-9)
@@ -194,6 +195,7 @@ test_that('Adaptive handles missing SNPs in true files (exact match btw. true an
   row1 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
   col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
   
+  v[is.na(v)] <- 0.0
   expect_equal(results$matcor, mat1, tolerance=1e-9)
   expect_equal(results$rowcors, row1, tolerance=1e-9)
   expect_equal(results$colcors, col1, tolerance=1e-9)
@@ -233,7 +235,7 @@ test_that('Adaptive handles missing SNPs in true files',{
   row1 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
   col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
   
-  v[v==0] <- NA
+  v[is.na(v)] <- 0.0
   expect_equal(results$matcor, mat1, tolerance=1e-9)
   expect_equal(results$rowcors, row1, tolerance=1e-9)
   expect_equal(results$colcors, col1, tolerance=1e-9)
