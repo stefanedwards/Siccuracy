@@ -17,9 +17,9 @@ subroutine readplinksimple(bed, fnout, ncol, nlines, na, newID, minor, maf, extr
   !! Local arguments
   integer(Byte) :: readplinkmode, element, plinkmode
   integer(Byte), dimension(2) :: readmagicnumber, magicnumber
-  logical :: checkmaf
+  !logical :: checkmaf
   logical, dimension(ncol) :: masksnps
-  integer :: stat, i, j, pos, k, snpcount, majorcount
+  integer :: stat, i, j, k, snpcount, majorcount
   integer, dimension(4) :: codes
   !integer, dimension(:), allocatable :: domasksnps
   integer, dimension(:,:), allocatable :: snps
@@ -175,9 +175,9 @@ subroutine convertplinkfragment(bedfilenames, flatfilenames, n, remerge, fragmen
   !! Local arguments
   integer(Byte) :: readplinkmode, element, plinkmode
   integer(Byte), dimension(2) :: readmagicnumber, magicnumber
-  integer :: i,j,k,stat
+  integer :: i,j,stat
   integer, dimension(0) :: excludeIDs
-  integer, dimension(n) :: bedcons, flatcons, ncols
+  integer, dimension(n) :: ncols
   integer, dimension(ncol) :: allpos
   integer, dimension(:), allocatable :: subset
   logical, dimension(ncol) :: mask
@@ -252,6 +252,6 @@ subroutine convertplinkfragment(bedfilenames, flatfilenames, n, remerge, fragmen
   if (remerge) then
     excludeIDs(:) = 0
     call cbindsnpscore(count(empties), pack(flatfilenames, empties), fnout, nlines, pack(ncols, empties), 0, &
-      0, excludeIDs, status, 2, 'I2', .TRUE., 'This is PLINK calling')
+      0, excludeIDs, status, 2, 'I2', .TRUE.) ! 'This is PLINK calling')
   endif
 end subroutine 

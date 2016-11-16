@@ -13,7 +13,7 @@ subroutine cbindsnpsrwrapper(files, fnin, fnout, nlines, ncols, skiplines, &
 
   logical :: alsoasint
   integer :: i, stat
-  character(1000) :: ctag
+  !character(1000) :: ctag
   character(1000), dimension(files) :: fns
   
   open(64, file=fnin, status='OLD')
@@ -34,9 +34,9 @@ subroutine cbindsnpsrwrapper(files, fnin, fnout, nlines, ncols, skiplines, &
   
   alsoasint = asint==1
   
-  ctag="Hello, is it me you're looking for?"
+  !ctag="Hello, is it me you're looking for?"
   call cbindsnpscore(files, fns, fnout, nlines, ncols, skiplines, &
-      idlength, excludeids, result, lenfmt, userfmt, alsoasint, ctag)
+      idlength, excludeids, result, lenfmt, userfmt, alsoasint)
   
   
 end subroutine cbindsnpsrwrapper
@@ -47,13 +47,13 @@ end subroutine cbindsnpsrwrapper
 ! The argument ctag isn't really used for anything. It just somehow
 ! fixes a bug where fns is not populated.
 subroutine cbindsnpscore(files, fns, fnout, nlines, ncols, skiplines, &
-    idlength, excludeids, result, lenfmt, userfmt, asint, ctag)
+    idlength, excludeids, result, lenfmt, userfmt, asint)
   implicit none
 
   logical, intent(in) :: asint
   integer, intent(in) :: files, nlines, skiplines, idlength, lenfmt
   character(lenfmt), intent(in) :: userfmt
-  character(1000), intent(in) :: ctag
+  !character(1000), intent(in) :: ctag
   character(255), intent(in) :: fnout
   character(1000), dimension(files), intent(in) :: fns
   integer, dimension(files), intent(in) :: ncols
@@ -66,7 +66,7 @@ subroutine cbindsnpscore(files, fns, fnout, nlines, ncols, skiplines, &
   real, dimension(:), allocatable :: rowreal
   character(50) :: fmt0
   character(50), dimension(files) :: fmt
-  character(4), dimension(files) :: advance, formatprefix
+  character(4), dimension(files) :: advance
   
   if (asint .eqv. .true.) then
     allocate(rowint(maxval(ncols, 1)))
@@ -297,7 +297,7 @@ subroutine masksnps(fn, outfn, ncols, nlines, &
     logical :: isint
     integer :: i, animalID, ndropSNPs
     character(50) :: fmt
-    logical, dimension(:), allocatable :: lmaskIDs, lmaskSNPs, ldropIDs, lkeepSNPs
+    logical, dimension(:), allocatable :: lmaskSNPs, lkeepSNPs !, ldropIDs, lmaskIDs
     integer, dimension(:), allocatable :: intoutput
     real, dimension(:), allocatable :: realoutput, inputline
     

@@ -193,7 +193,7 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
   real(r8_kind), intent(out) :: matcor
 
   !! Private variables
-  logical, dimension(nAnimals) :: foundID, notMasked
+  logical, dimension(nAnimals) :: foundID
   integer :: stat, start, animalID, commonrows, i, j, k, maxanimal, minanimal, ianimalID
   real(r8_kind) :: tru, imp, nan
   real(r8_kind), dimension(nSNPs) :: M, S, Mold, Sold
@@ -234,14 +234,6 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
 
   !! Calculate scaling parameters (mean and var)
   if (standardized == 1 .and. usermeans == 0) then
-    !means = 1/nan
-    !sds(i) = 0.0
-    !do i=1,nSNPs
-    !  notMasked = trueMat(:,i) /= NAval
-    !  if (all(.not. notMasked)) cycle
-    !  means(i) = sum(trueMat(:,i),MASK=notMasked) / count(notMasked)
-    !  sds(i) = sqrt(sum((trueMat(:,i) - means(i))**2,MASK=notMasked)  / count(notMasked) )
-    !enddo
     nLines(:) = 0
     S(:) = 0
     M(:) = -9
