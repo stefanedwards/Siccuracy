@@ -25,7 +25,7 @@
 #'   \item \strong{File info} \code{\link{get_nlines}}, \code{\link{get_firstcolumn}}, \code{\link{get_ncols}}
 #'   \item \strong{Imputation accuracies} \code{\link{imputation_accuracy}} correlations between matrices
 #'   \item \strong{Heterozygosity} \code{\link{heterozygosity}} counting alleles
-#'   \item \strong{Mutators} \code{\link{cbind_SNPs}}, \code{\link{rbind_SNPs}} for combining multiple files.
+#'   \item \strong{Mutators} \code{\link{cbind_SNPs}}, \code{\link{rbind_SNPs}} for combining multiple files, \code{\link{mask_SNPs}} for masking SNPs for simulating different density SNP chips.
 #'   \item \strong{Reading and writing} \code{\link{write.snps}}, \code{\link{read.snps}}
 #' }
 #' 

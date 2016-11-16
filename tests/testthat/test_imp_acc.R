@@ -366,3 +366,34 @@ test_that('User-provided allele frequencies works:',{
   expect_equal(results$colcors, col1, tolerance=1e-9)
   
 })
+
+test_that('Adaptive and non-adaptive returns same results',{
+  ts <- Siccuracy:::make.test(47, 108)
+  ids <- sample.int(nrow(ts$true), nrow(ts$true) * 0.6)
+  
+  true <- ts$true
+  true[sample.int(prod(dim(true)), prod(dim(true))*0.1)] <- NA
+  t1 <- tempfile()
+  t2 <- tempfile()
+  write.snps(true, t1)
+  write.snps(true[ids,], t2)
+  
+  imputed <- ts$imputed[ids,]
+  write.snps(ts$imputed[ids,], ts$imputedfn)
+  
+  # standardized has to be disabled (or provided by other means), as the two true-files differs!
+  resn <- imputation_accuracy(t2, ts$imputedfn, standardized=FALSE, adaptive=FALSE)
+  resa <- imputation_accuracy(t1, ts$imputedfn, standardized=FALSE, adaptive=TRUE)
+  expect_equal(resn$matcor, resa$matcor)
+  expect_equal(resn$colcors, resa$colcors)
+  expect_equal(resn$rowcors, resa$rowcors[match(resn$rowID, resa$rowID)])
+
+  het <- heterozygosity(t1)  
+  resn <- imputation_accuracy(t2, ts$imputedfn, standardized=TRUE, adaptive=FALSE, p=het$p)
+  resa <- imputation_accuracy(t1, ts$imputedfn, standardized=TRUE, adaptive=TRUE, p=het$p)
+  expect_equal(resn$matcor, resa$matcor)
+  expect_equal(resn$colcors, resa$colcors)
+  expect_equal(resn$rowcors, resa$rowcors[match(resn$rowID, resa$rowID)])
+})
+  
+  
