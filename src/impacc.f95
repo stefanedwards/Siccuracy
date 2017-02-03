@@ -7,7 +7,7 @@
 !! standardized, boolean, whether to standardize genotypes based on entire true genotypes.
 !! rowcor, matcor, colcor, vector of results.
 subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means, sds, &
-    usermeans, rowcors, matcor, colcors, rowID)
+    usermeans, rowcors, matcor, colcors, rowID, iexids, iexsnps)
   implicit none
   
   integer, parameter :: r8_kind = selected_real_kind(15, 307) ! double precision, 64-bit like, required for transferring to and fro R.
@@ -15,6 +15,8 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
   !! Arguments
   character(255), intent(in) :: truefn, imputefn
   integer, intent(in) :: nSNPs, NAval, standardized, nAnimals, usermeans
+  integer, dimension(nAnimals), intent(in) :: iexids
+  integer, dimension(nSNPs), intent(in) :: iexsnps
   integer, dimension(nAnimals), intent(out) :: rowID
   real(r8_kind), dimension(nSnps), intent(inout) :: means, sds, colcors
   real(r8_kind), dimension(nAnimals), intent(out) :: rowcors
@@ -23,6 +25,7 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
   !! Private variables
   integer :: stat, animalID, i, j, mn
   real(r8_kind) :: tru, imp, nan
+  logical, dimension(nAnimals) :: exids
   real(r8_kind), dimension(nSNPs) :: M, S, Mold, Sold
   real, dimension(nSNPs) :: genoin, true, imputed
   !! For running correlation on columns
@@ -38,6 +41,9 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
   !! Quiet NAN, double precision.
   !! Source, Steve Lionel (Intel) https://software.intel.com/en-us/forums/topic/294680
   nan = 0.
+
+  exids = iexids == 1
+  
 
   !! Read through true genotype file and get column-wise mean and variance
   if (standardized == 1 .and. usermeans == 0) then
@@ -72,6 +78,8 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
     sds(:) = 1
   end if
 
+  where(iexsnps == 1) sds = 0.
+
   !! Go through both files
   open(10, file=truefn, status='OLD')
   open(20, file=imputefn, status='OLD')
@@ -90,7 +98,12 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
     if (stat /= 0) then
       exit
     endif
-
+    
+    if (exids(i) .eqv. .true.) then
+      cNA = cNA + 1
+      cycle
+    endif
+    
     rNA = 0
     
     rst = 0
@@ -179,13 +192,15 @@ end subroutine
 !!
 !! param nAnimals is the number of animals (rows) in the true file.
 subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means, sds, &
-  usermeans, rowcors, matcor, colcors, rowID)
+  usermeans, rowcors, matcor, colcors, rowID, iexids, iexsnps)
   implicit none
   
   integer, parameter :: r8_kind = selected_real_kind(15, 150) ! double precision, 64-bit like, required for transferring to and fro R.
 
   !! Arguments
   character(255), intent(in) :: truefn, imputefn
+  integer, dimension(nAnimals), intent(in) :: iexids
+  integer, dimension(nSNPs), intent(in) :: iexsnps  
   integer, intent(in) :: nSNPs, NAval, standardized, nAnimals, usermeans
   real(r8_kind), dimension(nSnps), intent(out) :: means, sds, colcors
   real(r8_kind), dimension(nAnimals), intent(out) :: rowcors
