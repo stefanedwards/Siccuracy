@@ -515,6 +515,34 @@ test_that('Excluding SNPs by given NA allele frequencies does or does not break'
   
 })
 
+test_that('Excluding SNPs by given NA allele frequencies does or does not break, non-adaptive',{
+  ts <- Siccuracy:::make.test(15, 21)
+  
+  p <- rep(0.5, ncol(ts$true))
+  p[4] <- 0
+  res <- imputation_accuracy(ts$truefn, ts$imputedfn, p=p, adaptive = FALSE)
+  
+  true <- scale(ts$true, 2*p, 2*p*(1-p))
+  imputed <- scale(ts$imputed, 2*p, 2*p*(1-p))
+  true <- true[,-4]
+  imputed <- imputed[,-4]
+  mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  
+  expect_equal(res$matcor, mat2)  
+  expect_equal(res$rowcors, row2)
+  expect_equal(res$colcors[-4], col2)
+  
+  p[4] <- NA
+  res <- imputation_accuracy(ts$truefn, ts$imputedfn, p=p, adaptive = FALSE)
+  expect_equal(res$matcor, mat2)  
+  expect_equal(res$rowcors, row2)
+  expect_equal(res$colcors[-4], col2)
+  
+})
+
+
 test_that('Excluding individuals or SNPs from correations', {
   ts <- Siccuracy:::make.test(15, 21)
   noi <- c(3,8)

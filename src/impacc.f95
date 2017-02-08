@@ -202,7 +202,7 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
   integer, dimension(nAnimals), intent(in) :: iexids
   integer, dimension(nSNPs), intent(in) :: iexsnps  
   integer, intent(in) :: nSNPs, NAval, standardized, nAnimals, usermeans
-  real(r8_kind), dimension(nSnps), intent(out) :: means, sds, colcors
+  real(r8_kind), dimension(nSnps), intent(inout) :: means, sds, colcors
   real(r8_kind), dimension(nAnimals), intent(out) :: rowcors
   integer, dimension(nAnimals), intent(out) :: rowID
   real(r8_kind), intent(out) :: matcor

@@ -59,7 +59,11 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
   }
   if (is.null(center)) center=numeric(m)
   if (is.null(scale)) {scale=numeric(m);scale[] <- 1}
-  if (usermeans) standardized=TRUE
+  if (usermeans) {
+    center[is.na(center)] <- 0
+    scale[is.na(scale)] <- 0
+    standardized=TRUE
+  }
   
   ex_ids <- rep(0, n)
   if (!is.null(excludeIDs)) {
@@ -94,7 +98,7 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
                   rowID=vector('integer',n),
                   excludeIDs=as.integer(ex_ids),
                   excludeSNPs=as.integer(ex_snps),
-                  NAOK=TRUE,
+                  NAOK=FALSE,
                   PACKAGE='Siccuracy')
   res$colcors[is.infinite(res$colcors)] <- NA
   res$colcors[is.nan(res$colcors)] <- NA
