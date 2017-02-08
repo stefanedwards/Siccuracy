@@ -564,3 +564,56 @@ test_that('Excluding individuals or SNPs from correations', {
   expect_equal(res$colcors, col2)
   
 })
+
+test_that('Excluding individuals or SNPs from correations, adaptive', {
+  ts <- Siccuracy:::make.test(15, 21)
+  noi <- c(3,8)
+  nos <- c(2,9,10)
+  
+  write.snps(ts$imputed[sample.int(nrow(ts$imputed)),], ts$imputedfn)
+  
+  
+  res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=TRUE, excludeSNPs=nos)#, excludeIDs=noi)#, excludeSNPs=nos)
+  
+  true <- ts$true
+  #true[noi,] <- NA
+  true[,nos] <- NA
+  imputed <- ts$imputed
+  
+  mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  expect_equal(res$matcor, mat2)  
+  expect_equal(res$rowcors, row2)
+  expect_equal(res$colcors, col2)
+  
+  res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=TRUE, excludeIDs=noi)#, excludeSNPs=nos)
+  
+  true <- ts$true
+  true[noi,] <- NA
+  #true[,nos] <- NA
+  imputed <- ts$imputed
+  #imputed[noi,] <- NA
+  
+  mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  expect_equal(res$matcor, mat2)  
+  expect_equal(res$rowcors, row2)
+  expect_equal(res$colcors, col2)
+    
+  res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=TRUE, excludeIDs=noi, excludeSNPs=nos)
+  
+  true <- ts$true
+  true[noi,] <- NA
+  true[,nos] <- NA
+  imputed <- ts$imputed
+  
+  mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  expect_equal(res$matcor, mat2)  
+  expect_equal(res$rowcors, row2)
+  expect_equal(res$colcors, col2)
+  
+})

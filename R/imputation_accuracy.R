@@ -63,7 +63,7 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
   
   ex_ids <- rep(0, n)
   if (!is.null(excludeIDs)) {
-    imp_ids <- get_firstcolumn(imputefn)
+    imp_ids <- get_firstcolumn(truefn)
     ex_ids[imp_ids %in% excludeIDs] <- 1 
   }
   
@@ -94,6 +94,7 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
                   rowID=vector('integer',n),
                   excludeIDs=as.integer(ex_ids),
                   excludeSNPs=as.integer(ex_snps),
+                  NAOK=TRUE,
                   PACKAGE='Siccuracy')
   res$colcors[is.infinite(res$colcors)] <- NA
   res$colcors[is.nan(res$colcors)] <- NA

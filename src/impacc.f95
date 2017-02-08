@@ -209,8 +209,9 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
 
   !! Private variables
   logical, dimension(nAnimals) :: foundID
-  integer :: stat, start, animalID, commonrows, i, j, k, maxanimal, minanimal, ianimalID
+  integer :: stat, start, animalID, commonrows, i, j, k, l, maxanimal, minanimal, ianimalID
   real(r8_kind) :: tru, imp, nan
+  logical, dimension(nAnimals) :: exids
   real(r8_kind), dimension(nSNPs) :: M, S, Mold, Sold
   real(r8_kind), dimension(nSNPs) :: genoin, imputed
   real(r8_kind), dimension(nAnimals, nSnps) :: trueMat
@@ -226,6 +227,8 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
   real(r8_kind) :: rmp, rmq, rmt, rmi, rsi, rst, rsb  
 
   nan = 0.0
+
+  exids = iexids == 1
 
   rowID(:) = 0
   rowcors(:) = 0.0
@@ -278,6 +281,8 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
     sds(:) = 1
   end if
 
+  where(iexsnps == 1) sds = 0.
+
   !! Sneak peak into imputed
   ianimalID = 0
   open(20, file=imputefn, status='OLD')
@@ -305,13 +310,16 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
   mst=0; msi=0; msb=0; mn = 0
   i = 1
   k = 1
+  l = 0
   commonrows = 0
   do
+    l = l + 1
     read(20, *, iostat=stat) ianimalID, imputed
     if (stat /= 0) then
       exit
     endif
     !print *, 'Got', ianimalID, 'as imputed...'
+
 
     ! Find true genotype
     start = i
@@ -333,9 +341,13 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
     end if
     !print *, 'Settled on', animalIndex(i)
 
-    commonrows = commonrows + 1
+    
     rowID(i) = ianimalID
     foundID(i) = .true.
+
+    if (exids(i) .eqv. .true.) cycle
+
+    commonrows = commonrows + 1
     
     rNA = 0
     rst = 0
