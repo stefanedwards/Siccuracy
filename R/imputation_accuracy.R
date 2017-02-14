@@ -27,6 +27,8 @@
 #' @param center Numeric vector of \code{ncol}-length to subtract with for standardization.
 #' @param scale Numeric vector of \code{ncol}-length to divide by for standardization.
 #' @param p Shortcut for \code{center} and \code{scale} when using allele frequencies. \code{center=2p} and \code{scale=2p(1-p)}.
+#' @param excludeIDs Integer vector, exclude these individuals from correlations. \emph{Does not affect calculation of column means and standard deviations.}
+#' @param excludeSNPs Integer or logical vector, exclude these columns from correlations. \emph{Does not affect calculation of column means and standard deviations.}
 #' @return List with following elements:
 #' \describe{
 #'   \item{\code{means}}{Column means of true matrix.}
@@ -38,7 +40,7 @@
 #' }
 #' @export
 #' @seealso \code{\link{write.snps}} for writing SNPs to a file.
-imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, standardized=TRUE, adaptive=TRUE, center=NULL, scale=NULL, p=NULL) {
+imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, standardized=TRUE, adaptive=TRUE, center=NULL, scale=NULL, p=NULL, excludeIDs=NULL, excludeSNPs=NULL) {
   stopifnot(file.exists(truefn))
   stopifnot(file.exists(imputefn))
   
@@ -57,8 +59,29 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
   }
   if (is.null(center)) center=numeric(m)
   if (is.null(scale)) {scale=numeric(m);scale[] <- 1}
-  if (usermeans) standardized=TRUE
+  if (usermeans) {
+    center[is.na(center)] <- 0
+    scale[is.na(scale)] <- 0
+    standardized=TRUE
+  }
   
+  ex_ids <- rep(0, n)
+  if (!is.null(excludeIDs)) {
+    imp_ids <- get_firstcolumn(truefn)
+    ex_ids[imp_ids %in% excludeIDs] <- 1 
+  }
+  
+  ex_snps <- rep(0, m)
+  if (!is.null(excludeSNPs)) {
+    .is.na <- function(x) {if (is.null(x)) return(logical(0)); is.na(x)}
+    if (is.logical(excludeSNPs) & sum(!.is.na(excludeSNPs)) < m) stop('`excludeSNPs` as logical must be same length as SNPs in input files and without NA\'s.')
+    
+    if (is.logical(excludeSNPs)) {
+      ex_snps <- as.integer(excludeSNPs)
+    } else {
+      ex_snps[excludeSNPs] <- 1
+    }
+  }
   
   subroutine <- ifelse(adaptive, 'imp_acc', 'imp_acc_fast')
   
@@ -73,6 +96,9 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
                   usermeans=as.integer(usermeans),
                   rowcors=vector('numeric', n), matcor=numeric(1), colcors=vector('numeric',m),
                   rowID=vector('integer',n),
+                  excludeIDs=as.integer(ex_ids),
+                  excludeSNPs=as.integer(ex_snps),
+                  NAOK=FALSE,
                   PACKAGE='Siccuracy')
   res$colcors[is.infinite(res$colcors)] <- NA
   res$colcors[is.nan(res$colcors)] <- NA
@@ -85,6 +111,9 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
     res$rowcors <- res$rowcors[!is.na(res$rowcors)]
     res$rowID <- res$rowID[!is.na(res$rowID)]
   }
+  
+  if (!is.null(excludeIDs)) res$rowcors[ex_ids==1] <- NA
+  
   
   res[c('means','sds','rowcors','matcor','colcors','rowID')]
 }

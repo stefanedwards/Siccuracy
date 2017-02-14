@@ -396,4 +396,252 @@ test_that('Adaptive and non-adaptive returns same results',{
   expect_equal(resn$rowcors, resa$rowcors[match(resn$rowID, resa$rowID)])
 })
   
+test_that('True-animals gets correlation of 1',{
+  ts <- Siccuracy:::make.test(47, 108)
+  tid <- 1:15
+  imputed <- ts$imputed
+  true <- ts$true
+  imputed[tid,] <- true[tid,]
+  write.snps(imputed, ts$imputedfn)
   
+  mat1 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row1 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  
+  res1 <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive = FALSE)
+  expect_equal(res1$colcors, col1)
+  expect_equal(res1$rowcors, row1)
+  expect_equal(res1$matcor, mat1)
+  expect_equal(res1$rowcors[tid], rep(1, length(tid)))
+  
+  res1 <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive = TRUE)
+  expect_equal(res1$colcors, col1)
+  expect_equal(res1$rowcors, row1)
+  expect_equal(res1$matcor, mat1)
+  expect_equal(res1$rowcors[tid], rep(1, length(tid)))
+  
+  m <- apply(true, 2, mean)
+  v <- apply(true, 2, sd)
+  true <- scale(true, m, v)
+  imputed <- scale(imputed, m, v)
+  mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+
+  res2 <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = TRUE, adaptive = FALSE)
+  expect_equal(res2$colcors, col2)
+  expect_equal(res2$rowcors, row2)
+  expect_equal(res2$matcor, mat2)
+  expect_equal(res2$rowcors[tid], rep(1, length(tid)))
+  
+  res2 <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = TRUE, adaptive = TRUE)
+  expect_equal(res2$colcors, col2)
+  expect_equal(res2$rowcors, row2)
+  expect_equal(res2$matcor, mat2)
+  expect_equal(res2$rowcors[tid], rep(1, length(tid)))
+})
+
+test_that('True-columns gets correlation of 1',{
+  ts <- Siccuracy:::make.test(47, 108)
+  imputed <- ts$imputed
+  true <- ts$true
+  cid <- sample.int(ncol(true),ncol(true)*0.15)
+  imputed[,cid] <- true[,cid]
+  write.snps(imputed, ts$imputedfn)
+  
+  mat1 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row1 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  
+  cid <- setdiff(cid, which(is.na(col1)))
+  
+  res1 <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive = FALSE)
+  expect_equal(res1$colcors, col1)
+  expect_equal(res1$rowcors, row1)
+  expect_equal(res1$matcor, mat1)
+  expect_equal(res1$colcors[cid], rep(1, length(cid)))
+  
+  res1 <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive = TRUE)
+  expect_equal(res1$colcors, col1)
+  expect_equal(res1$rowcors, row1)
+  expect_equal(res1$matcor, mat1)
+  expect_equal(res1$colcors[cid], rep(1, length(cid)))
+  
+  m <- apply(true, 2, mean)
+  v <- apply(true, 2, sd)
+  true <- scale(true, m, v)
+  imputed <- scale(imputed, m, v)
+  mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  
+  res2 <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = TRUE, adaptive = FALSE)
+  expect_equal(res2$colcors, col2)
+  expect_equal(res2$rowcors, row2)
+  expect_equal(res2$matcor, mat2)
+  expect_equal(res1$colcors[cid], rep(1, length(cid)))
+  
+  res2 <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = TRUE, adaptive = TRUE)
+  expect_equal(res2$colcors, col2)
+  expect_equal(res2$rowcors, row2)
+  expect_equal(res2$matcor, mat2)
+  expect_equal(res1$colcors[cid], rep(1, length(cid)))
+})
+
+test_that('Excluding SNPs by given NA allele frequencies does or does not break',{
+  ts <- Siccuracy:::make.test(15, 21)
+  
+  p <- rep(0.5, ncol(ts$true))
+  p[4] <- 0
+  res <- imputation_accuracy(ts$truefn, ts$imputedfn, p=p)
+  
+  true <- scale(ts$true, 2*p, 2*p*(1-p))
+  imputed <- scale(ts$imputed, 2*p, 2*p*(1-p))
+  true <- true[,-4]
+  imputed <- imputed[,-4]
+  mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+
+  expect_equal(res$matcor, mat2)  
+  expect_equal(res$rowcors, row2)
+  expect_equal(res$colcors[-4], col2)
+  
+  p[4] <- NA
+  res <- imputation_accuracy(ts$truefn, ts$imputedfn, p=p)
+  expect_equal(res$matcor, mat2)  
+  expect_equal(res$rowcors, row2)
+  expect_equal(res$colcors[-4], col2)
+  
+})
+
+test_that('Excluding SNPs by given NA allele frequencies does or does not break, non-adaptive',{
+  ts <- Siccuracy:::make.test(15, 21)
+  
+  p <- rep(0.5, ncol(ts$true))
+  p[4] <- 0
+  res <- imputation_accuracy(ts$truefn, ts$imputedfn, p=p, adaptive = FALSE)
+  
+  true <- scale(ts$true, 2*p, 2*p*(1-p))
+  imputed <- scale(ts$imputed, 2*p, 2*p*(1-p))
+  true <- true[,-4]
+  imputed <- imputed[,-4]
+  mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  
+  expect_equal(res$matcor, mat2)  
+  expect_equal(res$rowcors, row2)
+  expect_equal(res$colcors[-4], col2)
+  
+  p[4] <- NA
+  res <- imputation_accuracy(ts$truefn, ts$imputedfn, p=p, adaptive = FALSE)
+  expect_equal(res$matcor, mat2)  
+  expect_equal(res$rowcors, row2)
+  expect_equal(res$colcors[-4], col2)
+  
+})
+
+
+test_that('Excluding individuals or SNPs from correations', {
+  ts <- Siccuracy:::make.test(15, 21)
+  noi <- c(3,8)
+  nos <- c(2,9,10)
+  
+  
+  res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=FALSE, excludeSNPs=nos)#, excludeIDs=noi)#, excludeSNPs=nos)
+  
+  true <- ts$true
+  #true[noi,] <- NA
+  true[,nos] <- NA
+  imputed <- ts$imputed
+  
+  mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  expect_equal(res$matcor, mat2)  
+  expect_equal(res$rowcors, row2)
+  expect_equal(res$colcors, col2)
+
+  res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=FALSE, excludeIDs=noi)#, excludeSNPs=nos)
+  
+  true <- ts$true
+  true[noi,] <- NA
+  #true[,nos] <- NA
+  imputed <- ts$imputed
+  
+  mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  expect_equal(res$matcor, mat2)  
+  expect_equal(res$rowcors, row2)
+  expect_equal(res$colcors, col2)
+  
+  res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=FALSE, excludeIDs=noi, excludeSNPs=nos)
+  
+  true <- ts$true
+  true[noi,] <- NA
+  true[,nos] <- NA
+  imputed <- ts$imputed
+  
+  mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  expect_equal(res$matcor, mat2)  
+  expect_equal(res$rowcors, row2)
+  expect_equal(res$colcors, col2)
+  
+})
+
+test_that('Excluding individuals or SNPs from correations, adaptive', {
+  ts <- Siccuracy:::make.test(15, 21)
+  noi <- c(3,8)
+  nos <- c(2,9,10)
+  
+  write.snps(ts$imputed[sample.int(nrow(ts$imputed)),], ts$imputedfn)
+  
+  
+  res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=TRUE, excludeSNPs=nos)#, excludeIDs=noi)#, excludeSNPs=nos)
+  
+  true <- ts$true
+  #true[noi,] <- NA
+  true[,nos] <- NA
+  imputed <- ts$imputed
+  
+  mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  expect_equal(res$matcor, mat2)  
+  expect_equal(res$rowcors, row2)
+  expect_equal(res$colcors, col2)
+  
+  res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=TRUE, excludeIDs=noi)#, excludeSNPs=nos)
+  
+  true <- ts$true
+  true[noi,] <- NA
+  #true[,nos] <- NA
+  imputed <- ts$imputed
+  #imputed[noi,] <- NA
+  
+  mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  expect_equal(res$matcor, mat2)  
+  expect_equal(res$rowcors, row2)
+  expect_equal(res$colcors, col2)
+    
+  res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=TRUE, excludeIDs=noi, excludeSNPs=nos)
+  
+  true <- ts$true
+  true[noi,] <- NA
+  true[,nos] <- NA
+  imputed <- ts$imputed
+  
+  mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  expect_equal(res$matcor, mat2)  
+  expect_equal(res$rowcors, row2)
+  expect_equal(res$colcors, col2)
+  
+})

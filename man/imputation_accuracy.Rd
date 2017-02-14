@@ -6,7 +6,7 @@
 \usage{
 imputation_accuracy(truefn, imputefn, ncol = NULL, nlines = NULL, na = 9,
   standardized = TRUE, adaptive = TRUE, center = NULL, scale = NULL,
-  p = NULL)
+  p = NULL, excludeIDs = NULL, excludeSNPs = NULL)
 }
 \arguments{
 \item{truefn}{Filename of \emph{true} matrix.}
@@ -29,6 +29,10 @@ Currently by subtracting column mean and dividing by column standard deviation.}
 \item{scale}{Numeric vector of \code{ncol}-length to divide by for standardization.}
 
 \item{p}{Shortcut for \code{center} and \code{scale} when using allele frequencies. \code{center=2p} and \code{scale=2p(1-p)}.}
+
+\item{excludeIDs}{Integer vector, exclude these individuals from correlations. \emph{Does not affect calculation of column means and standard deviations.}}
+
+\item{excludeSNPs}{Integer or logical vector, exclude these columns from correlations. \emph{Does not affect calculation of column means and standard deviations.}}
 }
 \value{
 List with following elements:
