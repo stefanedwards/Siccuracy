@@ -49,7 +49,7 @@ or, (untested)
 #!r
 
 library(devtools)
-install_bitbucket(repo='stefanedwards/Siccuracy', ref = "master")
+install_github(repo='stefanedwards/Siccuracy', ref = "master")
 ```
 
 ## I found a bug ##
