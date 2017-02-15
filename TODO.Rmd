@@ -1,0 +1,20 @@
+---
+title: "To do"
+author: "Stefan McKinnon Hoj-Edwards"
+output: html_document
+---
+
+## Tests
+
+## Developmental issues
+
+```{r issues,echo=FALSE,warning=FALSE}
+library(httr)
+library(jsonlite)
+
+res <- GET('https://api.github.com/repos/stefanedwards/Siccuracy/issues', query=list(state='open', per_page=100, page=1))
+github_df <- fromJSON(content(res, type='text'), flatten=TRUE)
+cat(paste0('* ', github_df$title, ' (#', github_df$number, ')\n'), '\n')
+```
+
+
