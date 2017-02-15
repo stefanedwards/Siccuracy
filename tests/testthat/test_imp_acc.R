@@ -204,6 +204,7 @@ test_that('Adaptive handles missing SNPs in true files (exact match btw. true an
   
 })
 
+# Adaptive handles missing SNPs in true files ----
 test_that('Adaptive handles missing SNPs in true files',{
   ts <- Siccuracy:::make.test(15, 21)
   imputed <- ts$imputed
@@ -339,6 +340,7 @@ test_that('User-provided scaling works',{
   expect_equal(results$colcors, col1, tolerance=1e-9)
   
 })
+
 # User-provided allele frequencies works: ----
 test_that('User-provided allele frequencies works:',{
   ts <- Siccuracy:::make.test(31, 87)

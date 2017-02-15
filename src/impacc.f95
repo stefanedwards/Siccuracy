@@ -211,7 +211,6 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
   logical, dimension(nAnimals) :: foundID
   integer :: stat, start, animalID, commonrows, i, j, k, l, maxanimal, minanimal, ianimalID
   real(r8_kind) :: tru, imp, nan
-  logical, dimension(nAnimals) :: exids
   real(r8_kind), dimension(nSNPs) :: M, S, Mold, Sold
   real(r8_kind), dimension(nSNPs) :: genoin, imputed
   real(r8_kind), dimension(nAnimals, nSnps) :: trueMat
@@ -227,8 +226,6 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
   real(r8_kind) :: rmp, rmq, rmt, rmi, rsi, rst, rsb  
 
   nan = 0.0
-
-  exids = iexids == 1
 
   rowID(:) = 0
   rowcors(:) = 0.0
@@ -345,7 +342,7 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
     rowID(i) = ianimalID
     foundID(i) = .true.
 
-    if (exids(i) .eqv. .true.) cycle
+    if (iexids(i) == 1) cycle
 
     commonrows = commonrows + 1
     
