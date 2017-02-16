@@ -48,7 +48,16 @@ export R_MAKEVARS_USER=Makevars
 R CMD SHLIB -o Siccuracy.so *.f90
 cd ../..
 
-R CMD INSTALL --no-inst --build --library=lib Siccuracy
+R CMD INSTALL --build --library=lib Siccuracy
+
+cat > test_package.R <<EOF
+  library(testthat)
+  library(Siccuracy, lib.loc=file.path(getwd(), 'lib'))
+  test_path <- file.path(getwd(), 'Siccuracy', 'tests', 'testthat')
+  testthat:::run_tests('Siccuracy', test_path, filter=NULL, reporter='summary')
+EOF
+
+Rscript --vanilla test_package.R
 
 for f in Siccuracy_*.tar.gz; do
   mv $f $ROOT/../${f/linux-gnu/linux-intel}
