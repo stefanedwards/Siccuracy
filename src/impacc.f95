@@ -79,12 +79,15 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
   end if
 
   where(iexsnps == 1) sds = 0.
+  
+  !open(10, file='fort.6', status='REPLACE')
+  !close(10)
 
   !! Go through both files
   open(10, file=truefn, status='OLD')
   open(20, file=imputefn, status='OLD')
   i = 0
-  cst(:)=0; csi(:)=0; csb(:)=0; cNA(:)=0
+  cmt(:)=0; cmp(:)=0; cst(:)=0; csi(:)=0; csb(:)=0; cNA(:)=0
   mst=0; msi=0; msb=0; mn = 0
   rowID(:) = 0
   do
@@ -110,6 +113,7 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
     rsi = 0
     rsb = 0
     
+    !print *, 'Animal', animalID
 
     do j=1,nSnps
       if (imputed(j) == NAval .or. true(j) == NAval .or. sds(j) == 0.) then
@@ -153,7 +157,9 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
         cmi(j) = cmi(j) + (imp - cmi(j)) / (i - cNA(j))
         csi(j) = csi(j) + (imp - cmq(j)) * (imp - cmi(j))
         csb(j) = csb(j) + (imp - cmi(j)) * (tru - cmp(j))      
-      endif        
+      endif 
+      
+      !print *, j, cmt(j), cmp(j), cst(j)
       
       ! matrix correlation
       if (mn .eq. 1) then
@@ -169,15 +175,24 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
         msb = msb + (imp - mmi) * (tru - mmp)         
       endif
     enddo
+    if (abs(rst) .lt. 1E-24) rst=0
+    if (abs(rsi) .lt. 1E-24) rsi=0
     rowcors(i) = rsb / (sqrt(rst) * sqrt(rsi))
   enddo
   close(10)
   close(20)
 
+  ! Evil 32-bit hacks to ensure "no" variance really is perceived as no variance.
+  if (abs(mst) .lt. 1E-24) mst=0
+  if (abs(msi) .lt. 1E-24) msi=0
   matcor = msb / (sqrt(mst) * sqrt(msi))
 
+  where(abs(cst) .lt. 1E-24) cst=0
+  where(abs(csi) .lt. 1E-24) csi=0
   colcors = csb / (sqrt(cst) * sqrt(csi))
   if (standardized == 1) where (sds == 0) colcors = 1/nan
+
+  !flush(6)
 
 end subroutine
 
@@ -410,15 +425,21 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
       endif
       
     end do ! end of j=1,nSNPs
-
+    if (abs(rst) .lt. 1E-24) rst=0
+    if (abs(rsi) .lt. 1E-24) rsi=0
     rowcors(i) = rsb / (sqrt(rst) * sqrt(rsi))
     i = i + 1
   enddo
   close(10)
   close(20)
 
+  ! Evil 32-bit hacks to ensure "no" variance really is perceived as no variance.
+  if (abs(mst) .lt. 1E-24) mst=0
+  if (abs(msi) .lt. 1E-24) msi=0
   matcor = msb / (sqrt(mst) * sqrt(msi))
   
+  where(abs(cst) .lt. 1E-24) cst=0
+  where(abs(csi) .lt. 1E-24) csi=0
   colcors = csb / (sqrt(cst) * sqrt(csi))
   
   if (standardized == 1)  where (sds == 0.) colcors = 1/nan

@@ -343,9 +343,9 @@ test_that('User-provided scaling works',{
 
 # User-provided allele frequencies works: ----
 test_that('User-provided allele frequencies works:',{
-  ts <- Siccuracy:::make.test(31, 87)
+  ts <- Siccuracy:::make.test(10, 13)
   
-  p <- runif(ncol(ts$true), 0.01, 0.5)
+  p <- seq(0.01, 0.05, length.out=ncol(ts$true))
   m <- 2*p
   v <- 2*p*(1-p)
   results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized = TRUE, adaptive = FALSE, p=p)
@@ -561,7 +561,7 @@ test_that('Excluding individuals or SNPs from correations', {
   
   mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
   row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
-  expect_warning(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')), regexp = 'the standard deviation is zero')
+  suppressWarnings(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')))
   expect_equal(res$matcor, mat2)  
   expect_equal(res$rowcors, row2)
   expect_equal(res$colcors, col2)
@@ -589,7 +589,7 @@ test_that('Excluding individuals or SNPs from correations', {
   
   mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
   row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
-  expect_warning(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')), regexp = 'the standard deviation is zero')
+  suppressWarnings(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')))
   expect_equal(res$matcor, mat2)  
   expect_equal(res$rowcors, row2)
   expect_equal(res$colcors, col2)
@@ -614,7 +614,7 @@ test_that('Excluding individuals or SNPs from correations, adaptive', {
   
   mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
   row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
-  expect_warning(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')), regexp = 'the standard deviation is zero')
+  suppressWarnings(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')))
   expect_equal(res$matcor, mat2)  
   expect_equal(res$rowcors, row2)
   expect_equal(res$colcors, col2)
@@ -643,7 +643,7 @@ test_that('Excluding individuals or SNPs from correations, adaptive', {
   
   mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
   row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
-  expect_warning(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')), regexp = 'the standard deviation is zero')
+  suppressWarnings(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')))
   expect_equal(res$matcor, mat2)  
   expect_equal(res$rowcors, row2)
   expect_equal(res$colcors, col2)
