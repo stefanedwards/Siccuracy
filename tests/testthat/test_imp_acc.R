@@ -84,6 +84,52 @@ test_that("Results matches R's correlations (standardized=TRUE)",{
   expect_equal(results$sds, v, tolerance=1e-9)
 })
 
+# Gene dosages ----
+
+test_that('Imputation accuracies handles gene dosages, i.e. numeric values', {
+  ts <- Siccuracy:::make.test(15, 21)
+  r <- sample.int(prod(dim(ts$imputed)), prod(dim(ts$imputed))*0.5)
+  imputed <- ts$imputed
+  imputed[r] <- imputed[r] + round(rnorm(length(r), sd=0.3), 2)
+  imputed[imputed < 0] <- 0
+  imputed[imputed > 2] <- 2
+  write.snps(imputed, ts$imputedfn)
+  true <- ts$true
+    
+  mat1 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row1 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  suppressWarnings(col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')))
+  
+  results <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive=FALSE)
+  expect_equal(results$matcor, mat1, tolerance=1e-8)
+  expect_equal(results$rowcors, row1, tolerance=1e-8)
+  expect_equal(results$colcors, col1, tolerance=1e-8)
+
+  results <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive=TRUE)
+  expect_equal(results$matcor, mat1, tolerance=1e-8)
+  expect_equal(results$rowcors, row1, tolerance=1e-8)
+  expect_equal(results$colcors, col1, tolerance=1e-8)
+  
+  m <- apply(true, 2, mean)
+  v <- apply(true, 2, sd)
+  true <- scale(true, m, v)
+  imputed <- scale(imputed, m, v)
+  mat1 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row1 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  
+  results <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = TRUE, adaptive=FALSE)
+  expect_equal(results$matcor, mat1, tolerance=1e-8)
+  expect_equal(results$rowcors, row1, tolerance=1e-8)
+  expect_equal(results$colcors, col1, tolerance=1e-8)
+  
+  results <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = TRUE, adaptive=TRUE)
+  expect_equal(results$matcor, mat1, tolerance=1e-8)
+  expect_equal(results$rowcors, row1, tolerance=1e-8)
+  expect_equal(results$colcors, col1, tolerance=1e-8)
+  
+})
+
 test_that('Non-adaptive handles missing SNPs in true files (exact match btw. true and genotyped)',{
   ts <- Siccuracy:::make.test(15, 21)
   imputed <- ts$imputed
