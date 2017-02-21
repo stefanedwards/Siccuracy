@@ -107,8 +107,8 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
   if (standardized) res$means[(res$means- -9) < 1e-8] <- NA
   #res$sds[res$sds == 0.0] <- NA
   
-  if (adaptive & any(is.na(res$rowcors))) {
-    res$rowcors <- res$rowcors[!is.na(res$rowcors)]
+  if (adaptive & any(is.na(res$rowID))) {
+    res$rowcors <- res$rowcors[!is.na(res$rowID)]
     res$rowID <- res$rowID[!is.na(res$rowID)]
   }
   

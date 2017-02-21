@@ -649,3 +649,32 @@ test_that('Excluding individuals or SNPs from correations, adaptive', {
   expect_equal(res$colcors, col2)
   
 })
+
+
+# Constant animal -----
+test_that('Animal is constant', {
+  ts <- Siccuracy:::make.test(15, 21)
+  true <- ts$true
+  
+  # No standardization, as it induces variance in a row
+  true[5,] <- 2
+  true[,8] <- 2
+  write.snps(true, ts$truefn)
+  
+  
+  mat2 <- cor(as.vector(true), as.vector(ts$imputed), use = 'complete.obs')
+  suppressWarnings(row2 <- sapply(1:nrow(true), function(i) cor(true[i,], ts$imputed[i,], use='na.or.complete')))
+  suppressWarnings(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], ts$imputed[,i], use='na.or.complete')))
+  expect_true(is.na(row2[5]))
+  expect_true(is.na(col2[8]))
+  
+  res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive=FALSE)
+  expect_equal(res$matcor, mat2)  
+  expect_equal(res$rowcors, row2)
+  expect_equal(res$colcors, col2)
+  
+  res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive=TRUE)
+  expect_equal(res$matcor, mat2)  
+  expect_equal(res$rowcors, row2)
+  expect_equal(res$colcors, col2)
+})
