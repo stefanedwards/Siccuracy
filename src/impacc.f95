@@ -403,6 +403,16 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
     rsb = 0
 
     do j=1,nSnps
+      if (imputed(j) == NAval .and. trueMat(i,j) == NAval) then
+        colbothna(j) = colbothna(j) + 1
+        rowbothna(i) = rowbothna(i) + 1
+      elseif (imputed(j) == NAval) then
+        colimpna(j) = colimpna(j) + 1
+        rowimpna(i) = rowimpna(i) + 1
+      elseif (trueMat(i,j) == NAval) then
+        coltruena(j) = coltruena(j) + 1
+        rowtruena(i) = rowtruena(i) + 1
+      endif    
       if (imputed(j) == NAval .or. trueMat(i,j) == Naval .or. sds(j) == 0.) then
         rNA = rNA + 1
         cNA(j) = cNA(j) + 1
@@ -416,6 +426,11 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
       else
         tru = trueMat(i,j)
         imp = imputed(j)
+      endif
+      
+      if (abs(trueMat(i,j) - imputed(j)) .le. tol) then
+        colcorrect(j) = colcorrect(j) + 1
+        rowcorrect(i) = rowcorrect(i) + 1
       endif
 
       ! rowcorrelation
