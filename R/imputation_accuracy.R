@@ -31,12 +31,26 @@
 #' @param excludeSNPs Integer or logical vector, exclude these columns from correlations. \emph{Does not affect calculation of column means and standard deviations.}
 #' @return List with following elements:
 #' \describe{
+#'   \item{\code{matcor}}{Matrix-wise correlation between true and imputed matrix.}
+#'   \item{\code{snps}}{Data frame with all snp-wise statistics}
+#'   \item{\code{animals}}{Data frame with all animal-wise statistics}
 #'   \item{\code{means}}{Column means of true matrix.}
 #'   \item{\code{vars}}{Column variances of true matrix.}
 #'   \item{\code{rowcors}}{Row-wise (animal-wise) correlation between true and imputed matrix.}
-#'   \item{\code{matcor}}{Matrix-wise correlation between true and imputed matrix.}
 #'   \item{\code{colcors}}{Column-wise (locus-wise) correlation between true and imputed matrix.}
 #'   \item{\code{rowID}}{Row IDs, corresponding to \code{rowcors}.}
+#' }
+#' The data frames with statistics consists of columns
+#' \describe{
+#'   \item{\code{rowID}}{Row ID (\code{animals} only!).}
+#'   \item{\code{means}}{Value subtracted from each column (\code{snps} only!).}
+#'   \item{\code{sds}}{Value used to scale each column (i.e. standard deviations) (\code{snps} only!).}
+#'   \item{\code{cors}}{Pearson correlation between true and imputed genotype.}
+#'   \item{\code{correct}}{Number of entries of equal value (within \code{tol})}
+#'   \item{\code{true.na}}{Number of entries in that were missing in \code{truefn} but not \code{imputefn}.}
+#'   \item{\code{imp.na}}{As \code{true.na}, but vice versa.}
+#'   \item{\code{both.na}}{Number of entries that were missing in both files.}
+#'   \item{\code{correct.pct}}{\code{correct} divided by total number of entries bare missing entries in \code{truefn}.}
 #' }
 #' @export
 #' @seealso \code{\link{write.snps}} for writing SNPs to a file.
@@ -115,13 +129,17 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
     res$rowID <- res$rowID[!is.na(res$rowID)]
   }
   
+  if (adaptive &  (any((res$colcorrect+res$coltruena+res$colimpna+res$colbothna) > n) | any((res$rowcorrect+res$rowtruena+res$rowimpna+res$rowbothna) > m))) {
+    warning('Oh oh. It seems I have counted more elements than SNPs or animals.\n  Check `with(snps, correct+true.na+imp.na+both.na)` and `with(animals, correct+true.na+imp.na+both.na)`.\n  Do you perhaps have repeated IDs?')
+  }
+  
   if (!is.null(excludeIDs)) res$rowcors[ex_ids==1] <- NA
   
   
   #res[c('means','sds','rowcors','matcor','colcors','rowID')]
   with(res, 
-       list(matcor=matcor, snps=data.frame(means, sds, cors=colcors, correct=colcorrect, true.na=coltruena, imp.na=colimpna, both.na=colbothna),
-            animals=data.frame(rowID, cors=rowcors, correct=rowcorrect, true.na=rowtruena, imp.na=rowimpna, both.na=rowbothna)))
+       list(matcor=matcor, snps=data.frame(means, sds, cors=colcors, correct=colcorrect, true.na=coltruena, imp.na=colimpna, both.na=colbothna, correct.pct=colcorrect/(n-coltruena-colbothna)),
+            animals=data.frame(rowID, cors=rowcors, correct=rowcorrect, true.na=rowtruena, imp.na=rowimpna, both.na=rowbothna, correct.pct=rowcorrect/(n-rowtruena-rowbothna))))
 }
 
 #' \code{imputation_accuracy1} and \code{imputation_accuracy3} has been replaced by \code{\link{imputation_accuracy}}.

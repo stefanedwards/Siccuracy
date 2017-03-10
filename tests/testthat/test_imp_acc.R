@@ -855,3 +855,43 @@ test_that('Counting correct and incorrect works, dosages', {
   
     
 })
+
+# What happens when an ID is repeated in the imputed file? -----
+test_that('Repeated IDs are handled somehow?', {
+  ts <- Siccuracy:::make.test(5, 13)
+  i2 <- Siccuracy:::make.imputed(ts$true)
+  
+  write.snps(i2, ts$imputedfn, append=TRUE)
+  
+  
+  i0 <- read.snps(ts$imputedfn)
+  t1 <- ts$true
+  i1 <- ts$imputed
+  
+  # Works as expected in non-adaptive because there are fewer true rows.
+  res1 <- imputation_accuracy(ts$truefn, ts$imputedfn, adaptive = FALSE, standardized = FALSE)
+  
+  mat2 <- cor(as.vector(t1), as.vector(i1), use = 'complete.obs')
+  row2 <- sapply(1:nrow(t1), function(i) cor(t1[i,], i1[i,], use='na.or.complete'))
+  suppressWarnings(col2 <- sapply(1:ncol(t1), function(i) cor(t1[,i], i1[,i], use='na.or.complete')))
+  
+  expect_equal(res1$matcor, mat2)
+  expect_equal(res1$snps$cors, col2)
+  expect_equal(res1$animals$cors, row2)
+  
+  # Now, what happens with adaptive???
+  
+  expect_warning(res2 <- imputation_accuracy(ts$truefn, ts$imputedfn, adaptive = TRUE, standardized = FALSE))
+  
+  
+  # If both files have repeated IDs
+  tf2 <- tempfile()
+  write.snps(t1, tf2)
+  write.snps(t1, tf2, append=TRUE)
+  res3 <- imputation_accuracy(tf2, ts$imputedfn, adaptive = FALSE, standardized = FALSE)
+  
+  res4 <- imputation_accuracy(tf2, ts$imputedfn, adaptive = TRUE, standardized = FALSE)
+  expect_equal(res3, res4)
+  
+  
+})
