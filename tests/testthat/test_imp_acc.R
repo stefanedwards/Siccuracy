@@ -289,6 +289,30 @@ test_that("Adaptive works with less true rows, and imputed are shuffled",{
   expect_length(results$sds, ncol(true))
 })
 
+# Animal's genotype has no variance ---
+test_that('Animal\'s genotype has no variance', {
+  ts <- Siccuracy:::make.test(15, 21)
+  true <- ts$true
+  true[2,] <- 2
+  write.snps(true, ts$truefn)
+  
+  # No standardization, as this changes each element of row 2 -- and it gets variance!
+  imputed <- ts$imputed
+  mat1 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  suppressWarnings(row1 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete')))
+  suppressWarnings(col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')))
+  
+  res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive = TRUE)
+  expect_equal(res$matcor, mat1, tolerance=1e-9)
+  expect_equal(res$rowcors, row1, tolerance=1e-9)
+  expect_equal(res$colcors, col1, tolerance=1e-9)
+  
+  res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive = FALSE)
+  expect_equal(res$matcor, mat1, tolerance=1e-9)
+  expect_equal(res$rowcors, row1, tolerance=1e-9)
+  expect_equal(res$colcors, col1, tolerance=1e-9)
+})
+
 test_that('User-provided centering works',{
   ts <- Siccuracy:::make.test(31, 87)
 
@@ -504,7 +528,7 @@ test_that('Excluding SNPs by given NA allele frequencies does or does not break'
   imputed <- imputed[,-4]
   mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
   row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
-  expect_warning(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')), regexp = 'the standard deviation is zero')
+  suppressWarnings(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')))
 
   expect_equal(res$matcor, mat2)  
   expect_equal(res$rowcors, row2)

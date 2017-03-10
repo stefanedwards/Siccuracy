@@ -1,7 +1,7 @@
 library(testthat)
 library(Siccuracy)
 
-context('Converting plink binary format to AlphaImpute format')
+context('\nConverting plink binary format to AlphaImpute format')
 
 # Requires test files in ../..(/inst)/extdata/testdata, which can be constructed using ../../tools/make_plink_test_files.R
 
