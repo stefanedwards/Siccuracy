@@ -118,9 +118,9 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
   if (!is.null(excludeIDs)) res$rowcors[ex_ids==1] <- NA
   
   
-  res[c('means','sds','rowcors','matcor','colcors','rowID')]
+  #res[c('means','sds','rowcors','matcor','colcors','rowID')]
   with(res, 
-       list(snps=data.frame(means, sds, cors=colcors, correct=colcorrect, true.na=coltruena, imp.na=colimpna, both.na=colbothna),
+       list(matcor=matcor, snps=data.frame(means, sds, cors=colcors, correct=colcorrect, true.na=coltruena, imp.na=colimpna, both.na=colbothna),
             animals=data.frame(rowID, cors=rowcors, correct=rowcorrect, true.na=rowtruena, imp.na=rowimpna, both.na=rowbothna)))
 }
 
@@ -136,12 +136,14 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
 #' @inheritParams imputation_accuracy
 imputation_accuracy3 <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAval=9, standardized=TRUE) {
   .Deprecated('imputation_accuracy', package='Siccuracy')
-  imputation_accuracy(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, adaptive=TRUE)
+  with(imputation_accuracy(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, adaptive=TRUE),
+       list(means=snps$means, sds=snps$sds, rowcors=animals$cors, matcor=matcor))
 }
 
 #' @export
 #' @rdname deprecated
 imputation_accuracy1 <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAval=9, standardized=TRUE) {
   .Deprecated('imputation_accuracy', package='Siccuracy')
-  imputation_accuracy(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, adaptive=FALSE)
+  with(imputation_accuracy(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, adaptive=FALSE),
+       list(means=snps$means, sds=snps$sds, rowcors=animals$cors, matcor=matcor))
 }
