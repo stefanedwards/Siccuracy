@@ -7,7 +7,9 @@
 !! standardized, boolean, whether to standardize genotypes based on entire true genotypes.
 !! rowcor, matcor, colcor, vector of results.
 subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means, sds, &
-    usermeans, rowcors, matcor, colcors, rowID, iexids, iexsnps)
+    usermeans, rowcors, matcor, colcors, rowID, iexids, iexsnps, &
+    tol, colcorrect, coltruena, colimpna, colbothna, &
+         rowcorrect, rowtruena, rowimpna, rowbothna)
   implicit none
   
   integer, parameter :: r8_kind = selected_real_kind(15, 307) ! double precision, 64-bit like, required for transferring to and fro R.
@@ -17,7 +19,9 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
   integer, intent(in) :: nSNPs, NAval, standardized, nAnimals, usermeans
   integer, dimension(nAnimals), intent(in) :: iexids
   integer, dimension(nSNPs), intent(in) :: iexsnps
-  integer, dimension(nAnimals), intent(out) :: rowID
+  integer, dimension(nAnimals), intent(out) :: rowID, rowcorrect, rowtruena, rowimpna, rowbothna
+  integer, dimension(nSNPs), intent(out) :: colcorrect, coltruena, colimpna, colbothna
+  real(r8_kind), intent(in) :: tol
   real(r8_kind), dimension(nSnps), intent(inout) :: means, sds, colcors
   real(r8_kind), dimension(nAnimals), intent(out) :: rowcors
   real(r8_kind), intent(out) :: matcor
@@ -79,12 +83,21 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
   end if
 
   where(iexsnps == 1) sds = 0.
+  
+  colcorrect(:) = 0
+  coltruena(:) = 0
+  colimpna(:) = 0
+  colbothna(:) = 0
+  rowcorrect(:) = 0
+  rowtruena(:) = 0
+  rowimpna(:) = 0
+  rowbothna(:) = 0
 
   !! Go through both files
   open(10, file=truefn, status='OLD')
   open(20, file=imputefn, status='OLD')
   i = 0
-  cst(:)=0; csi(:)=0; csb(:)=0; cNA(:)=0
+  cmt(:)=0; cmp(:)=0; cst(:)=0; csi(:)=0; csb(:)=0; cNA(:)=0
   mst=0; msi=0; msb=0; mn = 0
   rowID(:) = 0
   do
@@ -110,14 +123,30 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
     rsi = 0
     rsb = 0
     
+    !print *, 'Animal', animalID
 
     do j=1,nSnps
+      if (imputed(j) == NAval .and. true(j) == NAval) then
+        colbothna(j) = colbothna(j) + 1
+        rowbothna(i) = rowbothna(i) + 1
+      elseif (imputed(j) == NAval) then
+        colimpna(j) = colimpna(j) + 1
+        rowimpna(i) = rowimpna(i) + 1
+      elseif (true(j) == NAval) then
+        coltruena(j) = coltruena(j) + 1
+        rowtruena(i) = rowtruena(i) + 1
+      endif
       if (imputed(j) == NAval .or. true(j) == NAval .or. sds(j) == 0.) then
         rNA = rNA + 1
         cNA(j) = cNA(j) + 1
         cycle
       end if
       mn = mn + 1
+
+      if (abs(true(j) - imputed(j)) .le. tol) then
+        colcorrect(j) = colcorrect(j) + 1
+        rowcorrect(i) = rowcorrect(i) + 1
+      endif
 
       if (standardized == 1) then
         tru = (true(j)-means(j))/sds(j)
@@ -153,7 +182,9 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
         cmi(j) = cmi(j) + (imp - cmi(j)) / (i - cNA(j))
         csi(j) = csi(j) + (imp - cmq(j)) * (imp - cmi(j))
         csb(j) = csb(j) + (imp - cmi(j)) * (tru - cmp(j))      
-      endif        
+      endif 
+      
+      !print *, j, cmt(j), cmp(j), cst(j)
       
       ! matrix correlation
       if (mn .eq. 1) then
@@ -169,15 +200,24 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
         msb = msb + (imp - mmi) * (tru - mmp)         
       endif
     enddo
+    if (abs(rst) .lt. 1E-24) rst=0
+    if (abs(rsi) .lt. 1E-24) rsi=0
     rowcors(i) = rsb / (sqrt(rst) * sqrt(rsi))
   enddo
   close(10)
   close(20)
 
+  ! Evil 32-bit hacks to ensure "no" variance really is perceived as no variance.
+  if (abs(mst) .lt. 1E-24) mst=0
+  if (abs(msi) .lt. 1E-24) msi=0
   matcor = msb / (sqrt(mst) * sqrt(msi))
 
+  where(abs(cst) .lt. 1E-24) cst=0
+  where(abs(csi) .lt. 1E-24) csi=0
   colcors = csb / (sqrt(cst) * sqrt(csi))
   if (standardized == 1) where (sds == 0) colcors = 1/nan
+
+  !flush(6)
 
 end subroutine
 
@@ -192,21 +232,23 @@ end subroutine
 !!
 !! param nAnimals is the number of animals (rows) in the true file.
 subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means, sds, &
-  usermeans, rowcors, matcor, colcors, rowID, iexids, iexsnps)
+  usermeans, rowcors, matcor, colcors, rowID, iexids, iexsnps, &
+    tol, colcorrect, coltruena, colimpna, colbothna, &
+         rowcorrect, rowtruena, rowimpna, rowbothna)
   implicit none
   
   integer, parameter :: r8_kind = selected_real_kind(15, 150) ! double precision, 64-bit like, required for transferring to and fro R.
 
-  !! Arguments
   character(255), intent(in) :: truefn, imputefn
-  integer, dimension(nAnimals), intent(in) :: iexids
-  integer, dimension(nSNPs), intent(in) :: iexsnps  
   integer, intent(in) :: nSNPs, NAval, standardized, nAnimals, usermeans
+  integer, dimension(nAnimals), intent(in) :: iexids
+  integer, dimension(nSNPs), intent(in) :: iexsnps
+  integer, dimension(nAnimals), intent(out) :: rowID, rowcorrect, rowtruena, rowimpna, rowbothna
+  integer, dimension(nSNPs), intent(out) :: colcorrect, coltruena, colimpna, colbothna
+  real(r8_kind), intent(in) :: tol
   real(r8_kind), dimension(nSnps), intent(inout) :: means, sds, colcors
   real(r8_kind), dimension(nAnimals), intent(out) :: rowcors
-  integer, dimension(nAnimals), intent(out) :: rowID
   real(r8_kind), intent(out) :: matcor
-
   !! Private variables
   logical, dimension(nAnimals) :: foundID
   integer :: stat, start, animalID, commonrows, i, j, k, l, maxanimal, minanimal, ianimalID
@@ -231,6 +273,15 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
   rowcors(:) = 0.0
   colcors(:) = 0.0
   foundID(:) = .false.
+  
+  colcorrect(:) = 0
+  coltruena(:) = 0
+  colimpna(:) = 0
+  colbothna(:) = 0
+  rowcorrect(:) = 0
+  rowtruena(:) = 0
+  rowimpna(:) = 0
+  rowbothna(:) = 0
   
   !! Read in true genotype fil
   open(10, file=truefn, status='OLD')
@@ -352,6 +403,16 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
     rsb = 0
 
     do j=1,nSnps
+      if (imputed(j) == NAval .and. trueMat(i,j) == NAval) then
+        colbothna(j) = colbothna(j) + 1
+        rowbothna(i) = rowbothna(i) + 1
+      elseif (imputed(j) == NAval) then
+        colimpna(j) = colimpna(j) + 1
+        rowimpna(i) = rowimpna(i) + 1
+      elseif (trueMat(i,j) == NAval) then
+        coltruena(j) = coltruena(j) + 1
+        rowtruena(i) = rowtruena(i) + 1
+      endif    
       if (imputed(j) == NAval .or. trueMat(i,j) == Naval .or. sds(j) == 0.) then
         rNA = rNA + 1
         cNA(j) = cNA(j) + 1
@@ -365,6 +426,11 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
       else
         tru = trueMat(i,j)
         imp = imputed(j)
+      endif
+      
+      if (abs(trueMat(i,j) - imputed(j)) .le. tol) then
+        colcorrect(j) = colcorrect(j) + 1
+        rowcorrect(i) = rowcorrect(i) + 1
       endif
 
       ! rowcorrelation
@@ -410,15 +476,21 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
       endif
       
     end do ! end of j=1,nSNPs
-
+    if (abs(rst) .lt. 1E-24) rst=0
+    if (abs(rsi) .lt. 1E-24) rsi=0
     rowcors(i) = rsb / (sqrt(rst) * sqrt(rsi))
     i = i + 1
   enddo
   close(10)
   close(20)
 
+  ! Evil 32-bit hacks to ensure "no" variance really is perceived as no variance.
+  if (abs(mst) .lt. 1E-24) mst=0
+  if (abs(msi) .lt. 1E-24) msi=0
   matcor = msb / (sqrt(mst) * sqrt(msi))
   
+  where(abs(cst) .lt. 1E-24) cst=0
+  where(abs(csi) .lt. 1E-24) csi=0
   colcors = csb / (sqrt(cst) * sqrt(csi))
   
   if (standardized == 1)  where (sds == 0.) colcors = 1/nan

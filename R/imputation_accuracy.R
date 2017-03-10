@@ -40,7 +40,7 @@
 #' }
 #' @export
 #' @seealso \code{\link{write.snps}} for writing SNPs to a file.
-imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, standardized=TRUE, adaptive=TRUE, center=NULL, scale=NULL, p=NULL, excludeIDs=NULL, excludeSNPs=NULL) {
+imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, standardized=TRUE, adaptive=TRUE, center=NULL, scale=NULL, p=NULL, excludeIDs=NULL, excludeSNPs=NULL, tol=0.1) {
   stopifnot(file.exists(truefn))
   stopifnot(file.exists(imputefn))
   
@@ -98,6 +98,9 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
                   rowID=vector('integer',n),
                   excludeIDs=as.integer(ex_ids),
                   excludeSNPs=as.integer(ex_snps),
+                  tol=as.numeric(tol),
+                  colcorrect=vector('integer',m), coltruena=vector('integer',m), colimpna=vector('integer',m), colbothna=vector('integer',m), 
+                  rowcorrect=vector('integer',n), rowtruena=vector('integer',n), rowimpna=vector('integer',n), rowbothna=vector('integer',n),
                   NAOK=FALSE,
                   PACKAGE='Siccuracy')
   res$colcors[is.infinite(res$colcors)] <- NA
@@ -107,8 +110,8 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
   if (standardized) res$means[(res$means- -9) < 1e-8] <- NA
   #res$sds[res$sds == 0.0] <- NA
   
-  if (adaptive & any(is.na(res$rowcors))) {
-    res$rowcors <- res$rowcors[!is.na(res$rowcors)]
+  if (adaptive & any(is.na(res$rowID))) {
+    res$rowcors <- res$rowcors[!is.na(res$rowID)]
     res$rowID <- res$rowID[!is.na(res$rowID)]
   }
   
@@ -116,6 +119,9 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
   
   
   res[c('means','sds','rowcors','matcor','colcors','rowID')]
+  with(res, 
+       list(snps=data.frame(means, sds, cors=colcors, correct=colcorrect, true.na=coltruena, imp.na=colimpna, both.na=colbothna),
+            animals=data.frame(rowID, cors=rowcors, correct=rowcorrect, true.na=rowtruena, imp.na=rowimpna, both.na=rowbothna)))
 }
 
 #' \code{imputation_accuracy1} and \code{imputation_accuracy3} has been replaced by \code{\link{imputation_accuracy}}.

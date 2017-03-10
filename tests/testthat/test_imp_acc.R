@@ -84,6 +84,52 @@ test_that("Results matches R's correlations (standardized=TRUE)",{
   expect_equal(results$sds, v, tolerance=1e-9)
 })
 
+# Gene dosages ----
+
+test_that('Imputation accuracies handles gene dosages, i.e. numeric values', {
+  ts <- Siccuracy:::make.test(15, 21)
+  r <- sample.int(prod(dim(ts$imputed)), prod(dim(ts$imputed))*0.5)
+  imputed <- ts$imputed
+  imputed[r] <- imputed[r] + round(rnorm(length(r), sd=0.3), 2)
+  imputed[imputed < 0] <- 0
+  imputed[imputed > 2] <- 2
+  write.snps(imputed, ts$imputedfn)
+  true <- ts$true
+    
+  mat1 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row1 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  suppressWarnings(col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')))
+  
+  results <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive=FALSE)
+  expect_equal(results$matcor, mat1, tolerance=1e-8)
+  expect_equal(results$rowcors, row1, tolerance=1e-8)
+  expect_equal(results$colcors, col1, tolerance=1e-8)
+
+  results <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive=TRUE)
+  expect_equal(results$matcor, mat1, tolerance=1e-8)
+  expect_equal(results$rowcors, row1, tolerance=1e-8)
+  expect_equal(results$colcors, col1, tolerance=1e-8)
+  
+  m <- apply(true, 2, mean)
+  v <- apply(true, 2, sd)
+  true <- scale(true, m, v)
+  imputed <- scale(imputed, m, v)
+  mat1 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
+  row1 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
+  col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  
+  results <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = TRUE, adaptive=FALSE)
+  expect_equal(results$matcor, mat1, tolerance=1e-8)
+  expect_equal(results$rowcors, row1, tolerance=1e-8)
+  expect_equal(results$colcors, col1, tolerance=1e-8)
+  
+  results <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = TRUE, adaptive=TRUE)
+  expect_equal(results$matcor, mat1, tolerance=1e-8)
+  expect_equal(results$rowcors, row1, tolerance=1e-8)
+  expect_equal(results$colcors, col1, tolerance=1e-8)
+  
+})
+
 test_that('Non-adaptive handles missing SNPs in true files (exact match btw. true and genotyped)',{
   ts <- Siccuracy:::make.test(15, 21)
   imputed <- ts$imputed
@@ -367,9 +413,9 @@ test_that('User-provided scaling works',{
 
 # User-provided allele frequencies works: ----
 test_that('User-provided allele frequencies works:',{
-  ts <- Siccuracy:::make.test(31, 87)
+  ts <- Siccuracy:::make.test(10, 13)
   
-  p <- runif(ncol(ts$true), 0.01, 0.5)
+  p <- seq(0.01, 0.05, length.out=ncol(ts$true))
   m <- 2*p
   v <- 2*p*(1-p)
   results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized = TRUE, adaptive = FALSE, p=p)
@@ -585,7 +631,7 @@ test_that('Excluding individuals or SNPs from correations', {
   
   mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
   row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
-  expect_warning(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')), regexp = 'the standard deviation is zero')
+  suppressWarnings(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')))
   expect_equal(res$matcor, mat2)  
   expect_equal(res$rowcors, row2)
   expect_equal(res$colcors, col2)
@@ -613,7 +659,7 @@ test_that('Excluding individuals or SNPs from correations', {
   
   mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
   row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
-  expect_warning(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')), regexp = 'the standard deviation is zero')
+  suppressWarnings(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')))
   expect_equal(res$matcor, mat2)  
   expect_equal(res$rowcors, row2)
   expect_equal(res$colcors, col2)
@@ -638,7 +684,7 @@ test_that('Excluding individuals or SNPs from correations, adaptive', {
   
   mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
   row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
-  expect_warning(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')), regexp = 'the standard deviation is zero')
+  suppressWarnings(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')))
   expect_equal(res$matcor, mat2)  
   expect_equal(res$rowcors, row2)
   expect_equal(res$colcors, col2)
@@ -667,9 +713,145 @@ test_that('Excluding individuals or SNPs from correations, adaptive', {
   
   mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
   row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
-  expect_warning(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')), regexp = 'the standard deviation is zero')
+  suppressWarnings(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')))
   expect_equal(res$matcor, mat2)  
   expect_equal(res$rowcors, row2)
   expect_equal(res$colcors, col2)
   
+})
+
+
+# Constant animal -----
+test_that('Animal is constant', {
+  ts <- Siccuracy:::make.test(15, 21)
+  true <- ts$true
+  
+  # No standardization, as it induces variance in a row
+  true[5,] <- 2
+  true[,8] <- 2
+  write.snps(true, ts$truefn)
+  
+  
+  mat2 <- cor(as.vector(true), as.vector(ts$imputed), use = 'complete.obs')
+  suppressWarnings(row2 <- sapply(1:nrow(true), function(i) cor(true[i,], ts$imputed[i,], use='na.or.complete')))
+  suppressWarnings(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], ts$imputed[,i], use='na.or.complete')))
+  expect_true(is.na(row2[5]))
+  expect_true(is.na(col2[8]))
+  
+  res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive=FALSE)
+  expect_equal(res$matcor, mat2)  
+  expect_equal(res$rowcors, row2)
+  expect_equal(res$colcors, col2)
+  
+  res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive=TRUE)
+  expect_equal(res$matcor, mat2)  
+  expect_equal(res$rowcors, row2)
+  expect_equal(res$colcors, col2)
+})
+
+# Counting correct and incorrect ----
+test_that('Counting correct and incorrect works, no dosages', {
+  ts <- Siccuracy:::make.test(15, 21)
+  true <- ts$true
+  true[sample.int(prod(dim(true)), prod(dim(true))*0.4)] <- NA
+  write.snps(true, ts$truefn)
+  imputed <- ts$imputed
+  
+  rownames(imputed) <- rownames(true) <- NULL
+  
+  comp <- true == imputed
+  true <- is.na(true)
+  imputed <- is.na(imputed)
+  both.na <- true & imputed
+  only.tru <- true & !imputed
+  only.imp <- !true & imputed
+  
+  row.correct <- rowSums(comp, na.rm = TRUE)
+  row.na.imp <- rowSums(only.imp)
+  row.na.tru <- rowSums(only.tru)
+  row.na.both <- rowSums(both.na)
+  
+  col.correct <- colSums(comp, na.rm=TRUE)
+  col.na.imp <- colSums(only.imp)
+  col.na.tru <- colSums(only.tru)
+  col.na.both <- colSums(both.na)
+
+  results <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=FALSE)
+  expect_equal(results$snps$correct, col.correct)
+  expect_equal(results$snps$true.na, col.na.tru)
+  expect_equal(results$snps$imp.na, col.na.imp)
+  expect_equal(results$snps$both.na, col.na.both)
+
+  expect_equal(results$animals$correct, row.correct)
+  expect_equal(results$animals$true.na, row.na.tru)
+  expect_equal(results$animals$imp.na, row.na.imp)
+  expect_equal(results$animals$both.na, row.na.both)
+
+  results <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=TRUE)
+  expect_equal(results$snps$correct, col.correct)
+  expect_equal(results$snps$true.na, col.na.tru)
+  expect_equal(results$snps$imp.na, col.na.imp)
+  expect_equal(results$snps$both.na, col.na.both)
+  
+  expect_equal(results$animals$correct, row.correct)
+  expect_equal(results$animals$true.na, row.na.tru)
+  expect_equal(results$animals$imp.na, row.na.imp)
+  expect_equal(results$animals$both.na, row.na.both)
+  
+})
+
+test_that('Counting correct and incorrect works, dosages', {
+  ts <- Siccuracy:::make.test(15, 21)
+  true <- ts$true
+  true[sample.int(prod(dim(true)), prod(dim(true))*0.4)] <- NA
+  write.snps(true, ts$truefn)
+  imputed <- ts$imputed
+  p <- sample.int(prod(dim(imputed)), prod(dim(imputed))*0.7)
+  imputed[p] <- imputed[p] + rnorm(length(p), mean=0, sd=0.2)
+  imputed[imputed > 2] <- 2
+  imputed[imputed < 0] <- 0
+  write.snps(imputed, ts$imputedfn)
+  
+  rownames(imputed) <- rownames(true) <- NULL
+  
+  comp <- abs(true - imputed) < 0.2
+  true <- is.na(true)
+  imputed <- is.na(imputed)
+  both.na <- true & imputed
+  only.tru <- true & !imputed
+  only.imp <- !true & imputed
+
+  row.correct <- rowSums(comp, na.rm = TRUE)
+  row.na.imp <- rowSums(only.imp)
+  row.na.tru <- rowSums(only.tru)
+  row.na.both <- rowSums(both.na)
+  
+  col.correct <- colSums(comp, na.rm=TRUE)
+  col.na.imp <- colSums(only.imp)
+  col.na.tru <- colSums(only.tru)
+  col.na.both <- colSums(both.na)
+  
+  results <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=FALSE, tol = 0.2)
+  expect_equal(results$snps$correct, col.correct)
+  expect_equal(results$snps$true.na, col.na.tru)
+  expect_equal(results$snps$imp.na, col.na.imp)
+  expect_equal(results$snps$both.na, col.na.both)
+  
+  expect_equal(results$animals$correct, row.correct)
+  expect_equal(results$animals$true.na, row.na.tru)
+  expect_equal(results$animals$imp.na, row.na.imp)
+  expect_equal(results$animals$both.na, row.na.both)
+
+  results <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=TRUE, tol = 0.2)
+  expect_equal(results$snps$correct, col.correct)
+  expect_equal(results$snps$true.na, col.na.tru)
+  expect_equal(results$snps$imp.na, col.na.imp)
+  expect_equal(results$snps$both.na, col.na.both)
+  
+  expect_equal(results$animals$correct, row.correct)
+  expect_equal(results$animals$true.na, row.na.tru)
+  expect_equal(results$animals$imp.na, row.na.imp)
+  expect_equal(results$animals$both.na, row.na.both)
+  
+    
 })
