@@ -7,25 +7,25 @@ test_that("Lengths of returned vectors matches expected lengths (non-adaptive)",
   ts <- Siccuracy:::make.test(15, 21)
   results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized=TRUE, adaptive=FALSE)
   true <- ts$true
-  expect_equal(length(results$means), ncol(true))
-  expect_equal(length(results$sds), ncol(true))
-  expect_equal(length(results$rowcors), nrow(true))
+  expect_equal(length(results$snps$means), ncol(true))
+  expect_equal(length(results$snps$sds), ncol(true))
+  expect_equal(length(results$animals$cors), nrow(true))
   expect_equal(length(results$matcor), 1)
-  expect_equal(length(results$colcors), ncol(true))
-  expect_equal(length(results$rowID), nrow(true))
-  expect_equal(results$rowID, as.integer(rownames(true)))
+  expect_equal(length(results$snps$cors), ncol(true))
+  expect_equal(length(results$animals$rowID), nrow(true))
+  expect_equal(results$animals$rowID, as.integer(rownames(true)))
 })
 test_that("Lengths of returned vectors matches expected lengths (adaptive)",{
   ts <- Siccuracy:::make.test(15, 21)
   results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized=TRUE, adaptive=TRUE)
   true <- ts$true
-  expect_equal(length(results$means), ncol(true))
-  expect_equal(length(results$sds), ncol(true))
-  expect_equal(length(results$rowcors), nrow(true))
+  expect_equal(length(results$snps$means), ncol(true))
+  expect_equal(length(results$snps$sds), ncol(true))
+  expect_equal(length(results$animals$cors), nrow(true))
   expect_equal(length(results$matcor), 1)
-  expect_equal(length(results$colcors), ncol(true))
-  expect_equal(length(results$rowID), nrow(true))
-  expect_equal(results$rowID, as.integer(rownames(true)))
+  expect_equal(length(results$snps$cors), ncol(true))
+  expect_equal(length(results$animals$rowID), nrow(true))
+  expect_equal(results$animals$rowID, as.integer(rownames(true)))
 })
 
 test_that("Results matches R's correlations (standardized=FALSE)",{
@@ -40,16 +40,16 @@ test_that("Results matches R's correlations (standardized=FALSE)",{
   #context('Fast')
   results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, na=9, standardized=FALSE, adaptive=FALSE)
   expect_equal(results$matcor, mat1, tolerance=1e-15)
-  expect_equal(results$rowcors, row1, tolerance=1e-15)
-  expect_equal(results$colcors, col1, tolerance=1e-15)
-  expect_equal(results$rowID, as.integer(rownames(true)))
+  expect_equal(results$animals$cors, row1, tolerance=1e-15)
+  expect_equal(results$snps$cors, col1, tolerance=1e-15)
+  expect_equal(results$animals$rowID, as.integer(rownames(true)))
   
   #context('Adaptive')
   results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, na=9, standardized=FALSE, adaptive=TRUE)
   expect_equal(results$matcor, mat1, tolerance=1e-9)
-  expect_equal(results$rowcors, row1, tolerance=1e-9)
-  expect_equal(results$colcors, col1, tolerance=1e-9)
-  expect_equal(results$rowID, as.integer(rownames(true)))
+  expect_equal(results$animals$cors, row1, tolerance=1e-9)
+  expect_equal(results$snps$cors, col1, tolerance=1e-9)
+  expect_equal(results$animals$rowID, as.integer(rownames(true)))
 })
 
 
@@ -69,19 +69,19 @@ test_that("Results matches R's correlations (standardized=TRUE)",{
   #context('Fast')
   results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, na=9, standardized=TRUE, adaptive=FALSE)
   expect_equal(results$matcor, mat1, tolerance=1e-15)
-  expect_equal(results$rowcors, row1, tolerance=1e-15)
-  expect_equal(results$colcors, col1, tolerance=1e-15)
-  expect_equal(results$means, m, tolerance=1e-9)
-  expect_equal(results$sds, v, tolerance=1e-9)
+  expect_equal(results$animals$cors, row1, tolerance=1e-15)
+  expect_equal(results$snps$cors, col1, tolerance=1e-15)
+  expect_equal(results$snps$means, m, tolerance=1e-9)
+  expect_equal(results$snps$sds, v, tolerance=1e-9)
   
   
   #context('Adaptive')
   results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, na=9, standardized=TRUE, adaptive=TRUE)
   expect_equal(results$matcor, mat1, tolerance=1e-9)
-  expect_equal(results$rowcors, row1, tolerance=1e-9)
-  expect_equal(results$colcors, col1, tolerance=1e-9)
-  expect_equal(results$means, m, tolerance=1e-9)
-  expect_equal(results$sds, v, tolerance=1e-9)
+  expect_equal(results$animals$cors, row1, tolerance=1e-9)
+  expect_equal(results$snps$cors, col1, tolerance=1e-9)
+  expect_equal(results$snps$means, m, tolerance=1e-9)
+  expect_equal(results$snps$sds, v, tolerance=1e-9)
 })
 
 # Gene dosages ----
@@ -102,13 +102,13 @@ test_that('Imputation accuracies handles gene dosages, i.e. numeric values', {
   
   results <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive=FALSE)
   expect_equal(results$matcor, mat1, tolerance=1e-8)
-  expect_equal(results$rowcors, row1, tolerance=1e-8)
-  expect_equal(results$colcors, col1, tolerance=1e-8)
+  expect_equal(results$animals$cors, row1, tolerance=1e-8)
+  expect_equal(results$snps$cors, col1, tolerance=1e-8)
 
   results <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive=TRUE)
   expect_equal(results$matcor, mat1, tolerance=1e-8)
-  expect_equal(results$rowcors, row1, tolerance=1e-8)
-  expect_equal(results$colcors, col1, tolerance=1e-8)
+  expect_equal(results$animals$cors, row1, tolerance=1e-8)
+  expect_equal(results$snps$cors, col1, tolerance=1e-8)
   
   m <- apply(true, 2, mean)
   v <- apply(true, 2, sd)
@@ -120,13 +120,13 @@ test_that('Imputation accuracies handles gene dosages, i.e. numeric values', {
   
   results <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = TRUE, adaptive=FALSE)
   expect_equal(results$matcor, mat1, tolerance=1e-8)
-  expect_equal(results$rowcors, row1, tolerance=1e-8)
-  expect_equal(results$colcors, col1, tolerance=1e-8)
+  expect_equal(results$animals$cors, row1, tolerance=1e-8)
+  expect_equal(results$snps$cors, col1, tolerance=1e-8)
   
   results <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = TRUE, adaptive=TRUE)
   expect_equal(results$matcor, mat1, tolerance=1e-8)
-  expect_equal(results$rowcors, row1, tolerance=1e-8)
-  expect_equal(results$colcors, col1, tolerance=1e-8)
+  expect_equal(results$animals$cors, row1, tolerance=1e-8)
+  expect_equal(results$snps$cors, col1, tolerance=1e-8)
   
 })
 
@@ -147,8 +147,8 @@ test_that('Non-adaptive handles missing SNPs in true files (exact match btw. tru
   col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
   
   expect_equal(results$matcor, mat1, tolerance=1e-9)
-  expect_equal(results$rowcors, row1, tolerance=1e-9)
-  expect_equal(results$colcors, col1, tolerance=1e-9)
+  expect_equal(results$animals$cors, row1, tolerance=1e-9)
+  expect_equal(results$snps$cors, col1, tolerance=1e-9)
 
   #context('Standardized')
   results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized = TRUE, adaptive = FALSE)
@@ -163,10 +163,10 @@ test_that('Non-adaptive handles missing SNPs in true files (exact match btw. tru
   
   v[is.na(v)] <- 0.0
   expect_equal(results$matcor, mat1, tolerance=1e-9)
-  expect_equal(results$rowcors, row1, tolerance=1e-9)
-  expect_equal(results$colcors, col1, tolerance=1e-9)
-  expect_equal(results$means, m)
-  expect_equal(results$sds, v)
+  expect_equal(results$animals$cors, row1, tolerance=1e-9)
+  expect_equal(results$snps$cors, col1, tolerance=1e-9)
+  expect_equal(results$snps$means, m)
+  expect_equal(results$snps$sds, v)
   
 })
 
@@ -187,8 +187,8 @@ test_that('Non-adaptive handles missing SNPs in true files',{
   expect_warning(col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')), regexp = 'the standard deviation is zero')
   
   expect_equal(results$matcor, mat1, tolerance=1e-9)
-  expect_equal(results$rowcors, row1, tolerance=1e-9)
-  expect_equal(results$colcors, col1, tolerance=1e-9)
+  expect_equal(results$animals$cors, row1, tolerance=1e-9)
+  expect_equal(results$snps$cors, col1, tolerance=1e-9)
   
   #context('Standardized')
   results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized = TRUE, adaptive = FALSE)
@@ -203,10 +203,10 @@ test_that('Non-adaptive handles missing SNPs in true files',{
   
   v[is.na(v)] <- 0.0
   expect_equal(results$matcor, mat1, tolerance=1e-9)
-  expect_equal(results$rowcors, row1, tolerance=1e-9)
-  expect_equal(results$colcors, col1, tolerance=1e-9)
-  expect_equal(results$means, m)
-  expect_equal(results$sds, v)
+  expect_equal(results$animals$cors, row1, tolerance=1e-9)
+  expect_equal(results$snps$cors, col1, tolerance=1e-9)
+  expect_equal(results$snps$means, m)
+  expect_equal(results$snps$sds, v)
   
 })
 
@@ -227,8 +227,8 @@ test_that('Adaptive handles missing SNPs in true files (exact match btw. true an
   col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
   
   expect_equal(results$matcor, mat1, tolerance=1e-9)
-  expect_equal(results$rowcors, row1, tolerance=1e-9)
-  expect_equal(results$colcors, col1, tolerance=1e-9)
+  expect_equal(results$animals$cors, row1, tolerance=1e-9)
+  expect_equal(results$snps$cors, col1, tolerance=1e-9)
   
   #context('Standardized')
   results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized = TRUE, adaptive = TRUE)
@@ -243,10 +243,10 @@ test_that('Adaptive handles missing SNPs in true files (exact match btw. true an
   
   v[is.na(v)] <- 0.0
   expect_equal(results$matcor, mat1, tolerance=1e-9)
-  expect_equal(results$rowcors, row1, tolerance=1e-9)
-  expect_equal(results$colcors, col1, tolerance=1e-9)
-  expect_equal(results$means, m)
-  expect_equal(results$sds, v)
+  expect_equal(results$animals$cors, row1, tolerance=1e-9)
+  expect_equal(results$snps$cors, col1, tolerance=1e-9)
+  expect_equal(results$snps$means, m)
+  expect_equal(results$snps$sds, v)
   
 })
 
@@ -268,8 +268,8 @@ test_that('Adaptive handles missing SNPs in true files',{
   expect_warning(col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')), regexp = 'the standard deviation is zero')
   
   expect_equal(results$matcor, mat1, tolerance=1e-9)
-  expect_equal(results$rowcors, row1, tolerance=1e-9)
-  expect_equal(results$colcors, col1, tolerance=1e-9)
+  expect_equal(results$animals$cors, row1, tolerance=1e-9)
+  expect_equal(results$snps$cors, col1, tolerance=1e-9)
   
   #context('Standardized')
   results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized = TRUE, adaptive = TRUE)
@@ -284,10 +284,10 @@ test_that('Adaptive handles missing SNPs in true files',{
   
   v[is.na(v)] <- 0.0
   expect_equal(results$matcor, mat1, tolerance=1e-9)
-  expect_equal(results$rowcors, row1, tolerance=1e-9)
-  expect_equal(results$colcors, col1, tolerance=1e-9)
-  expect_equal(results$means, m)
-  expect_equal(results$sds, v)
+  expect_equal(results$animals$cors, row1, tolerance=1e-9)
+  expect_equal(results$snps$cors, col1, tolerance=1e-9)
+  expect_equal(results$snps$means, m)
+  expect_equal(results$snps$sds, v)
   
 })
 
@@ -305,12 +305,12 @@ test_that("Adaptive works with more true rows, and imputed are shuffled",{
     
   results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, na=9, standardized=FALSE, adaptive=TRUE)
   expect_equal(results$matcor, mat2, tolerance=1e-9)
-  expect_equal(results$rowcors, row2, tolerance=1e-9)
-  expect_equal(results$colcors, col2, tolerance=1e-9)
-  expect_equal(results$means, rep(0, length(results$means)), tolerance=1e-9)
-  expect_equal(results$sds, rep(1, length(results$sds)), tolerance=1e-9)  
-  expect_length(results$means, ncol(true))
-  expect_length(results$sds, ncol(true))
+  expect_equal(results$animals$cors, row2, tolerance=1e-9)
+  expect_equal(results$snps$cors, col2, tolerance=1e-9)
+  expect_equal(results$snps$means, rep(0, length(results$snps$means)), tolerance=1e-9)
+  expect_equal(results$snps$sds, rep(1, length(results$snps$sds)), tolerance=1e-9)  
+  expect_length(results$snps$means, ncol(true))
+  expect_length(results$snps$sds, ncol(true))
 })
 
 test_that("Adaptive works with less true rows, and imputed are shuffled",{
@@ -327,12 +327,12 @@ test_that("Adaptive works with less true rows, and imputed are shuffled",{
   
   results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, na=9, standardized=FALSE, adaptive=TRUE)
   expect_equal(results$matcor, mat2, tolerance=1e-9)
-  expect_equal(results$rowcors, row2, tolerance=1e-9)
-  expect_equal(results$colcors, col2, tolerance=1e-9)
-  expect_equal(results$means, rep(0, length(results$means)), tolerance=1e-9)
-  expect_equal(results$sds, rep(1, length(results$sds)), tolerance=1e-9)  
-  expect_length(results$means, ncol(true))
-  expect_length(results$sds, ncol(true))
+  expect_equal(results$animals$cors, row2, tolerance=1e-9)
+  expect_equal(results$snps$cors, col2, tolerance=1e-9)
+  expect_equal(results$snps$means, rep(0, length(results$snps$means)), tolerance=1e-9)
+  expect_equal(results$snps$sds, rep(1, length(results$snps$sds)), tolerance=1e-9)  
+  expect_length(results$snps$means, ncol(true))
+  expect_length(results$snps$sds, ncol(true))
 })
 
 # Animal's genotype has no variance ---
@@ -350,13 +350,13 @@ test_that('Animal\'s genotype has no variance', {
   
   res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive = TRUE)
   expect_equal(res$matcor, mat1, tolerance=1e-9)
-  expect_equal(res$rowcors, row1, tolerance=1e-9)
-  expect_equal(res$colcors, col1, tolerance=1e-9)
+  expect_equal(res$animals$cors, row1, tolerance=1e-9)
+  expect_equal(res$snps$cors, col1, tolerance=1e-9)
   
   res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive = FALSE)
   expect_equal(res$matcor, mat1, tolerance=1e-9)
-  expect_equal(res$rowcors, row1, tolerance=1e-9)
-  expect_equal(res$colcors, col1, tolerance=1e-9)
+  expect_equal(res$animals$cors, row1, tolerance=1e-9)
+  expect_equal(res$snps$cors, col1, tolerance=1e-9)
 })
 
 test_that('User-provided centering works',{
@@ -373,15 +373,15 @@ test_that('User-provided centering works',{
   expect_warning(col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')), regexp = 'the standard deviation is zero')
   
   expect_equal(results$matcor, mat1, tolerance=1e-9)
-  expect_equal(results$rowcors, row1, tolerance=1e-9)
-  expect_equal(results$colcors, col1, tolerance=1e-9)
+  expect_equal(results$animals$cors, row1, tolerance=1e-9)
+  expect_equal(results$snps$cors, col1, tolerance=1e-9)
   
   #context('Adaptive')
   results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized = TRUE, adaptive = TRUE, center=m)
   
   expect_equal(results$matcor, mat1, tolerance=1e-9)
-  expect_equal(results$rowcors, row1, tolerance=1e-9)
-  expect_equal(results$colcors, col1, tolerance=1e-9)
+  expect_equal(results$animals$cors, row1, tolerance=1e-9)
+  expect_equal(results$snps$cors, col1, tolerance=1e-9)
   
 })
 
@@ -399,15 +399,15 @@ test_that('User-provided scaling works',{
   expect_warning(col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')), regexp = 'the standard deviation is zero')
   
   expect_equal(results$matcor, mat1, tolerance=1e-9)
-  expect_equal(results$rowcors, row1, tolerance=1e-9)
-  expect_equal(results$colcors, col1, tolerance=1e-9)
+  expect_equal(results$animals$cors, row1, tolerance=1e-9)
+  expect_equal(results$snps$cors, col1, tolerance=1e-9)
   
   #context('Adaptive')
   results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized = TRUE, adaptive = TRUE, scale=v)
   
   expect_equal(results$matcor, mat1, tolerance=1e-9)
-  expect_equal(results$rowcors, row1, tolerance=1e-9)
-  expect_equal(results$colcors, col1, tolerance=1e-9)
+  expect_equal(results$animals$cors, row1, tolerance=1e-9)
+  expect_equal(results$snps$cors, col1, tolerance=1e-9)
   
 })
 
@@ -427,15 +427,15 @@ test_that('User-provided allele frequencies works:',{
   expect_warning(col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')), regexp = 'the standard deviation is zero')
   
   expect_equal(results$matcor, mat1, tolerance=1e-9)
-  expect_equal(results$rowcors, row1, tolerance=1e-9)
-  expect_equal(results$colcors, col1, tolerance=1e-9)
+  expect_equal(results$animals$cors, row1, tolerance=1e-9)
+  expect_equal(results$snps$cors, col1, tolerance=1e-9)
   
   #context('Adaptive')
   results <- imputation_accuracy(truefn=ts$truefn, imputefn=ts$imputedfn, standardized = TRUE, adaptive = TRUE, p=p)
   
   expect_equal(results$matcor, mat1, tolerance=1e-9)
-  expect_equal(results$rowcors, row1, tolerance=1e-9)
-  expect_equal(results$colcors, col1, tolerance=1e-9)
+  expect_equal(results$animals$cors, row1, tolerance=1e-9)
+  expect_equal(results$snps$cors, col1, tolerance=1e-9)
   
 })
 
@@ -458,15 +458,15 @@ test_that('Adaptive and non-adaptive returns same results',{
   resn <- imputation_accuracy(t2, ts$imputedfn, standardized=FALSE, adaptive=FALSE)
   resa <- imputation_accuracy(t1, ts$imputedfn, standardized=FALSE, adaptive=TRUE)
   expect_equal(resn$matcor, resa$matcor)
-  expect_equal(resn$colcors, resa$colcors)
-  expect_equal(resn$rowcors, resa$rowcors[match(resn$rowID, resa$rowID)])
+  expect_equal(resn$snps$cors, resa$snps$cors)
+  expect_equal(resn$animals$cors, resa$animals$cors[match(resn$animals$rowID, resa$animals$rowID)])
 
   het <- heterozygosity(t1)  
   resn <- imputation_accuracy(t2, ts$imputedfn, standardized=TRUE, adaptive=FALSE, p=het$p)
   resa <- imputation_accuracy(t1, ts$imputedfn, standardized=TRUE, adaptive=TRUE, p=het$p)
   expect_equal(resn$matcor, resa$matcor)
-  expect_equal(resn$colcors, resa$colcors)
-  expect_equal(resn$rowcors, resa$rowcors[match(resn$rowID, resa$rowID)])
+  expect_equal(resn$snps$cors, resa$snps$cors)
+  expect_equal(resn$animals$cors, resa$animals$cors[match(resn$animals$rowID, resa$animals$rowID)])
 })
   
 test_that('True-animals gets correlation of 1',{
@@ -482,16 +482,16 @@ test_that('True-animals gets correlation of 1',{
   expect_warning(col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')), regexp = 'the standard deviation is zero')
   
   res1 <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive = FALSE)
-  expect_equal(res1$colcors, col1)
-  expect_equal(res1$rowcors, row1)
+  expect_equal(res1$snps$cors, col1)
+  expect_equal(res1$animals$cors, row1)
   expect_equal(res1$matcor, mat1)
-  expect_equal(res1$rowcors[tid], rep(1, length(tid)))
+  expect_equal(res1$animals$cors[tid], rep(1, length(tid)))
   
   res1 <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive = TRUE)
-  expect_equal(res1$colcors, col1)
-  expect_equal(res1$rowcors, row1)
+  expect_equal(res1$snps$cors, col1)
+  expect_equal(res1$animals$cors, row1)
   expect_equal(res1$matcor, mat1)
-  expect_equal(res1$rowcors[tid], rep(1, length(tid)))
+  expect_equal(res1$animals$cors[tid], rep(1, length(tid)))
   
   m <- apply(true, 2, mean)
   v <- apply(true, 2, sd)
@@ -502,16 +502,16 @@ test_that('True-animals gets correlation of 1',{
   col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
 
   res2 <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = TRUE, adaptive = FALSE)
-  expect_equal(res2$colcors, col2)
-  expect_equal(res2$rowcors, row2)
+  expect_equal(res2$snps$cors, col2)
+  expect_equal(res2$animals$cors, row2)
   expect_equal(res2$matcor, mat2)
-  expect_equal(res2$rowcors[tid], rep(1, length(tid)))
+  expect_equal(res2$animals$cors[tid], rep(1, length(tid)))
   
   res2 <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = TRUE, adaptive = TRUE)
-  expect_equal(res2$colcors, col2)
-  expect_equal(res2$rowcors, row2)
+  expect_equal(res2$snps$cors, col2)
+  expect_equal(res2$animals$cors, row2)
   expect_equal(res2$matcor, mat2)
-  expect_equal(res2$rowcors[tid], rep(1, length(tid)))
+  expect_equal(res2$animals$cors[tid], rep(1, length(tid)))
 })
 
 test_that('True-columns gets correlation of 1',{
@@ -529,16 +529,16 @@ test_that('True-columns gets correlation of 1',{
   cid <- setdiff(cid, which(is.na(col1)))
   
   res1 <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive = FALSE)
-  expect_equal(res1$colcors, col1)
-  expect_equal(res1$rowcors, row1)
+  expect_equal(res1$snps$cors, col1)
+  expect_equal(res1$animals$cors, row1)
   expect_equal(res1$matcor, mat1)
-  expect_equal(res1$colcors[cid], rep(1, length(cid)))
+  expect_equal(res1$snps$cors[cid], rep(1, length(cid)))
   
   res1 <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive = TRUE)
-  expect_equal(res1$colcors, col1)
-  expect_equal(res1$rowcors, row1)
+  expect_equal(res1$snps$cors, col1)
+  expect_equal(res1$animals$cors, row1)
   expect_equal(res1$matcor, mat1)
-  expect_equal(res1$colcors[cid], rep(1, length(cid)))
+  expect_equal(res1$snps$cors[cid], rep(1, length(cid)))
   
   m <- apply(true, 2, mean)
   v <- apply(true, 2, sd)
@@ -549,16 +549,16 @@ test_that('True-columns gets correlation of 1',{
   col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
   
   res2 <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = TRUE, adaptive = FALSE)
-  expect_equal(res2$colcors, col2)
-  expect_equal(res2$rowcors, row2)
+  expect_equal(res2$snps$cors, col2)
+  expect_equal(res2$animals$cors, row2)
   expect_equal(res2$matcor, mat2)
-  expect_equal(res1$colcors[cid], rep(1, length(cid)))
+  expect_equal(res1$snps$cors[cid], rep(1, length(cid)))
   
   res2 <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = TRUE, adaptive = TRUE)
-  expect_equal(res2$colcors, col2)
-  expect_equal(res2$rowcors, row2)
+  expect_equal(res2$snps$cors, col2)
+  expect_equal(res2$animals$cors, row2)
   expect_equal(res2$matcor, mat2)
-  expect_equal(res1$colcors[cid], rep(1, length(cid)))
+  expect_equal(res1$snps$cors[cid], rep(1, length(cid)))
 })
 
 test_that('Excluding SNPs by given NA allele frequencies does or does not break',{
@@ -577,14 +577,14 @@ test_that('Excluding SNPs by given NA allele frequencies does or does not break'
   suppressWarnings(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')))
 
   expect_equal(res$matcor, mat2)  
-  expect_equal(res$rowcors, row2)
-  expect_equal(res$colcors[-4], col2)
+  expect_equal(res$animals$cors, row2)
+  expect_equal(res$snps$cors[-4], col2)
   
   p[4] <- NA
   res <- imputation_accuracy(ts$truefn, ts$imputedfn, p=p)
   expect_equal(res$matcor, mat2)  
-  expect_equal(res$rowcors, row2)
-  expect_equal(res$colcors[-4], col2)
+  expect_equal(res$animals$cors, row2)
+  expect_equal(res$snps$cors[-4], col2)
   
 })
 
@@ -604,14 +604,14 @@ test_that('Excluding SNPs by given NA allele frequencies does or does not break,
   col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
   
   expect_equal(res$matcor, mat2)  
-  expect_equal(res$rowcors, row2)
-  expect_equal(res$colcors[-4], col2)
+  expect_equal(res$animals$cors, row2)
+  expect_equal(res$snps$cors[-4], col2)
   
   p[4] <- NA
   res <- imputation_accuracy(ts$truefn, ts$imputedfn, p=p, adaptive = FALSE)
   expect_equal(res$matcor, mat2)  
-  expect_equal(res$rowcors, row2)
-  expect_equal(res$colcors[-4], col2)
+  expect_equal(res$animals$cors, row2)
+  expect_equal(res$snps$cors[-4], col2)
   
 })
 
@@ -633,8 +633,8 @@ test_that('Excluding individuals or SNPs from correations', {
   row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
   suppressWarnings(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')))
   expect_equal(res$matcor, mat2)  
-  expect_equal(res$rowcors, row2)
-  expect_equal(res$colcors, col2)
+  expect_equal(res$animals$cors, row2)
+  expect_equal(res$snps$cors, col2)
 
   res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=FALSE, excludeIDs=noi)#, excludeSNPs=nos)
   
@@ -647,8 +647,8 @@ test_that('Excluding individuals or SNPs from correations', {
   row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
   expect_warning(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')), regexp = 'the standard deviation is zero')
   expect_equal(res$matcor, mat2)  
-  expect_equal(res$rowcors, row2)
-  expect_equal(res$colcors, col2)
+  expect_equal(res$animals$cors, row2)
+  expect_equal(res$snps$cors, col2)
   
   res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=FALSE, excludeIDs=noi, excludeSNPs=nos)
   
@@ -661,8 +661,8 @@ test_that('Excluding individuals or SNPs from correations', {
   row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
   suppressWarnings(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')))
   expect_equal(res$matcor, mat2)  
-  expect_equal(res$rowcors, row2)
-  expect_equal(res$colcors, col2)
+  expect_equal(res$animals$cors, row2)
+  expect_equal(res$snps$cors, col2)
   
 })
 
@@ -686,8 +686,8 @@ test_that('Excluding individuals or SNPs from correations, adaptive', {
   row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
   suppressWarnings(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')))
   expect_equal(res$matcor, mat2)  
-  expect_equal(res$rowcors, row2)
-  expect_equal(res$colcors, col2)
+  expect_equal(res$animals$cors, row2)
+  expect_equal(res$snps$cors, col2)
   
   res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=TRUE, excludeIDs=noi)#, excludeSNPs=nos)
   
@@ -701,8 +701,8 @@ test_that('Excluding individuals or SNPs from correations, adaptive', {
   row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
   expect_warning(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')), regexp = 'the standard deviation is zero')
   expect_equal(res$matcor, mat2)  
-  expect_equal(res$rowcors, row2)
-  expect_equal(res$colcors, col2)
+  expect_equal(res$animals$cors, row2)
+  expect_equal(res$snps$cors, col2)
     
   res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=TRUE, excludeIDs=noi, excludeSNPs=nos)
   
@@ -715,8 +715,8 @@ test_that('Excluding individuals or SNPs from correations, adaptive', {
   row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
   suppressWarnings(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')))
   expect_equal(res$matcor, mat2)  
-  expect_equal(res$rowcors, row2)
-  expect_equal(res$colcors, col2)
+  expect_equal(res$animals$cors, row2)
+  expect_equal(res$snps$cors, col2)
   
 })
 
@@ -740,13 +740,13 @@ test_that('Animal is constant', {
   
   res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive=FALSE)
   expect_equal(res$matcor, mat2)  
-  expect_equal(res$rowcors, row2)
-  expect_equal(res$colcors, col2)
+  expect_equal(res$animals$cors, row2)
+  expect_equal(res$snps$cors, col2)
   
   res <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive=TRUE)
   expect_equal(res$matcor, mat2)  
-  expect_equal(res$rowcors, row2)
-  expect_equal(res$colcors, col2)
+  expect_equal(res$animals$cors, row2)
+  expect_equal(res$snps$cors, col2)
 })
 
 # Counting correct and incorrect ----
@@ -895,3 +895,4 @@ test_that('Repeated IDs are handled somehow?', {
   
   
 })
+

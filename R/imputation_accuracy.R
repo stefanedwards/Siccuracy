@@ -34,17 +34,12 @@
 #'   \item{\code{matcor}}{Matrix-wise correlation between true and imputed matrix.}
 #'   \item{\code{snps}}{Data frame with all snp-wise statistics}
 #'   \item{\code{animals}}{Data frame with all animal-wise statistics}
-#'   \item{\code{means}}{Column means of true matrix.}
-#'   \item{\code{vars}}{Column variances of true matrix.}
-#'   \item{\code{rowcors}}{Row-wise (animal-wise) correlation between true and imputed matrix.}
-#'   \item{\code{colcors}}{Column-wise (locus-wise) correlation between true and imputed matrix.}
-#'   \item{\code{rowID}}{Row IDs, corresponding to \code{rowcors}.}
 #' }
 #' The data frames with statistics consists of columns
 #' \describe{
-#'   \item{\code{rowID}}{Row ID (\code{animals} only!).}
-#'   \item{\code{means}}{Value subtracted from each column (\code{snps} only!).}
-#'   \item{\code{sds}}{Value used to scale each column (i.e. standard deviations) (\code{snps} only!).}
+#'   \item{\code{rowID}}{Row ID (\code{$animals} only!).}
+#'   \item{\code{means}}{Value subtracted from each column (\code{$snps} only!).}
+#'   \item{\code{sds}}{Value used to scale each column (i.e. standard deviations) (\code{$snps} only!).}
 #'   \item{\code{cors}}{Pearson correlation between true and imputed genotype.}
 #'   \item{\code{correct}}{Number of entries of equal value (within \code{tol})}
 #'   \item{\code{true.na}}{Number of entries in that were missing in \code{truefn} but not \code{imputefn}.}
@@ -125,8 +120,13 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
   #res$sds[res$sds == 0.0] <- NA
   
   if (adaptive & any(is.na(res$rowID))) {
-    res$rowcors <- res$rowcors[!is.na(res$rowID)]
+    keep <- !is.na(res$rowID)
+    res$rowcors <- res$rowcors[keep]
     res$rowID <- res$rowID[!is.na(res$rowID)]
+    res$rowcorrect <- res$rowcorrect[keep]
+    res$rowimpna <- res$rowimpna[keep]
+    res$rowtruena <- res$rowtruena[keep]
+    res$rowbothna <- res$rowbothna[keep]
   }
   
   if (adaptive &  (any((res$colcorrect+res$coltruena+res$colimpna+res$colbothna) > n) | any((res$rowcorrect+res$rowtruena+res$rowimpna+res$rowbothna) > m))) {

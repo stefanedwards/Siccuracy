@@ -6,7 +6,7 @@
 \usage{
 imputation_accuracy(truefn, imputefn, ncol = NULL, nlines = NULL, na = 9,
   standardized = TRUE, adaptive = TRUE, center = NULL, scale = NULL,
-  p = NULL, excludeIDs = NULL, excludeSNPs = NULL)
+  p = NULL, excludeIDs = NULL, excludeSNPs = NULL, tol = 0.1)
 }
 \arguments{
 \item{truefn}{Filename of \emph{true} matrix.}
@@ -37,12 +37,21 @@ Currently by subtracting column mean and dividing by column standard deviation.}
 \value{
 List with following elements:
 \describe{
-  \item{\code{means}}{Column means of true matrix.}
-  \item{\code{vars}}{Column variances of true matrix.}
-  \item{\code{rowcors}}{Row-wise (animal-wise) correlation between true and imputed matrix.}
   \item{\code{matcor}}{Matrix-wise correlation between true and imputed matrix.}
-  \item{\code{colcors}}{Column-wise (locus-wise) correlation between true and imputed matrix.}
-  \item{\code{rowID}}{Row IDs, corresponding to \code{rowcors}.}
+  \item{\code{snps}}{Data frame with all snp-wise statistics}
+  \item{\code{animals}}{Data frame with all animal-wise statistics}
+}
+The data frames with statistics consists of columns
+\describe{
+  \item{\code{rowID}}{Row ID (\code{$animals} only!).}
+  \item{\code{means}}{Value subtracted from each column (\code{$snps} only!).}
+  \item{\code{sds}}{Value used to scale each column (i.e. standard deviations) (\code{$snps} only!).}
+  \item{\code{cors}}{Pearson correlation between true and imputed genotype.}
+  \item{\code{correct}}{Number of entries of equal value (within \code{tol})}
+  \item{\code{true.na}}{Number of entries in that were missing in \code{truefn} but not \code{imputefn}.}
+  \item{\code{imp.na}}{As \code{true.na}, but vice versa.}
+  \item{\code{both.na}}{Number of entries that were missing in both files.}
+  \item{\code{correct.pct}}{\code{correct} divided by total number of entries bare missing entries in \code{truefn}.}
 }
 }
 \description{
