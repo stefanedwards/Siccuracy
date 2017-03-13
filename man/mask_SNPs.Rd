@@ -4,37 +4,61 @@
 \alias{mask_SNPs}
 \title{Masks entries of a single SNP chip file.}
 \usage{
-mask_SNPs(fn, outfn, maskIDs, maskSNPs, dropIDs = NULL, dropSNPs = NULL,
-  na = 9, ncol = NULL, nlines = NULL, int = TRUE, format = NULL)
+mask_SNPs(fn, outfn, masking = NULL, snps = NULL, snpsinnew = FALSE,
+  dropIDs = NULL, na = 9, int = TRUE, format = NULL)
 }
 \arguments{
 \item{fn}{Input filename.}
 
 \item{outfn}{Output filename.}
 
-\item{maskIDs}{IDs of rows to mask.}
+\item{masking}{List that specifies how to mask. Positions given here refer to columns in \code{fn}. See details.}
 
-\item{maskSNPs}{Integer indices of columns in \code{fn} to mask, i.e. before considering \code{dropSNPs}.}
+\item{snps}{Vector of column indicies to use in output file. Defaults to all.}
+
+\item{snpsinnew}{Logical, when \code{TRUE}, positions in \code{masking} are mapped to the output file instead of input file.}
 
 \item{dropIDs}{IDs to exclude from output.}
 
-\item{dropSNPs}{Integer indices of columns in \code{fn} to exclude from output.}
-
 \item{na}{Value to use for masking.}
-
-\item{ncol}{Integer, number of SNP columns in \code{fn}. When \code{NULL} (default), automagically detected with \code{get_ncols(fn)-1}.}
-
-\item{nlines}{Integer, number of lines to process.}
 
 \item{int}{Logical (default \code{TRUE}), read and write integers.}
 
 \item{format}{Character, Fortran edit descriptors for output. See \link{parseformat}.}
+
+\item{ncol}{Integer, number of SNP columns in \code{fn}. When \code{NULL} (default), automagically detected with \code{get_ncols(fn)-1}.}
+
+\item{nlines}{Integer, number of lines to process.}
 }
 \description{
 This function runs through a single file and masks specified columns of specified rows.
 It is a simplified version of \code{\link{rbind_SNPs}}.
 }
 \details{
-If \code{maskIDs} or \code{maskSNPs} are zero-length vectors, \code{dropIDs} and \code{dropSNPs} is still performed.
+The \code{masking} argument controls which samples / loci are masked as missing with \code{na}.
+It accepts three different objects: 
+1) an integer vector of loci to mask, 
+2) a list with first element containing integer vector of IDs for samples to mask and second element an integer vector of loci to mask for those samples,
+or 
+a list of 2).
+For 1), the given loci are masked for \emph{all} samples. For 2) it is limited to those IDs given.
+By default, the integer vector of loci to mask are mapped to the input file. To map them to output file, set \code{snpsinnew=TRUE}.
+}
+\examples{
+
+SNPs <- Siccuracy:::make.true(9, 12)
+snpfile <- tempfile()
+write.snps(SNPs, snpfile)
+
+masking = list(
+list(1:3, c(1,3,5,7,9,11)),
+list(4:6, c(2,4,6,8,10,12)),
+list(7:9, c(1,3,9,10,12))
+)
+
+fn <- tempfile()
+res <- mask_SNPs(snpfile, fn, masking=masking, na=9)
+m <- read.snps(fn)
+
 }
 

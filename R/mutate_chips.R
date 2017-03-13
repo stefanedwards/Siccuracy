@@ -160,47 +160,107 @@ mergeChips <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outpos=NULL, 
 #' This function runs through a single file and masks specified columns of specified rows.
 #' It is a simplified version of \code{\link{rbind_SNPs}}.
 #' 
-#' If \code{maskIDs} or \code{maskSNPs} are zero-length vectors, \code{dropIDs} and \code{dropSNPs} is still performed.
+#' The \code{masking} argument controls which samples / loci are masked as missing with \code{na}.
+#' It accepts three different objects: 
+#' 1) an integer vector of loci to mask, 
+#' 2) a list with first element containing integer vector of IDs for samples to mask and second element an integer vector of loci to mask for those samples,
+#' or 
+#' a list of 2).
+#' For 1), the given loci are masked for \emph{all} samples. For 2) it is limited to those IDs given.
+#' By default, the integer vector of loci to mask are mapped to the input file. To map them to output file, set \code{snpsinnew=TRUE}.
+#' 
 #' 
 #' @param fn Input filename.
 #' @param outfn Output filename.
-#' @param maskIDs IDs of rows to mask.
-#' @param maskSNPs Integer indices of columns in \code{fn} to mask, i.e. before considering \code{dropSNPs}.
+#' @param snps Vector of column indicies to use in output file. Defaults to all.
+#' @param masking List that specifies how to mask. Positions given here refer to columns in \code{fn}. See details.
+#' @param snpsinnew Logical, when \code{TRUE}, positions in \code{masking} are mapped to the output file instead of input file.
 #' @param dropIDs IDs to exclude from output.
-#' @param dropSNPs Integer indices of columns in \code{fn} to exclude from output.
 #' @param na Value to use for masking.
 #' @param ncol Integer, number of SNP columns in \code{fn}. When \code{NULL} (default), automagically detected with \code{get_ncols(fn)-1}.
 #' @param nlines Integer, number of lines to process.
 #' @param int Logical (default \code{TRUE}), read and write integers.
 #' @param format Character, Fortran edit descriptors for output. See \link{parseformat}.
 #' @export
-mask_SNPs <- function(fn, outfn, maskIDs, maskSNPs, dropIDs=NULL, dropSNPs=NULL, na=9, ncol=NULL, nlines=NULL, int=TRUE, format=NULL) {
+#' @examples
+#' 
+#' SNPs <- Siccuracy:::make.true(9, 12)
+#' snpfile <- tempfile()
+#' write.snps(SNPs, snpfile)
+#' 
+#' masking = list(
+#' list(1:3, c(1,3,5,7,9,11)),
+#' list(4:6, c(2,4,6,8,10,12)),
+#' list(7:9, c(1,3,9,10,12))
+#' )
+#' 
+#' fn <- tempfile()
+#' res <- mask_SNPs(snpfile, fn, masking=masking, na=9)
+#' m <- read.snps(fn)
+#' 
+mask_SNPs <- function(fn, outfn, masking=NULL, snps=NULL, snpsinnew=FALSE, dropIDs=NULL, na=9, int=TRUE, format=NULL) {
   if (!file.exists(fn)) stop('Input file was not found.')
   
   format <- parse.format(format, int)
-  
-  maskIDs <- as.integer(maskIDs)
-  maskSNPs <- as.integer(maskSNPs)
   dropIDs <- as.integer(dropIDs)
-  dropSNPs <- as.integer(dropSNPs)
   
   IDs <- get_firstcolumn(fn)
-  if (!is.null(nlines)) IDs <- IDs[1:nlines]
-  maskIDs <- IDs %in% maskIDs
+  n <- length(IDs)
+  m <- get_ncols(fn) - 1
+  
+  if (is.null(snps)) {
+    snps <- 1:m
+  } else {
+    snps <- snps[snps >= 0 & snps <= m]
+  }
+  
+  # Handling masking
+  maskIDs <- integer(n)
+  maskstart <- integer(0)
+  maskend <- integer(0)
+  maskSNPs <- integer(0)
+  if (is.list(masking)) {
+    if (length(masking) == 2) {
+      if (!is.list(masking[[1]]) & !is.list(masking[[2]])) {
+        masking <- list(masking)
+      }
+    }
+    for (i in 1:length(masking)) {
+      maskIDs[match(masking[[i]][[1]], IDs)] <- i
+      masking[[i]][[2]] <- masking[[i]][[2]][masking[[i]][[2]] <= m & masking[[i]][[2]] > 0]
+    }
+    maskSNPs <- unlist(sapply(masking, function(x) x[[2]], simplify = TRUE))
+    masklengths <- unlist(sapply(masking, function(x) length(x[[2]]), simplify = TRUE))
+    maskend <- cumsum(masklengths)
+    maskstart <- c(1, maskend[-length(maskend)]+1)
+
+  } else if (is.vector(masking)) {
+    # Ordinary vector with columns to 
+    masking <- as.integer(masking)
+    masking <- masking[masking <= m & masking > 0]
+    maskIDs[] <- 1
+    maskstart <- 1
+    maskSNPs <- masking
+    maskend <- length(maskSNPs)
+  } else  if (is.null(masking)) {
+    # Do nothing
+  } else {
+    stop('`mask_SNPs` does not understand how to deal with the given `masking`, as it is neither a list or integer vector.')
+  }
+  
+  # Convert indices to input columns.
+  if (snpsinnew) {
+    maskSNPs <- snps[maskSNPs]
+  }
+
   dropIDs <- IDs %in% dropIDs
   
-  if (is.null(nlines)) nlines <- get_nlines(fn)
-  if (is.null(ncol)) ncol <- get_ncols(fn)-1
-  
-  maskSNPs <- c(1:ncol) %in% maskSNPs
-  dropSNPs <- c(1:ncol) %in% dropSNPs
-  
-  stopifnot(sum(dropSNPs) < ncol)
-  
-  res <- .Fortran('masksnps', fn=as.character(fn), outfn=as.character(outfn), ncol=as.integer(ncol), nlines=as.integer(nlines),
-                  imaskIDs=as.integer(maskIDs), imaskSNPs=as.integer(maskSNPs), 
-                  idropIDs=as.integer(dropIDs), idropSNPs=as.integer(dropSNPs),
-                  na=as.numeric(na), userfmt=as.character(format), lenuserfmt=nchar(format), asint=as.integer(int),
-                  stat=integer(1))
-  res
+  #subroutine masksnps(fn, outfn, ncols, nlines, na, userfmt, lenuserfmt, asint, stat
+  res <- .Fortran('masksnps2', fn=as.character(fn), outfn=as.character(outfn), ncol=as.integer(m), nlines=as.integer(n),
+                  na=as.numeric(na), userfmt=as.character(format), lenuserfmt=nchar(format), asint=as.integer(int), stat=integer(1),
+                  dropIDs=as.integer(dropIDs),
+                  snpslength=as.integer(length(snps)), snps=as.integer(snps), 
+                  maskIDs=as.integer(maskIDs), maps=as.integer(length(maskstart)), maskstart=as.integer(maskstart), maskend=as.integer(maskend),
+                  masklength=as.integer(length(maskSNPs)), maskSNPs=as.integer(maskSNPs))
+  invisible(res)
 }
