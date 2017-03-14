@@ -21,18 +21,27 @@
 #' @section Overview:
 #' 
 #' \itemize{
-#'   \item \strong{Converters} \code{\link{convert_phases}}, \code{\link{convert_plink}}, \code{\link{convert_plinkA}}
-#'   \item \strong{File info} \code{\link{get_nlines}}, \code{\link{get_firstcolumn}}, \code{\link{get_ncols}}
-#'   \item \strong{Imputation accuracies} \code{\link{imputation_accuracy}} correlations between matrices
-#'   \item \strong{Heterozygosity} \code{\link{heterozygosity}} counting alleles
+#'   \item \strong{Converters} \code{\link{convert_phases}}, \code{\link{convert_plink}}, \code{\link{convert_plinkA}}.
+#'   \item \strong{File info} \code{\link{get_nlines}}, \code{\link{get_firstcolumn}}, \code{\link{get_ncols}}.
+#'   \item \strong{Imputation accuracies} \code{\link{imputation_accuracy}} correlations between matrices, and tabulating correctly imputed genotypes.
+#'   \item \strong{Heterozygosity} \code{\link{heterozygosity}} counting alleles.
 #'   \item \strong{Mutators} \code{\link{cbind_SNPs}}, \code{\link{rbind_SNPs}} for combining multiple files, \code{\link{mask_SNPs}} for masking SNPs for simulating different density SNP chips.
-#'   \item \strong{Reading and writing} \code{\link{write.snps}}, \code{\link{read.snps}}
+#'   \item \strong{Reading and writing} \code{\link{write.snps}}, \code{\link{read.snps}}.
 #' }
+#' 
+#' @section IDs:
+#' 
+#' The AlphaImpute format \strong{must} have integer IDs. 
+#' In this software package, we have choosen an arbitrary upper limit of 20 digits for IDs.
+#' Exceed this limit and the ID will be lumped together with the following genotype.
+#' 
+#' Regarding \emph{repeated} IDs, it is best to avoid these.
 #' 
 #' @section Output format:
 #' 
 #' Functions that write new files may have a pair of arguments (\code{int} and \code{format}) 
 #' that specifies whether the outputted format are integers (\code{int=TRUE}) or have decimals.
+#' For more information on how to specify the format, see \link{parseformat}.
 #' 
 #' @docType package
 #' @name Siccuracy

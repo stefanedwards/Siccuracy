@@ -30,6 +30,9 @@ mask_SNPs(fn, outfn, masking = NULL, snps = NULL, snpsinnew = FALSE,
 
 \item{nlines}{Integer, number of lines to process.}
 }
+\value{
+Invisible list of vectors sent to Fortran subtroutine.
+}
 \description{
 This function runs through a single file and masks specified columns of specified rows.
 It is a simplified version of \code{\link{rbind_SNPs}}.

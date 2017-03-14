@@ -182,6 +182,7 @@ mergeChips <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outpos=NULL, 
 #' @param int Logical (default \code{TRUE}), read and write integers.
 #' @param format Character, Fortran edit descriptors for output. See \link{parseformat}.
 #' @export
+#' @return Invisible list of vectors sent to Fortran subtroutine.
 #' @examples
 #' 
 #' SNPs <- Siccuracy:::make.true(9, 12)
