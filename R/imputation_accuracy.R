@@ -24,18 +24,32 @@
 #' @param standardized Logical, whether to center and scale genotypes by dataset in \code{true}-matrix.
 #'        Currently by subtracting column mean and dividing by column standard deviation.
 #' @param adaptive Use adaptive method (default) that stores \code{truefn} in memory and compares rows by ID in first column.
+#' @param center Numeric vector of \code{ncol}-length to subtract with for standardization.
+#' @param scale Numeric vector of \code{ncol}-length to divide by for standardization.
+#' @param p Shortcut for \code{center} and \code{scale} when using allele frequencies. \code{center=2p} and \code{scale=2p(1-p)}.
+#' @param excludeIDs Integer vector, exclude these individuals from correlations. \emph{Does not affect calculation of column means and standard deviations.}
+#' @param excludeSNPs Integer or logical vector, exclude these columns from correlations. \emph{Does not affect calculation of column means and standard deviations.}
 #' @return List with following elements:
 #' \describe{
-#'   \item{\code{means}}{Column means of true matrix.}
-#'   \item{\code{vars}}{Column variances of true matrix.}
-#'   \item{\code{rowcors}}{Row-wise (animal-wise) correlation between true and imputed matrix.}
 #'   \item{\code{matcor}}{Matrix-wise correlation between true and imputed matrix.}
-#'   \item{\code{colcors}}{Column-wise (locus-wise) correlation between true and imputed matrix.}
-#'   \item{\code{rowID}}{Row IDs, corresponding to \code{rowcors}.}
+#'   \item{\code{snps}}{Data frame with all snp-wise statistics}
+#'   \item{\code{animals}}{Data frame with all animal-wise statistics}
+#' }
+#' The data frames with statistics consists of columns
+#' \describe{
+#'   \item{\code{rowID}}{Row ID (\code{$animals} only!).}
+#'   \item{\code{means}}{Value subtracted from each column (\code{$snps} only!).}
+#'   \item{\code{sds}}{Value used to scale each column (i.e. standard deviations) (\code{$snps} only!).}
+#'   \item{\code{cors}}{Pearson correlation between true and imputed genotype.}
+#'   \item{\code{correct}}{Number of entries of equal value (within \code{tol})}
+#'   \item{\code{true.na}}{Number of entries in that were missing in \code{truefn} but not \code{imputefn}.}
+#'   \item{\code{imp.na}}{As \code{true.na}, but vice versa.}
+#'   \item{\code{both.na}}{Number of entries that were missing in both files.}
+#'   \item{\code{correct.pct}}{\code{correct} divided by total number of entries bare missing entries in \code{truefn}.}
 #' }
 #' @export
 #' @seealso \code{\link{write.snps}} for writing SNPs to a file.
-imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, standardized=TRUE, adaptive=TRUE) {
+imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, standardized=TRUE, adaptive=TRUE, center=NULL, scale=NULL, p=NULL, excludeIDs=NULL, excludeSNPs=NULL, tol=0.1) {
   stopifnot(file.exists(truefn))
   stopifnot(file.exists(imputefn))
   
@@ -46,6 +60,38 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
   m <- as.integer(ncol)
   n <- as.integer(nlines)
   
+  usermeans <-  (!is.null(p) | !is.null(center) | !is.null(scale))
+  if (!is.null(p)) {
+    stopifnot(length(p)==m)
+    center <- 2*p
+    scale <- 2*p*(1-p)
+  }
+  if (is.null(center)) center=numeric(m)
+  if (is.null(scale)) {scale=numeric(m);scale[] <- 1}
+  if (usermeans) {
+    center[is.na(center)] <- 0
+    scale[is.na(scale)] <- 0
+    standardized=TRUE
+  }
+  
+  ex_ids <- rep(0, n)
+  if (!is.null(excludeIDs)) {
+    imp_ids <- get_firstcolumn(truefn)
+    ex_ids[imp_ids %in% excludeIDs] <- 1 
+  }
+  
+  ex_snps <- rep(0, m)
+  if (!is.null(excludeSNPs)) {
+    .is.na <- function(x) {if (is.null(x)) return(logical(0)); is.na(x)}
+    if (is.logical(excludeSNPs) & sum(!.is.na(excludeSNPs)) < m) stop('`excludeSNPs` as logical must be same length as SNPs in input files and without NA\'s.')
+    
+    if (is.logical(excludeSNPs)) {
+      ex_snps <- as.integer(excludeSNPs)
+    } else {
+      ex_snps[excludeSNPs] <- 1
+    }
+  }
+  
   subroutine <- ifelse(adaptive, 'imp_acc', 'imp_acc_fast')
   
   res <- .Fortran(subroutine,
@@ -55,21 +101,45 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
                   nAnimals=as.integer(nlines),
                   NAval=as.integer(na),
                   standardized=as.integer(standardized),
-                  means=vector('numeric',m), sds=vector('numeric',m),  # Placeholders for return data.
+                  means=as.numeric(center), sds=as.numeric(scale),  # Placeholders for return data.
+                  usermeans=as.integer(usermeans),
                   rowcors=vector('numeric', n), matcor=numeric(1), colcors=vector('numeric',m),
                   rowID=vector('integer',n),
+                  excludeIDs=as.integer(ex_ids),
+                  excludeSNPs=as.integer(ex_snps),
+                  tol=as.numeric(tol),
+                  colcorrect=vector('integer',m), coltruena=vector('integer',m), colimpna=vector('integer',m), colbothna=vector('integer',m), 
+                  rowcorrect=vector('integer',n), rowtruena=vector('integer',n), rowimpna=vector('integer',n), rowbothna=vector('integer',n),
+                  NAOK=FALSE,
                   PACKAGE='Siccuracy')
   res$colcors[is.infinite(res$colcors)] <- NA
   res$colcors[is.nan(res$colcors)] <- NA
   res$rowcors[is.infinite(res$rowcors)] <- NA
   res$rowcors[is.nan(res$rowcors)] <- NA
+  if (standardized) res$means[(res$means- -9) < 1e-8] <- NA
+  #res$sds[res$sds == 0.0] <- NA
   
-  if (adaptive & any(is.na(res$rowcors))) {
-    res$rowcors <- res$rowcors[!is.na(res$rowcors)]
+  if (adaptive & any(is.na(res$rowID))) {
+    keep <- !is.na(res$rowID)
+    res$rowcors <- res$rowcors[keep]
     res$rowID <- res$rowID[!is.na(res$rowID)]
+    res$rowcorrect <- res$rowcorrect[keep]
+    res$rowimpna <- res$rowimpna[keep]
+    res$rowtruena <- res$rowtruena[keep]
+    res$rowbothna <- res$rowbothna[keep]
   }
   
-  res[c('means','sds','rowcors','matcor','colcors','rowID')]
+  if (adaptive &  (any((res$colcorrect+res$coltruena+res$colimpna+res$colbothna) > n) | any((res$rowcorrect+res$rowtruena+res$rowimpna+res$rowbothna) > m))) {
+    warning('Oh oh. It seems I have counted more elements than SNPs or animals.\n  Check `with(snps, correct+true.na+imp.na+both.na)` and `with(animals, correct+true.na+imp.na+both.na)`.\n  Do you perhaps have repeated IDs?')
+  }
+  
+  if (!is.null(excludeIDs)) res$rowcors[ex_ids==1] <- NA
+  
+  
+  #res[c('means','sds','rowcors','matcor','colcors','rowID')]
+  with(res, 
+       list(matcor=matcor, snps=data.frame(means, sds, cors=colcors, correct=colcorrect, true.na=coltruena, imp.na=colimpna, both.na=colbothna, correct.pct=colcorrect/(n-coltruena-colbothna)),
+            animals=data.frame(rowID, cors=rowcors, correct=rowcorrect, true.na=rowtruena, imp.na=rowimpna, both.na=rowbothna, correct.pct=rowcorrect/(n-rowtruena-rowbothna))))
 }
 
 #' \code{imputation_accuracy1} and \code{imputation_accuracy3} has been replaced by \code{\link{imputation_accuracy}}.
@@ -84,12 +154,14 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
 #' @inheritParams imputation_accuracy
 imputation_accuracy3 <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAval=9, standardized=TRUE) {
   .Deprecated('imputation_accuracy', package='Siccuracy')
-  imputation_accuracy(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, adaptive=TRUE)
+  with(imputation_accuracy(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, adaptive=TRUE),
+       list(means=snps$means, sds=snps$sds, rowcors=animals$cors, matcor=matcor))
 }
 
 #' @export
 #' @rdname deprecated
 imputation_accuracy1 <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAval=9, standardized=TRUE) {
   .Deprecated('imputation_accuracy', package='Siccuracy')
-  imputation_accuracy(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, adaptive=FALSE)
+  with(imputation_accuracy(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, adaptive=FALSE),
+       list(means=snps$means, sds=snps$sds, rowcors=animals$cors, matcor=matcor))
 }

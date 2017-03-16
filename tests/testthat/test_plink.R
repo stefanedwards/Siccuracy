@@ -1,7 +1,7 @@
 library(testthat)
 library(Siccuracy)
 
-context('Converting plink binary format to AlphaImpute format')
+context('\nConverting plink binary format to AlphaImpute format')
 
 # Requires test files in ../..(/inst)/extdata/testdata, which can be constructed using ../../tools/make_plink_test_files.R
 
@@ -16,7 +16,7 @@ if (is.na(v$`.extdata.dir`)) {
   file.path(.extdata.dir, c(...))
 }
 
-cat(.datadir(''), '\n')
+#cat(.datadir(''), '\n')
 
 expect_equal(file.exists(.datadir('')), TRUE, info=paste0('Run tools/make_plink_test_files.R to create `', .datadir(''), '`.'))
        
@@ -43,12 +43,12 @@ test_that('Basic plink routine correctly takes newID specifiers', {
   res <- convert_plink(.datadir('simple1'), fn2, newID=newID)
   expect_equal(res$newID$newID, newID + 1:6)
   expect_equal(res$newID$newID, get_firstcolumn(fn2))
-  
+
   newID <- c(55, 99, 10)
   res <- convert_plink(.datadir('simple1'), fn2, newID=newID)
   expect_equal(res$newID$newID[res$newID$keep], newID)
   expect_equal(res$newID$newID[res$newID$keep], get_firstcolumn(fn2))
-  
+
   # Shuffled newID
   newID <- get_firstcolumn(.datadir('simple1.fam'), class=rep('character', 2), col.names=c('famID', 'sampID'))
   newID$newID <- 1:nrow(newID)
@@ -57,18 +57,18 @@ test_that('Basic plink routine correctly takes newID specifiers', {
   newID <- newID[order(newID$newID),]
   expect_equal(res$newID[,c('famID','sampID','newID')], newID[,c('famID','sampID','newID')])
   expect_equal(res$newID$newID, get_firstcolumn(fn2))
-  
+
   context("To many newID's")
   newID <- get_firstcolumn(.datadir('simple1.fam'), class=rep('character', 2), col.names=c('famID', 'sampID'))
   newID <- rbind(newID, data.frame(famID=c('a','a','b','b','b','d','d'), sampID=c('p','q','a','b','c','d','e')))
   newID$order <- 1:nrow(newID)
-  newID <- newID[sample.int(nrow(newID)),]  
+  newID <- newID[sample.int(nrow(newID)),]
   newID$newID <- sample.int(nrow(newID))
   res <- convert_plink(.datadir('simple1'), fn2, newID=newID)
-  snp1 <- read.snps(fn2)  
+  snp1 <- read.snps(fn2)
   newID <- newID[order(newID$order),]
   expect_equal(as.integer(rownames(snp1)), newID$newID[1:nrow(snp1)])
-  
+
 })
 
 test_that('Duplicate IDs lead to issues', {
@@ -106,7 +106,7 @@ test_that('Count minor/major allele works', {
   snp.minor <- read.snps(fn2, na = 9)
   expect_equal(snp.major, 2-snp.minor)
 })
-
+ 
 
 test_that('Simple converter accepts minimal allele frequencies', {
   fn1 <- tempfile()
@@ -201,13 +201,13 @@ test_that('Filtering works', {
 test_that('Lowmem plink conversion does not blow up',{
   bim <- get_firstcolumn(.datadir('simple2.bim'), col.names=c('chr','rs'), class=c('integer','character'))
   fam <- get_firstcolumn(.datadir('simple2.fam'), class=c('character','character'))
-  
+
   fn <- tempfile()
   res <- convert_plink(.datadir('simple2'), outfn=fn, method='lowmem', fragments='chr', countminor=FALSE)
   fnraw <- tempfile()
   w <- convert_plinkA(.datadir('simple2.raw'), fnraw, newID=res$newID)
   raw <- read.snps(fnraw)
-  
+
   expect_equal(res$fragments, bim$chr)
   fr <- table(res$fragments)
   snps <- sapply(res$fragmentfns[unique(bim$chr)], read.snps)
@@ -217,7 +217,7 @@ test_that('Lowmem plink conversion does not blow up',{
     expect_equal(snps[[i]], raw[,co,drop=FALSE])
   }
   expect_true(all(sapply(snps, nrow) == nrow(fam)))
-  
+
   snps <- read.snps(fn)
   expect_equal(raw, snps)
 })
@@ -225,11 +225,11 @@ test_that('Lowmem plink conversion does not blow up',{
 test_that('Lowmem plink conversion filters works', {
   bim <- get_firstcolumn(.datadir('simple2.bim'), col.names=c('chr','rs'), class=c('integer','character'))
   fam <- get_firstcolumn(.datadir('simple2.fam'), class=c('character','character'))
-  
+
   fnraw <- tempfile()
-  w <- convert_plinkA(.datadir('simple2.raw'), fnraw, newID=res$newID)
+  w <- convert_plinkA(.datadir('simple2.raw'), fnraw)# , newID=res$newID)
   raw <- read.snps(fnraw)
-  
+
   extract <- bim$chr != 2
   #extract[] <- TRUE
   #extract[3] <- FALSE
@@ -238,7 +238,7 @@ test_that('Lowmem plink conversion filters works', {
   fr <- table(res$fragments)
   snps <- sapply(res$fragmentfns[c(1,3)], read.snps)
   expect_equivalent(sapply(snps, ncol, USE.NAMES = FALSE), as.integer(fr[-2]))
-  
+
   context('Leaving out an entire fragment does not fail')
   res <- convert_plink(.datadir('simple2'), outfn=fn, method='lowmem', fragments='chr', extract=extract, countminor=FALSE, remerge=TRUE)
   snps <- sapply(res$fragmentfns[unique(res$fragments[res$extract==1])], read.snps)
@@ -246,7 +246,7 @@ test_that('Lowmem plink conversion filters works', {
   expect_equal(raw[,res$extract==1,drop=FALSE], do.call(cbind,snps))
   total <- read.snps(fn)
   expect_equal(raw[,res$extract==1,drop=FALSE], total)
-  
+
   context('Leaving out some samples does not fail')
   remove <- sample(fam[,2], 3)
   res <- convert_plink(.datadir('simple2'), outfn=fn, method='lowmem', fragments='chr', remove=remove, countminor=FALSE, remerge=TRUE)
@@ -255,4 +255,22 @@ test_that('Lowmem plink conversion filters works', {
   expect_equal(raw[res$newID$keep,,drop=FALSE], do.call(cbind, snps))
   total <- read.snps(fn)
   expect_equal(raw[res$newID$keep,,drop=FALSE], total)
+})
+
+test_that('Previous bed files of fragmented plink method gets deleted', {
+  bim <- get_firstcolumn(.datadir('simple2.bim'), col.names=c('chr','rs'), class=c('integer','character'))
+  fam <- get_firstcolumn(.datadir('simple2.fam'), class=c('character','character'))
+  
+  fragmentsfn <- replicate(6, tempfile(), simplify = TRUE)
+  null <- sapply(fragmentsfn, function(f) cat('Hello, is it me you\'re looking for?', file=f))
+  
+  fn <- tempfile()
+  res <- convert_plink(.datadir('simple2'), outfn=fn, method='lowmem', fragments='chr', countminor=FALSE, fragmentfns = fragmentsfn)
+  
+  fnraw <- tempfile()
+  w <- convert_plinkA(.datadir('simple2.raw'), fnraw)# , newID=res$newID)
+  raw <- read.snps(fnraw)
+  
+  merged <- read.snps(fn)
+  expect_equal(raw, merged)
 })

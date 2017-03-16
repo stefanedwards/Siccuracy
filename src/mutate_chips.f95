@@ -1,6 +1,7 @@
 
 ! Cannot pass character vector from R, so we use this wrapper.
-subroutine cbindsnpsrwrapper(files, fnin, fnout, nlines, ncols, skiplines, idlength, excludeids, result, lenfmt, userfmt, asint)
+subroutine cbindsnpsrwrapper(files, fnin, fnout, nlines, ncols, skiplines, & 
+    idlength, excludeids, result, lenfmt, userfmt, asint)
   implicit none
 
   integer, intent(in) :: files, nlines, skiplines, idlength, lenfmt, asint
@@ -12,31 +13,49 @@ subroutine cbindsnpsrwrapper(files, fnin, fnout, nlines, ncols, skiplines, idlen
 
   logical :: alsoasint
   integer :: i, stat
-  character(255), dimension(files) :: fns
-
+  !character(1000) :: ctag
+  character(1000), dimension(files) :: fns
+  
   open(64, file=fnin, status='OLD')
   do i=1,files
-    read(64, *, iostat=stat) fns(i)
+    read(64, '(A255)', iostat=stat) fns(i)
   end do
   close(64)
 
+
+  !open(27, file='C:\Users\shojedw\Documents\Projects\test1.txt')
+  !write(27, *) 'tag:', ctag
+  !write(27, '(A7,A255)') 'input:', trim(adjustl(fnin))
+  !write(27, *) 'files:', files
+  !do i=1,files
+  !  write(27, *) 'file:', i, '>>'//trim(adjustl(fns(i)))//'<<'
+  !enddo
+  !close(27)
+  
   alsoasint = asint==1
   
-  call cbindsnps(files, fns, fnout, nlines, ncols, skiplines, idlength, excludeids, result, lenfmt, userfmt, alsoasint)
-
+  !ctag="Hello, is it me you're looking for?"
+  call cbindsnpscore(files, fns, fnout, nlines, ncols, skiplines, &
+      idlength, excludeids, result, lenfmt, userfmt, alsoasint)
+  
+  
 end subroutine cbindsnpsrwrapper
 
 
 ! Concatenates genotype matrices (from e.g. multiple chromosomes) into one.
 ! No row ID checking.
-subroutine cbindsnps(files, fns, fnout, nlines, ncols, skiplines, idlength, excludeids, result, lenfmt, userfmt, asint)
+! The argument ctag isn't really used for anything. It just somehow
+! fixes a bug where fns is not populated.
+subroutine cbindsnpscore(files, fns, fnout, nlines, ncols, skiplines, &
+    idlength, excludeids, result, lenfmt, userfmt, asint)
   implicit none
 
   logical, intent(in) :: asint
   integer, intent(in) :: files, nlines, skiplines, idlength, lenfmt
   character(lenfmt), intent(in) :: userfmt
+  !character(1000), intent(in) :: ctag
   character(255), intent(in) :: fnout
-  character(255), dimension(files), intent(in) :: fns
+  character(1000), dimension(files), intent(in) :: fns
   integer, dimension(files), intent(in) :: ncols
   integer, dimension(idlength), intent(in) :: excludeids
   integer, intent(out) :: result
@@ -47,8 +66,8 @@ subroutine cbindsnps(files, fns, fnout, nlines, ncols, skiplines, idlength, excl
   real, dimension(:), allocatable :: rowreal
   character(50) :: fmt0
   character(50), dimension(files) :: fmt
-  character(4), dimension(files) :: advance, formatprefix
-
+  character(4), dimension(files) :: advance
+  
   if (asint .eqv. .true.) then
     allocate(rowint(maxval(ncols, 1)))
   end if
@@ -56,10 +75,19 @@ subroutine cbindsnps(files, fns, fnout, nlines, ncols, skiplines, idlength, excl
 
   advance(:) = 'no'
   advance(files) = 'yes'
+
+  !open(27, file='C:\Users\shojedw\Documents\Projects\test2.txt')  
+  !write(27, *) 'tag:', ctag  
+  !write(27, *) 'from cbindsnps:'
+  !write(27, *) 'files:', files
+  !do i=1,files
+  !  write(27, '(A6,I2,A70,A70)') 'file:', i, '>>'//trim(adjustl(fns(i)))//'<< ', fns(i)
+  !enddo
+  !close(27)
   
   do i=1,files
     units(i) = 200 + i
-    open(units(i), file=fns(i), status='OLD')
+    open(units(i), file=fns(i), status='UNKNOWN')
     write(fmt0, '(i5)') ncols(i)
     fmt(i)='('//trim(adjustl(fmt0))//trim(adjustl(userfmt))//')'
   end do
@@ -98,14 +126,14 @@ subroutine cbindsnps(files, fns, fnout, nlines, ncols, skiplines, idlength, excl
 
   result=stat
 
-end subroutine cbindsnps
+end subroutine cbindsnpscore
 
 
 
 !! Merges two SNP chips
 
 subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
-  nhd, hdid, nld, ldid, hdpos, ldpos,  missing, lenfmt, userfmt, stat, asint)
+  nhd, hdid, nld, ldid, hdpos, ldpos,  missing, lenfmt, userfmt, asint, stat, totallines)
 
   integer, intent(in) :: hdcols, ldcols, outcols, nhd, nld, missing, lenfmt, asint
   character(lenfmt), intent(in) :: userfmt
@@ -114,7 +142,7 @@ subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
   integer, intent(in), dimension(nld) :: ldid
   integer, intent(in), dimension(hdcols) :: hdpos
   integer, intent(in), dimension(ldcols) :: ldpos
-  integer, intent(out) :: stat
+  integer, intent(out) :: stat, totallines
 
   logical :: foundID, isint
   integer :: i, oldi, animalID
@@ -122,10 +150,11 @@ subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
   character(50)  :: fmt
   integer, allocatable :: intoutput(:)
   real, allocatable :: line(:), realoutput(:)
+  logical, dimension(:), allocatable :: mask
   
   isint = asint == 1
   
-  write(fmt, '(i5)') outcols
+  write(fmt, '(i20)') outcols
   fmt='(i20,'//trim(adjustl(fmt))//userfmt//')'
   
   if (isint .eqv. .true.) then
@@ -136,14 +165,17 @@ subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
     realoutput(:) = missing
   end if
 
-
   ! Open output file.
   open(71, file=fnout, status='UNKNOWN', iostat=stat)
   
   ! Read through HD file.
   allocate(line(hdcols))
+  allocate(mask(hdcols))
+  mask(:) = hdpos(:) /= 0
+  
   i = 0
   oldi = 0
+  totallines=0
   open(72, file=fnhd, status='OLD')
   do while (.TRUE.)
     read(72, *, iostat=stat) animalID, line
@@ -166,20 +198,25 @@ subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
     oldi = i
     if (foundID) then
       if (isint .eqv. .true.) then
-        intoutput(hdpos) = NINT(line(1:hdcols))
+        intoutput(hdpos) = NINT(PACK(line, mask))
         write(71, fmt) animalID, intoutput
       else
-        realoutput(hdpos) = line(1:hdcols)
+        realoutput(hdpos) = PACK(line, mask)
         write(71, fmt) animalID, realoutput
       end if
+      totallines = totallines+1
     end if
 
   end do
   close(72)
   deallocate(line)
+  deallocate(mask)
 
   ! Read through LD file.
   allocate(line(ldcols))
+  allocate(mask(ldcols))
+  mask(:) = ldpos(:) /= 0
+  
   if (isint .eqv. .true.) then
     intoutput(:) = missing
   else
@@ -211,12 +248,13 @@ subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
     oldi = i
     if (foundID) then
       if (isint .eqv. .true.) then
-        intoutput(ldpos) = NINT(line(1:ldcols))
+        intoutput(ldpos) = NINT(PACK(line, mask))
         write(71, fmt) animalID, intoutput
       else
-        realoutput(ldpos) = line(1:ldcols)
+        realoutput(ldpos) = PACK(line, mask)
         write(71, fmt) animalID, realoutput
       end if
+      totallines = totallines+1
     end if
 
   end do
@@ -224,6 +262,7 @@ subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
   close(71)
   
   deallocate(line)
+  deallocate(mask)
 
   if (isint .eqv. .true.) then
     deallocate(intoutput)
@@ -231,5 +270,114 @@ subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
     deallocate(realoutput)
   endif
 
+  if (stat == -1) stat = 0
 
 end subroutine rbindsnps
+
+
+!! Mask SNPs
+
+subroutine masksnps2(fn, outfn, ncols, nlines, na, userfmt, lenuserfmt, asint, stat, &
+    dropIDs, snpslength, snps, maskIDs, maps, maskstart, maskend, masklength, maskSNPs)
+
+  implicit none
+
+  ! Arguments
+  character(255), intent(in) :: fn, outfn
+  integer, intent(in) :: ncols, nlines, lenuserfmt, asint, snpslength, maps, masklength
+  character(lenuserfmt), intent(in) :: userfmt
+  double precision, intent(in) :: na
+  integer, intent(out) :: stat
+  integer, dimension(snpslength), intent(in) :: snps
+  integer, dimension(nlines), intent(in) :: maskIDs, dropIDs
+  integer, dimension(maps), intent(in) :: maskstart, maskend
+  integer, dimension(masklength), intent(in) :: maskSNPs
+
+    
+  ! Local variables
+  logical :: isint
+  integer :: i, animalID, ndropSNPs, snpstocopy
+  character(50) :: fmt
+  logical, dimension(:), allocatable :: isnotzero
+  integer, dimension(:), allocatable :: intoutput, copysnps, copysnpsdest
+  real, dimension(:), allocatable :: realoutput, inputline, outputline
+  
+  !print *, 'Hello world!', nlines
+
+  ! Construct input and output holders
+  allocate(inputline(1:ncols)) 
+  allocate(isnotzero(1:snpslength))
+
+  isnotzero =  snps /= 0
+  !print *, isnotzero
+  allocate(copysnps(1:COUNT(isnotzero)))
+  allocate(copysnpsdest(1:COUNT(isnotzero)))
+  copysnps = PACK(snps, isnotzero)
+  copysnpsdest = PACK( (/ (i, i=1, snpslength) /), isnotzero)
+  
+  !print *, 'snps:', snps
+  !print *, 'copysnps:', copysnps
+  !print *, 'copysnp dest:', copysnpsdest
+  
+  isint = asint == 1
+  if (isint) then
+    allocate(intoutput(snpslength))  
+  endif
+  allocate(realoutput(snpslength))
+  realoutput(:) = na
+  
+  
+  !print *, 'maskIDs:', maskIDs
+  !print *, 'maskSNPs:', maskSNPs
+  !print *, 'dropIDs:', dropIDs
+  
+  write(fmt, '(i10)') snpslength
+  fmt='(i20,'//trim(adjustl(fmt))//userfmt//')'
+  
+  ! Loop: read, write, loop.
+  open(119, file=fn, status='OLD')
+  open(120, file=outfn, status='UNKNOWN')
+  do i=1,nlines
+    if (dropIDs(i) == 1) then
+      read(119, *, iostat=stat) animalID
+      cycle
+    endif
+    
+    read(119, *, iostat=stat) animalID, inputline
+    if (stat /= 0) exit
+    !print *, animalID, inputline
+
+    if (maskIDs(i) /= 0) then 
+      inputline(maskSNPs(maskstart(maskIDs(i)):maskend(maskIDs(i)))) = na
+    endif
+
+    
+    realoutput(copysnpsdest) = inputline(copysnps)
+    !print *, animalID, realoutput
+    
+    
+    if (isint) then
+      intoutput = NINT(realoutput)
+      write(120, fmt) animalID, intoutput
+    else
+      write(120, fmt) animalID, realoutput
+    endif
+    
+    
+  enddo
+  close(119)
+  close(120)
+  
+  
+  deallocate(inputline)
+  deallocate(realoutput)
+  if (isint) then
+    deallocate(intoutput)
+  endif
+  deallocate(copysnps)
+  deallocate(copysnpsdest)
+  
+  if (stat == -1) stat=0
+end subroutine    masksnps2
+    
+    

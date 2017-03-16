@@ -6,9 +6,9 @@
 \usage{
 convert_plink(bfile, outfn, na = 9, newID = 0, nlines = NULL,
   fam = NULL, bim = NULL, bed = NULL, countminor = TRUE, maf = 0,
-  extract = NULL, exclude = NULL, keep = NULL, remove = NULL,
-  method = "simple", fragments = "chr", remerge = TRUE,
-  fragmentfns = NULL)
+  chr = NULL, extract = NULL, exclude = NULL, extract_chr = NULL,
+  keep = NULL, remove = NULL, method = "simple", fragments = "chr",
+  remerge = TRUE, fragmentfns = NULL)
 }
 \arguments{
 \item{bfile}{Filename of PLINK binary files, i.e. without extension.}
@@ -31,9 +31,13 @@ convert_plink(bfile, outfn, na = 9, newID = 0, nlines = NULL,
 
 \item{maf}{Numeric, restrict SNPs to SNPs with this frequency.}
 
+\item{chr}{Vector of chromosomes to limit output to.}
+
 \item{extract}{Extract only these SNPs, see Details.}
 
 \item{exclude}{Do not extract these SNPs, see Details.}
+
+\item{extract_chr}{Extract only these chromosomes, see Details.}
 
 \item{keep}{Keep only these samples, see Details.}
 
@@ -65,8 +69,6 @@ For \code{method='lowmem'} use argument \code{fragment} to indicate how the loci
 When \code{fragment='chr'} (case unsensitive), loci are split according to 1st column of .bim file.
 If \code{fragment} is a scalar integer, loci are split into this number of blocks.
 If an integer vector of same length as \code{ncol}, it directly specifies which block a locus is sent to. \code{max(fragment)} specifies the number of blocks.
-
-If \code{remerge=FALSE}, \code{outfn} should be a vector of same length as number of blocks, and will be filenames of the formatted blocks.
 }
 \section{Filtering loci or samples}{
 
@@ -80,11 +82,12 @@ Exclusion criteria (\code{exclude} and \code{remove}) are applied \emph{after} i
  \item{Integer or numeric}{Indicates positional which loci to include or exclude. Numeric vectors are coerced to integer vectors.}
  \item{Character}{Matched against probe IDs, i.e. 2nd column of .bim file.}
 }
+For restricting the output to certain chromosomes, use \code{extract_chr}. The output is the intersect of \code{extract} and \code{exctract_chr}.
 
 \code{keep} and \code{remove} are as \code{exctract} and \code{exclude} above, can be a combination of, and can additionally be:
 \describe{
  \item{Character}{Matched against both famID or sampID, i.e. 1st and 2nd column of .fam file.}
- \item{List with named elements \code{famID} and/or \code{sampID}}{The named elements are matches against, respectively, the 1st and 2nd column of the .fam file.}
+ \item{List with named elements \code{famID} and/or \code{sampID}}{The named elements are matched against, respectively, the 1st and 2nd column of the .fam file.}
 }
 }
 \references{
@@ -93,5 +96,9 @@ Exclusion criteria (\code{exclude} and \code{remove}) are applied \emph{after} i
  \item Shaun Purvell and Christopher Chang. \emph{PLINK v. 1.90} \url{https://www.cog-genomics.org/plink2}
  \item Chang CC, Chow CC, Tellier LCAM, Vattikuti S, Purcell SM, Lee JJ (2015) \href{http://www.gigasciencejournal.com/content/4/1/7}{Second-generation PLINK: rising to the challenge of larger and richer datasets.} \emph{GigaScience}, 4.
 }
+}
+\seealso{
+\code{convert_plink} is a direct conversion that does not rely on PLINK.
+See the alternate \code{\link{convert_plinkA}} which re-formats the output from \code{plink --recode A}.
 }
 

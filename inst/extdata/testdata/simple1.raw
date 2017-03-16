@@ -1,0 +1,7 @@
+FID IID PAT MAT SEX PHENOTYPE snp1_G snp2_1 snp3_A
+a a 0 0 1 1 2 0 0
+a b 0 0 1 1 0 NA 1
+a c 0 0 1 1 NA 1 1
+a d 0 0 1 1 0 0 NA
+a e 0 0 1 1 0 0 NA
+a f 0 0 1 1 0 0 2

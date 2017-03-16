@@ -25,7 +25,7 @@ get_ncols <- function(file) {
 
 #' Gets number of rows in as file.
 #'
-#' \code{get_nlines} returns number of lines. **Requires first column to be numeric**.
+#' \code{get_nlines} returns number of lines.
 #'
 #' @param fn Filename.
 #' @export

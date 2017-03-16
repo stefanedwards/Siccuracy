@@ -2,7 +2,8 @@
 subroutine readplinksimple(bed, fnout, ncol, nlines, na, newID, minor, maf, extract, keep, status)
   
   implicit none
-  
+
+  ! Arguments  
   character(255), intent(in) :: bed, fnout
   integer, intent(in) :: ncol, nlines, na, minor
   integer, dimension(nlines), intent(in) :: newID, keep
@@ -10,12 +11,15 @@ subroutine readplinksimple(bed, fnout, ncol, nlines, na, newID, minor, maf, extr
   integer, intent(out) :: status
   double precision, intent(in) :: maf
   
+  !! Types
+  INTEGER, PARAMETER :: Byte = SELECTED_INT_KIND(1) ! Byte
+  
   !! Local arguments
-  byte :: readplinkmode, element, plinkmode
-  byte, dimension(2) :: readmagicnumber, magicnumber
-  logical :: checkmaf
+  integer(Byte) :: readplinkmode, element, plinkmode
+  integer(Byte), dimension(2) :: readmagicnumber, magicnumber
+  !logical :: checkmaf
   logical, dimension(ncol) :: masksnps
-  integer :: stat, i, j, pos, k, snpcount, majorcount
+  integer :: stat, i, j, k, snpcount, majorcount
   integer, dimension(4) :: codes
   !integer, dimension(:), allocatable :: domasksnps
   integer, dimension(:,:), allocatable :: snps
@@ -31,7 +35,8 @@ subroutine readplinksimple(bed, fnout, ncol, nlines, na, newID, minor, maf, extr
   !print *, 'keep:', size(keep), keep
   
   ! Supported formats as per plink 1.9.
-  data magicnumber/X'6c',X'1b'/,  plinkmode/X'01'/
+  !data magicnumber/X"6C",X'0000001B' /,  plinkmode/X'01'/
+  data magicnumber /108,27/, plinkmode /1/
   
   allocate(snps(nlines,ncol))
   snps(:,:) = -1
@@ -136,11 +141,13 @@ subroutine convertplinkrwrapper(listfn, n, remerge, fragments, &
   double precision, intent(in) :: maf
   
   ! Local variables
-  character(255), dimension(n) :: filelist
+  character(1000), dimension(n) :: filelist
   integer :: i
   
   open(77, file=listfn)
-  read(77, *) (filelist(i), i=1, n)
+  do i=1,n
+    read(77, '(A1000)') filelist(i)
+  enddo
   close(77)
   
   call convertplinkfragment(filelist((n/2+1):n), filelist(1:(n/2)), n/2, remerge==1, fragments,   &
@@ -155,19 +162,22 @@ subroutine convertplinkfragment(bedfilenames, flatfilenames, n, remerge, fragmen
   ! Arguments
   logical, intent(in) :: remerge
   character(255), intent(in) :: bed, fnout
-  character(255), dimension(n), intent(in) :: bedfilenames, flatfilenames
   integer, intent(in) :: ncol, nlines, na, minor, n
+  character(1000), dimension(n), intent(in) :: bedfilenames, flatfilenames
   integer, dimension(nlines), intent(in) :: newID, keep
   integer, dimension(ncol), intent(in) :: extract, fragments
-  integer, intent(out) :: status
+  integer, intent(inout) :: status
   double precision, intent(in) :: maf
   
-  ! Local variables
-  byte :: readplinkmode, element, plinkmode
-  byte, dimension(2) :: readmagicnumber, magicnumber
-  integer :: i,j,k,stat
+    !! Types
+  INTEGER, PARAMETER :: Byte = SELECTED_INT_KIND(1) ! Byte
+  
+  !! Local arguments
+  integer(Byte) :: readplinkmode, element, plinkmode
+  integer(Byte), dimension(2) :: readmagicnumber, magicnumber
+  integer :: i,j,stat
   integer, dimension(0) :: excludeIDs
-  integer, dimension(n) :: bedcons, flatcons, ncols
+  integer, dimension(n) :: ncols
   integer, dimension(ncol) :: allpos
   integer, dimension(:), allocatable :: subset
   logical, dimension(ncol) :: mask
@@ -175,7 +185,8 @@ subroutine convertplinkfragment(bedfilenames, flatfilenames, n, remerge, fragmen
   
 
   ! Supported formats as per plink 1.9.
-  data magicnumber/X'6c',X'1b'/,  plinkmode/X'01'/
+  !data magicnumber/X"6C",X'0000001B' /,  plinkmode/X'01'/
+  data magicnumber /108,27/, plinkmode /1/
   
   open(15, file=bed, status='OLD', ACCESS='STREAM', FORM='UNFORMATTED')
   read(15) readmagicnumber, readplinkmode
@@ -194,7 +205,11 @@ subroutine convertplinkfragment(bedfilenames, flatfilenames, n, remerge, fragmen
     ! Delete file first.
     ! Opening for binary output does not truncate the file, so any previous data will be left trailing...
     open(100+i, file=bedfilenames(i), status='old', iostat=stat)
-    if (stat == 0) close(100+i, status='delete')
+    if (stat == 0) then
+      close(100+i, status='delete')
+    else
+      close(100+i)
+    endif
     ! Then open for writing.
     open(100+i, file=bedfilenames(i), status='UNKNOWN', ACCESS='STREAM', form='UNFORMATTED')
     write(100+i) magicnumber, plinkmode
@@ -234,10 +249,9 @@ subroutine convertplinkfragment(bedfilenames, flatfilenames, n, remerge, fragmen
     deallocate(subset)
   enddo
   
-  
   if (remerge) then
     excludeIDs(:) = 0
-    call cbindsnps(count(empties), pack(flatfilenames, empties), fnout, nlines, pack(ncols, empties), 0, &
-      0, excludeIDs, status, 2, 'I2', .TRUE.)
+    call cbindsnpscore(count(empties), pack(flatfilenames, empties), fnout, nlines, pack(ncols, empties), 0, &
+      0, excludeIDs, status, 2, 'I2', .TRUE.) ! 'This is PLINK calling')
   endif
 end subroutine 

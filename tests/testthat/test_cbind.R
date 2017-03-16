@@ -2,6 +2,7 @@ library(testthat)
 library(Siccuracy)
 
 test_that('cbind_SNPs binds columns correctly', {
+  #cat('cbind_SNPs binds columns correctly\n')
   nchr <- 5
   fns <- replicate(nchr, tempfile())
   # Different columns per SNP file.
@@ -22,6 +23,7 @@ test_that('cbind_SNPs binds columns correctly', {
 })
 
 test_that('Skiplines skip lines', {
+  #cat('Skiplines skip lines\n')
   nchr <- 5
   fns <- replicate(nchr, tempfile())
   # Different columns per SNP file.
@@ -38,6 +40,7 @@ test_that('Skiplines skip lines', {
 })
 
 test_that('Excluded IDs are not outputted',{
+  #cat('Excluded IDs are not outputted','\n')
   nchr <- 5
   fns <- replicate(nchr, tempfile())
   # Different columns per SNP file.
@@ -55,6 +58,7 @@ test_that('Excluded IDs are not outputted',{
 })
 
 test_that('Numerical formats are respected',{
+  #cat('Numerical formats are respected','\n')
   nchr <- 5
   fns <- replicate(nchr, tempfile())
   # Different columns per SNP file.
@@ -69,6 +73,7 @@ test_that('Numerical formats are respected',{
   s <- scan(fnout, what='character', quiet=TRUE, nlines=1)[-1]
   expect(all(nchar(s) == 6), 'Wrong number of characters in written output.')  # spaces are stripped; expected character length is 4+2 (decimals + period + leading digit).
   
+  #cat('Testing something else..\n')
   n <- cbind_SNPs(fns, fnout, int=FALSE, format='10.8') 
   s <- scan(fnout, what='character', quiet=TRUE)
   expect(length(s) == nrow(total), 'Space as separators are not missing.')

@@ -14,7 +14,7 @@ subroutine get_nlines(fn, nlines, stat)
   integer, intent(out) :: nlines, stat
 
   !! Local variables
-  real :: one
+  character(len=1) :: one
 
   nlines = 0
   open(40, file=fn, status='OLD')

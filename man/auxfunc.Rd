@@ -35,7 +35,7 @@ or picking the first column (relevant if this contains IDs).
 
 \code{get_ncols} returns number of columns.
 
-\code{get_nlines} returns number of lines. **Requires first column to be numeric**.
+\code{get_nlines} returns number of lines.
 
 \code{get_firstcolumn} is a wrapper for \code{read.table} that allows the user
 to easily get the first column(s) by padding \code{colClasses} with \code{"NULL"} character elements to

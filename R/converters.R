@@ -103,6 +103,8 @@ phasotogeno_int <- function(phasefn, genofn, ncol=NULL, nrow=NULL) {
 #'  \item \href{http://www.gigasciencejournal.com/content/4/1/7}{Chang CC, Chow CC, Tellier LCAM, Vattikuti S, Purcell SM, Lee JJ (2015) Second-generation PLINK: rising to the challenge of larger and richer datasets. GigaScience, 4.}
 #' }
 #' @export
+#' @seealso 
+#' \code{\link{convert_plink}} is a direct conversion that does not rely on PLINK.
 convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) {
   stopifnot(file.exists(rawfn))
   
@@ -172,7 +174,6 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #' If \code{fragment} is a scalar integer, loci are split into this number of blocks.
 #' If an integer vector of same length as \code{ncol}, it directly specifies which block a locus is sent to. \code{max(fragment)} specifies the number of blocks.
 #' 
-#' If \code{remerge=FALSE}, \code{outfn} should be a vector of same length as number of blocks, and will be filenames of the formatted blocks.
 #'   
 #' @section Filtering loci or samples:
 #' Filters on loci or samples can be employed in a number of ways; filtering on loci and samples are handled independently.
@@ -185,11 +186,12 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #'  \item{Integer or numeric}{Indicates positional which loci to include or exclude. Numeric vectors are coerced to integer vectors.}
 #'  \item{Character}{Matched against probe IDs, i.e. 2nd column of .bim file.}
 #' }
+#' For restricting the output to certain chromosomes, use \code{extract_chr}. The output is the intersect of \code{extract} and \code{exctract_chr}.
 #' 
 #' \code{keep} and \code{remove} are as \code{exctract} and \code{exclude} above, can be a combination of, and can additionally be:
 #' \describe{
 #'  \item{Character}{Matched against both famID or sampID, i.e. 1st and 2nd column of .fam file.}
-#'  \item{List with named elements \code{famID} and/or \code{sampID}}{The named elements are matches against, respectively, the 1st and 2nd column of the .fam file.}
+#'  \item{List with named elements \code{famID} and/or \code{sampID}}{The named elements are matched against, respectively, the 1st and 2nd column of the .fam file.}
 #' }
 #' 
 #' 
@@ -203,8 +205,10 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #' @param bed See \code{fam}.
 #' @param countminor Logical: Should the output count minor allele (default), or major allele as \code{plink --recode A}.
 #' @param maf Numeric, restrict SNPs to SNPs with this frequency. 
+#' @param chr Vector of chromosomes to limit output to.
 #' @param extract Extract only these SNPs, see Details.
 #' @param exclude Do not extract these SNPs, see Details.
+#' @param extract_chr Extract only these chromosomes, see Details.
 #' @param keep Keep only these samples, see Details.
 #' @param remove Removes these samples from output, see Details.
 #' @param fragments \code{"chr"} or integer vector. Only used when \code{method='lowmem'}.
@@ -218,8 +222,10 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #'  \item Shaun Purvell and Christopher Chang. \emph{PLINK v. 1.90} \url{https://www.cog-genomics.org/plink2}
 #'  \item Chang CC, Chow CC, Tellier LCAM, Vattikuti S, Purcell SM, Lee JJ (2015) \href{http://www.gigasciencejournal.com/content/4/1/7}{Second-generation PLINK: rising to the challenge of larger and richer datasets.} \emph{GigaScience}, 4.
 #' }
-#
-convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bim=NULL, bed=NULL, countminor=TRUE, maf=0.0, extract=NULL, exclude=NULL, keep=NULL, remove=NULL, method='simple', fragments="chr", remerge=TRUE, fragmentfns=NULL) {
+#' @seealso 
+#' \code{convert_plink} is a direct conversion that does not rely on PLINK.
+#' See the alternate \code{\link{convert_plinkA}} which re-formats the output from \code{plink --recode A}.
+convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bim=NULL, bed=NULL, countminor=TRUE, maf=0.0, chr=NULL, extract=NULL, exclude=NULL, extract_chr=NULL, keep=NULL, remove=NULL, method='simple', fragments="chr", remerge=TRUE, fragmentfns=NULL) {
   
   # Get filenames
   if (!(is.null(bfile) | is.na(bfile))) {
@@ -323,8 +329,13 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
   .extract <- rep(TRUE, ncol)
   snps <- NULL
   
+  if (!is.null(chr)) {
+    snps <- get_firstcolumn(bim, class=c('character','character'), col.names=c('chr','rs'), stringsAsFactors=FALSE)
+    .extract <- snps$chr %in% as.character(chr)
+  }
+  
   # Decide upon exclude/include
-  if (!is.null(extract) | !is.null(exclude)) {
+  if (!is.null(extract) | !is.null(exclude) | !is.null(extract_chr)) {
     .is.na <- function(x) {if (is.null(x)) return(logical(0)); is.na(x)}
     if (is.logical(extract) & sum(!.is.na(extract)) < ncol) stop('`extract` as logical must be same length as SNPs in input file and without NA\'s.')
     if (is.logical(exclude) & sum(!.is.na(exclude)) < ncol) stop('`exclude` as logical must be same length as SNPs in input file and without NA\'s.')
@@ -335,7 +346,7 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
     if (!is.logical(extract) & !is.integer(extract)) extract <- as.character(extract)
     if (!is.logical(exclude) & !is.integer(exclude)) exclude <- as.character(exclude)
 
-    if (is.character(extract) | is.character(exclude)) {
+    if ((is.character(extract) | is.character(exclude) | !is.null(extract_chr)) & is.null(snps)) {
       snps <- get_firstcolumn(bim, class=c('character','character'), col.names=c('chr','rs'), stringsAsFactors=FALSE)
     }    
   
@@ -348,6 +359,11 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
       } else {
         .extract[snps$rs %in% extract] <- TRUE
       }
+    }
+    
+    if (!is.null(extract_chr)) {
+      extract_chr <- as.character(extract_chr)
+      .extract <- .extract & snps$chr %in% extract_chr
     }
     
     if (is.logical(exclude)) {
@@ -382,12 +398,12 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
       } else if (n == 1) {
         tmpfiles <- sapply(1:max(fragments), fragmentfns)
       } else {
-        .outfn <- sapply( 1:max(fragments), fragmentfns, max(fragments))
+        tmpfiles <- sapply( 1:max(fragments), fragmentfns, max(fragments))
       }
     } else {
       tmpfiles <- as.character(fragmentfns)
-      tmpfiles <- c(tmpfiles, as.character(replicate(2*max(fragments)-length(tmpfiles), tempfile())))
     }
+    tmpfiles <- c(tmpfiles, as.character(replicate(2*max(fragments)-length(tmpfiles), tempfile())))
     
   }  
   
@@ -417,7 +433,7 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
     res <- list(bed=as.character(bed), fnout=as.character(outfn), 
                 ncol=as.integer(ncol), nlines=as.integer(nlines), na=as.integer(na), newID=as.integer(newID$newID), minor=as.integer(countminor), 
                 maf=as.numeric(maf), extract=as.integer(.extract), keep=as.integer(.keep),
-                fragments=as.integer(fragments), fragmentfns=as.character(fragmentfns))
+                fragments=as.integer(fragments), fragmentfns=as.character(tmpfiles))
   } 
   res$newID=newID
   res
