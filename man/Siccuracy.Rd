@@ -55,7 +55,7 @@ Functions that write new files may have a pair of arguments (\code{int} and \cod
 that specifies whether the outputted format are integers (\code{int=TRUE}) or have decimals.
 For more information on how to specify the format, see \link{parseformat}.
 }
+
 \author{
 Stefan McKinnon Edwards <sme@iysik.com>
 }
-

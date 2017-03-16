@@ -49,4 +49,3 @@ The columns of the output file is prepopulated with \code{na}.
 \seealso{
 \code{\link{get_ncols}}
 }
-

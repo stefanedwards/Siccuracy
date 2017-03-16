@@ -25,7 +25,7 @@ cbind_SNPs <- function(fns, fnout, ncols=NULL, nlines=NULL, skiplines=0, exclude
   format <- parse.format(format, int)
   
   ftemp <- tempfile()
-  write.table(fns, file = ftemp, row.names = FALSE, col.names=FALSE, quote=FALSE)
+  utils::write.table(fns, file = ftemp, row.names = FALSE, col.names=FALSE, quote=FALSE)
   
   res <- .Fortran('cbindsnpsrwrapper',
                   files=length(fns),
@@ -177,8 +177,6 @@ mergeChips <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outpos=NULL, 
 #' @param snpsinnew Logical, when \code{TRUE}, positions in \code{masking} are mapped to the output file instead of input file.
 #' @param dropIDs IDs to exclude from output.
 #' @param na Value to use for masking.
-#' @param ncol Integer, number of SNP columns in \code{fn}. When \code{NULL} (default), automagically detected with \code{get_ncols(fn)-1}.
-#' @param nlines Integer, number of lines to process.
 #' @param int Logical (default \code{TRUE}), read and write integers.
 #' @param format Character, Fortran edit descriptors for output. See \link{parseformat}.
 #' @export

@@ -76,7 +76,7 @@ get_firstcolumn <- function(fn, class='integer', ...) {
       args$col.names <- c(args$col.names, paste0('X', 1:(cols-length(args$col.names))))
   }
   
-  res <- do.call(read.table, args)
+  res <- do.call(utils::read.table, args)
   if (ncol(res) == 1) res <- res[,1]
   return(res)
 }
@@ -96,7 +96,7 @@ NULL
 #' @seealso \code{\link[utils]{write.table}}, \link[base]{connections}
 #' @export
 write.snps <- function(x, file, row.names=TRUE, na='9', ...) {
-  write.table(x, file, col.names=FALSE, row.names=row.names, quote=FALSE, na=na, ...)
+  utils::write.table(x, file, col.names=FALSE, row.names=row.names, quote=FALSE, na=na, ...)
 }
 
 #' Read genotype matrix from file.

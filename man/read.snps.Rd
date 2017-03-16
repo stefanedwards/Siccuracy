@@ -56,4 +56,3 @@ close(f)
 \seealso{
 \code{\link{write.snps}}, \link[base]{typeof}, \code{\link{get_ncols}}, \code{\link[base]{scan}}.
 }
-

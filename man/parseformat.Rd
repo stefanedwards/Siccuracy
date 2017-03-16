@@ -24,4 +24,3 @@ The type of accepted values for \code{format} are:
 }
 \strong{Note:} No checks are performed on the width and number of decimals.
 }
-

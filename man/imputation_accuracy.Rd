@@ -33,6 +33,8 @@ Currently by subtracting column mean and dividing by column standard deviation.}
 \item{excludeIDs}{Integer vector, exclude these individuals from correlations. \emph{Does not affect calculation of column means and standard deviations.}}
 
 \item{excludeSNPs}{Integer or logical vector, exclude these columns from correlations. \emph{Does not affect calculation of column means and standard deviations.}}
+
+\item{tol}{Numeric, tolerance for imputation error when counting correctly imputed genotypes.}
 }
 \value{
 List with following elements:
@@ -75,4 +77,3 @@ The non-adaptive method is however, and very surprisingly, slightly slower.
 \seealso{
 \code{\link{write.snps}} for writing SNPs to a file.
 }
-

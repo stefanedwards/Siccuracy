@@ -53,4 +53,3 @@ NB! Function does not test for validity of this argument, so change with caution
 
 \strong{Missing values:} Values after summing less than 0 or greater than 2 are assumed as missing and replaced with \code{na}.
 }
-
