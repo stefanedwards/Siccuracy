@@ -67,4 +67,3 @@ Bhatia, Patterson, Sankararaman, and Price. Estimating and interpreting FST: The
 \emph{Genome Research} (2013) 23: 1514-1521. \href{http://genome.cshlp.org/content/early/2013/07/16/gr.154831.113.full.pdf}{Preprint}
 \href{http://dx.doi.org/10.1101/gr.154831.113}{doi: 10.1101/gr.154831.113}.
 }
-

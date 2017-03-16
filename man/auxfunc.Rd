@@ -2,9 +2,9 @@
 % Please edit documentation in R/auxil.R
 \name{auxfunc}
 \alias{auxfunc}
-\alias{get_firstcolumn}
 \alias{get_ncols}
 \alias{get_nlines}
+\alias{get_firstcolumn}
 \title{Auxiliary functions}
 \usage{
 get_ncols(file)

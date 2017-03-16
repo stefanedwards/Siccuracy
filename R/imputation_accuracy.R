@@ -29,6 +29,7 @@
 #' @param p Shortcut for \code{center} and \code{scale} when using allele frequencies. \code{center=2p} and \code{scale=2p(1-p)}.
 #' @param excludeIDs Integer vector, exclude these individuals from correlations. \emph{Does not affect calculation of column means and standard deviations.}
 #' @param excludeSNPs Integer or logical vector, exclude these columns from correlations. \emph{Does not affect calculation of column means and standard deviations.}
+#' @param tol Numeric, tolerance for imputation error when counting correctly imputed genotypes.
 #' @return List with following elements:
 #' \describe{
 #'   \item{\code{matcor}}{Matrix-wise correlation between true and imputed matrix.}

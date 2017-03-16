@@ -90,6 +90,7 @@ For restricting the output to certain chromosomes, use \code{extract_chr}. The o
  \item{List with named elements \code{famID} and/or \code{sampID}}{The named elements are matched against, respectively, the 1st and 2nd column of the .fam file.}
 }
 }
+
 \references{
 \itemize{
  \item PLINK v. 1.07 BED file format: \url{http://pngu.mgh.harvard.edu/~purcell/plink/binary.shtml}
@@ -101,4 +102,3 @@ For restricting the output to certain chromosomes, use \code{extract_chr}. The o
 \code{convert_plink} is a direct conversion that does not rely on PLINK.
 See the alternate \code{\link{convert_plinkA}} which re-formats the output from \code{plink --recode A}.
 }
-

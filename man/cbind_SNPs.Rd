@@ -30,4 +30,3 @@ Exit status, invisible.
 \description{
 Does row-wise concatenation of multiple genotype files, ignoring the first column.
 }
-
