@@ -43,4 +43,3 @@ If data.frame with columns \code{famID}, \code{sampID}, and \code{newID}, they w
 \seealso{
 \code{\link{convert_plink}} is a direct conversion that does not rely on PLINK.
 }
-

@@ -24,4 +24,3 @@ For file format see \link{Siccuracy}.
 \seealso{
 \code{\link[utils]{write.table}}, \link[base]{connections}
 }
-

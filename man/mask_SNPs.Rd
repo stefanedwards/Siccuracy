@@ -25,10 +25,6 @@ mask_SNPs(fn, outfn, masking = NULL, snps = NULL, snpsinnew = FALSE,
 \item{int}{Logical (default \code{TRUE}), read and write integers.}
 
 \item{format}{Character, Fortran edit descriptors for output. See \link{parseformat}.}
-
-\item{ncol}{Integer, number of SNP columns in \code{fn}. When \code{NULL} (default), automagically detected with \code{get_ncols(fn)-1}.}
-
-\item{nlines}{Integer, number of lines to process.}
 }
 \description{
 This function runs through a single file and masks specified columns of specified rows.
@@ -61,4 +57,3 @@ res <- mask_SNPs(snpfile, fn, masking=masking, na=9)
 m <- read.snps(fn)
 
 }
-

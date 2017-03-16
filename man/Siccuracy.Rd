@@ -44,7 +44,7 @@ Requirements for format: Space or tab separated; number of digits is unimportant
 Functions that write new files may have a pair of arguments (\code{int} and \code{format}) 
 that specifies whether the outputted format are integers (\code{int=TRUE}) or have decimals.
 }
+
 \author{
 Stefan McKinnon Edwards <sme@iysik.com>
 }
-
