@@ -4,6 +4,8 @@ subroutine convert_phase_num(phasefn, genofn, ncol, nrow, naval, numfmt, lennumf
 
   implicit none
 
+  integer, parameter :: i16_kind = selected_int_kind(16)
+
   !! Arguments
   character(255), intent(in) :: phasefn, genofn
   integer, intent(in) :: ncol, naval, lennumfmt
@@ -11,7 +13,8 @@ subroutine convert_phase_num(phasefn, genofn, ncol, nrow, naval, numfmt, lennumf
   integer, intent(inout) :: nrow
 
   !! Local variables
-  integer :: stat, i, animalid
+  integer :: stat, i
+  integer(i16_kind) :: animalid
   real, dimension(ncol) :: linea, lineb, summ
   character(100) :: nChar, fmt
 
@@ -43,6 +46,8 @@ subroutine convert_phase(phasefn, genofn, ncol, nrow, na, int, lenfmt, userfmt)
 
   implicit none
   
+  integer, parameter :: i16_kind = selected_int_kind(16)
+  
   !! Arguments
   character(255), intent(in) :: phasefn, genofn
   integer, intent(in) :: ncol, na, int, lenfmt
@@ -50,7 +55,8 @@ subroutine convert_phase(phasefn, genofn, ncol, nrow, na, int, lenfmt, userfmt)
   integer, intent(inout) :: nrow
 
   !! Local variables
-  integer :: stat, i, animalid
+  integer :: stat, i
+  integer(i16_kind) :: animalid
   logical :: isint
   integer, dimension(:),  allocatable :: summint
   real, dimension(ncol) :: linea, lineb, summ
@@ -127,7 +133,7 @@ subroutine convertplinka(rawfn, outputfn, newID, ncol, nrow, naval, header, stat
   i = 0
   open(90, file=rawfn, status='OLD')
   if (hasheader .eqv. .true.) then
-    read(90, *, iostat=stat) sixcolumns, SNPs ! formatted splits also at underscores(!) !!
+    read(90, *, iostat=stat) sixcolumns, SNPs ! formatted input splits also at underscores(!) !!
   endif
   
   open(91, file=outputfn, status='UNKNOWN')

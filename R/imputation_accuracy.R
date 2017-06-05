@@ -140,7 +140,7 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
   #res[c('means','sds','rowcors','matcor','colcors','rowID')]
   with(res, 
        list(matcor=matcor, snps=data.frame(means, sds, cors=colcors, correct=colcorrect, true.na=coltruena, imp.na=colimpna, both.na=colbothna, correct.pct=colcorrect/(n-coltruena-colbothna)),
-            animals=data.frame(rowID, cors=rowcors, correct=rowcorrect, true.na=rowtruena, imp.na=rowimpna, both.na=rowbothna, correct.pct=rowcorrect/(n-rowtruena-rowbothna))))
+            animals=data.frame(rowID, cors=rowcors, correct=rowcorrect, true.na=rowtruena, imp.na=rowimpna, both.na=rowbothna, correct.pct=rowcorrect/(m-rowtruena-rowbothna))))
 }
 
 #' \code{imputation_accuracy1} and \code{imputation_accuracy3} has been replaced by \code{\link{imputation_accuracy}}.

@@ -13,6 +13,7 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
   implicit none
   
   integer, parameter :: r8_kind = selected_real_kind(15, 307) ! double precision, 64-bit like, required for transferring to and fro R.
+  integer, parameter :: i16_kind = selected_int_kind(16)
 
   !! Arguments
   character(255), intent(in) :: truefn, imputefn
@@ -27,8 +28,9 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
   real(r8_kind), intent(out) :: matcor
 
   !! Private variables
-  integer :: stat, animalID, i, j, mn
+  integer :: stat, i, j, mn
   real(r8_kind) :: tru, imp, nan
+  integer(i16_kind) :: animalID
   logical, dimension(nAnimals) :: exids
   real(r8_kind), dimension(nSNPs) :: M, S, Mold, Sold
   real, dimension(nSNPs) :: genoin, true, imputed
@@ -238,7 +240,8 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
   implicit none
   
   integer, parameter :: r8_kind = selected_real_kind(15, 150) ! double precision, 64-bit like, required for transferring to and fro R.
-
+  integer, parameter :: i16_kind = selected_int_kind(16)
+  
   character(255), intent(in) :: truefn, imputefn
   integer, intent(in) :: nSNPs, NAval, standardized, nAnimals, usermeans
   integer, dimension(nAnimals), intent(in) :: iexids
@@ -249,16 +252,18 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
   real(r8_kind), dimension(nSnps), intent(inout) :: means, sds, colcors
   real(r8_kind), dimension(nAnimals), intent(out) :: rowcors
   real(r8_kind), intent(out) :: matcor
+  
   !! Private variables
   logical, dimension(nAnimals) :: foundID
-  integer :: stat, start, animalID, commonrows, i, j, k, l, maxanimal, minanimal, ianimalID
+  integer :: stat, start, commonrows, i, j, k, l
+  integer(i16_kind) :: animalID, maxanimal, minanimal, ianimalID
   real(r8_kind) :: tru, imp, nan
   real(r8_kind), dimension(nSNPs) :: M, S, Mold, Sold
   real(r8_kind), dimension(nSNPs) :: genoin, imputed
   real(r8_kind), dimension(nAnimals, nSnps) :: trueMat
   !! For running correlation on columns
   integer, dimension(nSNPs) :: cNA, nLines
-  integer, dimension(nAnimals) :: animalIndex
+  integer(i16_kind), dimension(nAnimals) :: animalIndex
   real(r8_kind), dimension(nSNPs) :: cmp, cmq, cmt, cmi, csi, cst, csb
   !! For matrix
   integer :: mn

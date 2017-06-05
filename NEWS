@@ -1,3 +1,8 @@
+# 0.7.1
+
+  * Fortran routines updated to be able to handle integer IDs exceeding 
+    2147483647. Passing larger integers back to R is however still not possible.
+
 # 0.5.0
 
   * Preparing package for publication.
