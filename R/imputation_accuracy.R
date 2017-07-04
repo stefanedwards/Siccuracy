@@ -61,6 +61,8 @@ imputation_accuracy <- function(truefn, imputefn, ncol=NULL, nlines=NULL, na=9, 
   m <- as.integer(ncol)
   n <- as.integer(nlines)
   
+  stopifnot(m == (get_ncols(imputefn) - 1))
+  
   usermeans <-  (!is.null(p) | !is.null(center) | !is.null(scale))
   if (!is.null(p)) {
     stopifnot(length(p)==m)
