@@ -131,6 +131,12 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
     !print *, 'Animal', animalID
 
     do j=1,nSnps
+      if (iexsnps(j) == 1) then
+        rNA = rNA + 1
+        cNA(j) = cNA(j) + 1
+        cycle
+      end if
+    
       if (imputed(j) == NAval .and. true(j) == NAval) then
         colbothna(j) = colbothna(j) + 1
         rowbothna(i) = rowbothna(i) + 1
@@ -420,6 +426,12 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
     rsb = 0
 
     do j=1,nSnps
+      if (iexsnps(j) .eq. 1) then
+        rNA = rNA + 1
+        cNA(j) = cNA(j) + 1
+        cycle
+      end if
+    
       if (imputed(j) == NAval .and. trueMat(i,j) == NAval) then
         colbothna(j) = colbothna(j) + 1
         rowbothna(i) = rowbothna(i) + 1

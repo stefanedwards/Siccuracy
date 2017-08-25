@@ -16,6 +16,17 @@ imputation_accuracy <- function(true, impute, ...) {
 #' Correlations are only performed on those rows that are found in \emph{both} files,
 #' based on the first column (ID column).
 #'
+#' \emph{Standardization} is performed by subtracting the mean followed by 
+#' division of the standard deviation; conceptually the same as in 
+#' \code{\link[base]{scale}}.
+#' Mean and standard deviation are calculated based on \code{true} matrix,
+#' \emph{before} removing samples (\code{excludeIDs}) or SNPs (\code{excludeSNPs}).
+#' Alternate means and scales may be provided by arguments 
+#' \code{center} and \code{scale}, or \code{p}.
+#' Note: If either \code{scale} or \code{p} are \code{0} or \code{NA}, they 
+#' will \emph{not} contribute to correlation, but they \emph{will count} towards
+#' correct pct. To exclude entirely, use \code{excludeSNPs}.
+#'
 #' Genotypes equal to \code{NAval} are considered missing (i.e. \code{NA}) and are not included in the calculations.
 #'
 #' This method stores the "true" matrix in memory with a low-precision real type,
@@ -41,10 +52,13 @@ imputation_accuracy <- function(true, impute, ...) {
 #' @return List with following elements:
 #' \describe{
 #'   \item{\code{matcor}}{Matrix-wise correlation between true and imputed matrix.}
-#'   \item{\code{snps}}{Data frame with all snp-wise statistics}
-#'   \item{\code{animals}}{Data frame with all animal-wise statistics}
+#'   \item{\code{snps}}{Data frame with all snp-wise statistics; has $m$ or $m - |excludeSNPs|$ rows.}
+#'   \item{\code{animals}}{Data frame with all animal-wise statistics; has $n$ or $n - |excludeIDs|$ rows.}
 #' }
-#' The data frames with statistics consists of columns
+#' The data frames keeps all rows when used on files; when used on matrices, 
+#' the rows of the corresponding dropped IDs or SNPs are dropped.
+#' 
+#' The data frames, \code{snps} and \code{animals}, with statistics consists of columns
 #' \describe{
 #'   \item{\code{rowID}}{Row ID (\code{$animals} only!).}
 #'   \item{\code{means}}{Value subtracted from each column (\code{$snps} only!).}
@@ -157,14 +171,14 @@ imputation_accuracy.character <- function(true, impute, ncol=NULL, nlines=NULL, 
 }
 
 
-#' Correlation between two matrices in R
+
 #' @param true Matrix of true genotypes
 #' @param impute Matrix of imputed genotypes
 #' @param transpose Logical, if SNPs are per row, set to \code{TRUE}.
 #' @inheritParams imputation_accuracy.character
 #' @rdname imputation_accuracy
 #' @export
-imputation_accuracy.matrix <- function(true, impute, na=9, standardized=TRUE, center=NULL, scale=NULL, p=NULL, excludeIDs=NULL, excludeSNPs=NULL, tol=0.1, transpose=FALSE) {
+imputation_accuracy.matrix <- function(true, impute, standardized=TRUE, center=NULL, scale=NULL, p=NULL, excludeIDs=NULL, excludeSNPs=NULL, tol=0.1, transpose=FALSE) {
   
   standardized <- as.logical(standardized)
 
@@ -211,6 +225,7 @@ imputation_accuracy.matrix <- function(true, impute, na=9, standardized=TRUE, ce
   if (!is.null(excludeIDs)) {
     ex_ids[rownames(true) %in% excludeIDs] <- TRUE 
   }
+  ex_ids[!rownames(true) %in% rownames(impute)] <- TRUE
   
   ex_snps <- rep(FALSE, m)
   if (!is.null(excludeSNPs)) {
@@ -222,7 +237,7 @@ imputation_accuracy.matrix <- function(true, impute, na=9, standardized=TRUE, ce
     }
   }
   
-  if (any(ex_ids) | any(ex_snps)) {
+  if (any(ex_snps)) {
     true <- true[!ex_ids, !ex_snps]
     impute <- impute[rownames(true), !ex_snps]
     m <- ncol(true)
@@ -230,28 +245,31 @@ imputation_accuracy.matrix <- function(true, impute, na=9, standardized=TRUE, ce
     center <- center[!ex_snps]
     scale <- scale[!ex_snps]
   } else {
+    true <- true[!ex_ids, ]
+    n <- nrow(true)
+    impute <- impute[rownames(true), ]
     impute <- impute[rownames(true), ]
   }
   
   
   ## Calculate statistics
-  #if (standardized) {
-    matcor <- cor(as.vector(scale(true, center, scale)), as.vector(scale(impute, center,scale)), use = 'complete.obs')
-  #} else {
-  #  matcor <- cor(as.vector(true), as.vector(impute), use = 'complete.obs')
-  #}
-  
-  col.stats <- sapply(1:ncol(true), function(ii) vect.stat(true[,ii], impute[,ii], tol=tol, m=center[ii], s=scale[ii]))
+  .scale <- scale
+  .scale[.scale==0] <- NA
+  matcor <- cor(as.vector(scale(true, center, scale)), as.vector(scale(impute, center, .scale)), use = 'pairwise.complete.obs')
+
+  col.stats <- sapply(1:ncol(true), function(ii) vect.stat(true[,ii], impute[,ii], tol=tol, m=center[ii], s=.scale[ii]))
   col.stats <- as.data.frame(t(col.stats))
   colnames(col.stats) <- c('cors','correct','true.na','imp.na','both.na')
   col.stats$correct.pct <- with(col.stats, correct/(n - true.na - both.na))
   col.stats <- cbind.data.frame(means=center, sds=scale, col.stats, stringsAsFactors=FALSE)
-  
-  row.stats <- sapply(1:nrow(true), function(ii) vect.stat(true[ii,], impute[ii,], tol=tol, m=center, s=scale))
+  rownames(col.stats) <- which(!ex_snps)
+
+  row.stats <- sapply(1:nrow(true), function(ii) vect.stat(true[ii,], impute[ii,], tol=tol, m=center, s=.scale))
   row.stats <- as.data.frame(t(row.stats))
   colnames(row.stats) <- c('cors','correct','true.na','imp.na','both.na')
   row.stats$correct.pct <- with(row.stats, correct/(m - true.na - both.na))
   row.stats <- cbind.data.frame(rowID=rownames(true), row.stats, stringsAsFactors=FALSE)
+  rownames(row.stats) <- which(!ex_ids)
   
   #if (anyNA(scale)) {
   #  i <- which(is.na(scale))
