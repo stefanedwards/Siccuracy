@@ -1,7 +1,15 @@
 # 0.7.1
 
   * Fortran routines updated to be able to handle integer IDs exceeding 
-    2147483647. Passing larger integers back to R is however still not possible.
+    2147483647. Passing larger integers between R and Fortran routines is 
+    however still not possible.
+    
+  * `imputation_accuracy` has slight modified behaviour:
+    It now dispatches to either files or matrices depending on first argument.
+    Correct.pct is calculated as # correct / (elements - true missing).
+    Tolerance is limited to 4 digits. I.e. a tolerance below 1e-4 is effectively
+    ignored.
+  
 
 # 0.5.0
 

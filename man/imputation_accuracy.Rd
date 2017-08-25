@@ -2,27 +2,36 @@
 % Please edit documentation in R/imputation_accuracy.R
 \name{imputation_accuracy}
 \alias{imputation_accuracy}
+\alias{imputation_accuracy.character}
+\alias{imputation_accuracy.matrix}
 \title{Imputation accuracy, aka. correlations}
 \usage{
-imputation_accuracy(truefn, imputefn, ncol = NULL, nlines = NULL, na = 9,
-  standardized = TRUE, adaptive = TRUE, center = NULL, scale = NULL,
-  p = NULL, excludeIDs = NULL, excludeSNPs = NULL, tol = 0.1)
+imputation_accuracy(true, impute, ...)
+
+\method{imputation_accuracy}{character}(true, impute, ncol = NULL,
+  nlines = NULL, na = 9, standardized = TRUE, adaptive = TRUE,
+  center = NULL, scale = NULL, p = NULL, excludeIDs = NULL,
+  excludeSNPs = NULL, tol = 0.1)
+
+\method{imputation_accuracy}{matrix}(true, impute, standardized = TRUE,
+  center = NULL, scale = NULL, p = NULL, excludeIDs = NULL,
+  excludeSNPs = NULL, tol = 0.1, transpose = FALSE)
 }
 \arguments{
-\item{truefn}{Filename of \emph{true} matrix.}
+\item{true}{\emph{True} genotype matrix, or filename.}
 
-\item{imputefn}{Filename of \emph{imputed} matrix.}
+\item{impute}{\emph{Imputed} genotype matrix, or filename.}
 
-\item{ncol}{Integer, number of SNP columns in files. When \code{NULL}, automagically detected with \code{get_ncols(truefn)-1}.}
+\item{ncol}{Integer, number of SNP columns in files. When \code{NULL}, automagically detected with \code{get_ncols(true)-1}.}
 
-\item{nlines}{Integer, number of lines in \code{truefn}. When \code{NULL}, automagically detected with \code{gen_nlines(truefn)}.}
+\item{nlines}{Integer, number of lines in \code{true}. When \code{NULL}, automagically detected with \code{gen_nlines(true)}.}
 
 \item{na}{Value of missing genotypes.}
 
 \item{standardized}{Logical, whether to center and scale genotypes by dataset in \code{true}-matrix.
 Currently by subtracting column mean and dividing by column standard deviation.}
 
-\item{adaptive}{Use adaptive method (default) that stores \code{truefn} in memory and compares rows by ID in first column.}
+\item{adaptive}{Use adaptive method (default) that stores \code{true} in memory and compares rows by ID in first column.}
 
 \item{center}{Numeric vector of \code{ncol}-length to subtract with for standardization.}
 
@@ -35,30 +44,39 @@ Currently by subtracting column mean and dividing by column standard deviation.}
 \item{excludeSNPs}{Integer or logical vector, exclude these columns from correlations. \emph{Does not affect calculation of column means and standard deviations.}}
 
 \item{tol}{Numeric, tolerance for imputation error when counting correctly imputed genotypes.}
+
+\item{transpose}{Logical, if SNPs are per row, set to \code{TRUE}.}
+
+\item{true}{Matrix of true genotypes}
+
+\item{impute}{Matrix of imputed genotypes}
 }
 \value{
 List with following elements:
 \describe{
   \item{\code{matcor}}{Matrix-wise correlation between true and imputed matrix.}
-  \item{\code{snps}}{Data frame with all snp-wise statistics}
-  \item{\code{animals}}{Data frame with all animal-wise statistics}
+  \item{\code{snps}}{Data frame with all snp-wise statistics; has $m$ or $m - |excludeSNPs|$ rows.}
+  \item{\code{animals}}{Data frame with all animal-wise statistics; has $n$ or $n - |excludeIDs|$ rows.}
 }
-The data frames with statistics consists of columns
+The data frames keeps all rows when used on files; when used on matrices, 
+the rows of the corresponding dropped IDs or SNPs are dropped.
+
+The data frames, \code{snps} and \code{animals}, with statistics consists of columns
 \describe{
   \item{\code{rowID}}{Row ID (\code{$animals} only!).}
   \item{\code{means}}{Value subtracted from each column (\code{$snps} only!).}
   \item{\code{sds}}{Value used to scale each column (i.e. standard deviations) (\code{$snps} only!).}
   \item{\code{cors}}{Pearson correlation between true and imputed genotype.}
   \item{\code{correct}}{Number of entries of equal value (within \code{tol})}
-  \item{\code{true.na}}{Number of entries in that were missing in \code{truefn} but not \code{imputefn}.}
+  \item{\code{true.na}}{Number of entries in that were missing in \code{true} but not \code{impute}.}
   \item{\code{imp.na}}{As \code{true.na}, but vice versa.}
   \item{\code{both.na}}{Number of entries that were missing in both files.}
-  \item{\code{correct.pct}}{\code{correct} divided by total number of entries bare missing entries in \code{truefn}.}
+  \item{\code{correct.pct}}{\code{correct} divided by total number of entries bare missing entries in \code{true}.}
 }
 }
 \description{
 Calculation of column-wise, row-wise, and matrix-wise correlations between
-matrix in files \code{truefn} and \code{imputefn}.
+matrix in files \code{true} and \code{impute}.
 Assumes first column in both files is an integer ID column and thus excluded from calculations.
 Standardization (subtract mean, divide by standard deviation) is done column-wise based
 on means and standard deviations of \code{truefn}.
@@ -66,6 +84,17 @@ Correlations are only performed on those rows that are found in \emph{both} file
 based on the first column (ID column).
 }
 \details{
+\emph{Standardization} is performed by subtracting the mean followed by 
+division of the standard deviation; conceptually the same as in 
+\code{\link[base]{scale}}.
+Mean and standard deviation are calculated based on \code{true} matrix,
+\emph{before} removing samples (\code{excludeIDs}) or SNPs (\code{excludeSNPs}).
+Alternate means and scales may be provided by arguments 
+\code{center} and \code{scale}, or \code{p}.
+Note: If either \code{scale} or \code{p} are \code{0} or \code{NA}, they 
+will \emph{not} contribute to correlation, but they \emph{will count} towards
+correct pct. To exclude entirely, use \code{excludeSNPs}.
+
 Genotypes equal to \code{NAval} are considered missing (i.e. \code{NA}) and are not included in the calculations.
 
 This method stores the "true" matrix in memory with a low-precision real type,
@@ -77,3 +106,4 @@ The non-adaptive method is however, and very surprisingly, slightly slower.
 \seealso{
 \code{\link{write.snps}} for writing SNPs to a file.
 }
+
