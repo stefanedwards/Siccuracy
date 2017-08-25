@@ -2,7 +2,10 @@
 
   * Fortran routines updated to be able to handle integer IDs exceeding 
     2147483647. Passing larger integers back to R is however still not possible.
-
+  * Added support for vcf files with package 'vcfR', but require the genotypes
+    to be loaded with `read.vcfR`.
+    Support is on `write.snps`, and `imputation_accuracy`.
+  
 # 0.5.0
 
   * Preparing package for publication.

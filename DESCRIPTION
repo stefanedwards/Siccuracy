@@ -9,6 +9,9 @@ Description: Calculation of imputation accuracies and similar allele stats.
 License: GPL-2 | GPL-3 | file LICENSE
 LazyData: TRUE
 URL: https://github.com/stefanedwards/Siccuracy
+Requires:
+    R (> 3.1.0),
+    vcfR (> 1.4.0)
 Suggests:
     testthat,
     knitr,
