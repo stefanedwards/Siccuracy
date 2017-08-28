@@ -181,7 +181,7 @@ extract.phased <- function(x) {
 #' @rdname extract.gt
 #' @export
 extract.snps <- function(x, ...) {
-  UseMethods('extract.snps', x)
+  UseMethod('extract.snps', x)
 }
 
 
