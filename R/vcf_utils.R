@@ -5,7 +5,7 @@
 #' VCF objects in Siccuracy
 #' 
 #' To allow fluid interaction with the \emph{Variant Call Format}, 
-#' some functions accepts the objects from the \code[=vcfR]{vcfR} package.
+#' some functions accepts the objects from the \link[=vcfR]{vcfR} package.
 #' 
 #' The following functions have been implemented 
 #' with method dispatching for \link[=vcfR]{vcfR} objects:
@@ -99,5 +99,6 @@ imputation_accuracy.vcfR <- function(true, impute, standardized=TRUE, center=NUL
                       p=p,
                       excludeIDs=excludeIDs,
                       excludeSNPs=excludeSNPs,
-                      tol=tol)
+                      tol=tol,
+                      transpose=TRUE)
 }

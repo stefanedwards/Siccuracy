@@ -6,7 +6,7 @@
 \title{VCF objects in Siccuracy}
 \description{
 To allow fluid interaction with the \emph{Variant Call Format}, 
-some functions accepts the objects from the \code[=vcfR]{vcfR} package.
+some functions accepts the objects from the \link[=vcfR]{vcfR} package.
 }
 \details{
 The following functions have been implemented 

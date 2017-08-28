@@ -8,6 +8,7 @@ data(vcfR_example) # loads object vcf
 
 context('vcf files/objects')
 
+# write.snps ------
 test_that('write.snps works on vcf objects', {
   tfn <- tempfile()
   newIDs <- write.snps(vcf, file = tfn, na='9')
@@ -45,7 +46,7 @@ test_that('write.snps handles some bad newIDs', {
   expect_equivalent(nrow(v), as.integer(dim(vcf)['gt_cols'] - 1)) ## bloody names...
 })
 
-# write.snps returns all columns of newID -----
+## write.snps returns all columns of newID -----
 test_that('write.snps returns all columns of newID', {
   newIDs <- data.frame(sampID=colnames(vcf@gt), newID=1:(dim(vcf)['gt_cols']) +10, stringsAsFactors = FALSE)
   newIDs$nice <- letters[sample.int(length(letters), nrow(newIDs), replace=TRUE)]
@@ -59,7 +60,7 @@ test_that('write.snps returns all columns of newID', {
   expect_equal(rownames(snps), as.character(newIDs$newID))
 })
 
-# write.snps fails when given vcfR without gt -----
+## write.snps fails when given vcfR without gt -----
 test_that('write.snps fails when given vcfR without gt', {
   # object here is given by:
   # data(vcfR_test)  # return object named vcfR_test
@@ -92,4 +93,32 @@ test_that('write.snps fails when given vcfR without gt', {
                                     "INFO")))
       )
   expect_error(write.snps(v, file=tempfile()))
+})
+
+
+# Imputation accuracy -----------------
+
+data(vcfR_example) # loads object vcf
+
+## imputation_accuracy on VCF objects are entirely true (object: vcf) ------
+test_that('imputation_accuracy on VCF objects are entirely true (object: vcf)', {
+  m <- vcfR::maf(vcf)
+  res <- imputation_accuracy(vcf, vcf)
+  
+  expect_equal(res$matcor, 1.0)
+  
+  snps.0 <- snps.1 <- rep(1, dim(vcf)['variants'])
+  NAs <- m[,'Count'] <= 1 # subset of rows with no variance
+  snps.0[res$snps$sds == 0 | is.na(res$snps$sd)] <- NA
+  expect_equal(nrow(res$snps), length(snps.1))
+  expect_equal(res$snps$cors, snps.0)
+  expect_equal(res$snps$correct.pct, snps.1)
+  
+  
+  samples.1 <- rep(1, dim(vcf)['gt_cols'] - 1)
+  expect_equal(nrow(res$animals), length(samples.1))
+  expect_equal(res$animals$cors, samples.1)
+  expect_equal(res$animals$correct.pct, samples.1)
+  
+  expect_equal(res$snps$both.na, as.integer(m[,'NA']))
 })
