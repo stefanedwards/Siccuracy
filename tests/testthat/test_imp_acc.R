@@ -807,7 +807,7 @@ test_that('Excluding SNPs by given NA allele frequencies does not change, non-ad
   imputed <- imputed[,-4]
   mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
   row2 <- sapply(1:nrow(true), function(i) cor(true[i,], imputed[i,], use='na.or.complete'))
-  col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete'))
+  suppressWarnings(col2 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')))
   
   expect_equal(res$matcor, mat2)  
   expect_equal(res$animals$cors, row2)
