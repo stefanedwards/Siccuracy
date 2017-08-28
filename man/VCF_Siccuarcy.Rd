@@ -31,6 +31,9 @@ For the first step, PLINK may be called as:
 and then to convert to AlphaImpute format:
 
 \code{convert_plinkA('temp_file.raw', 'alphaimpute_genotypes.txt')}
+
+Take care of sample IDs when using PLINK, as IDs containing an underscore ('_')
+are split into family ID and sample ID (famID and sampID, respectively).
 }
 \author{
 Stefan McKinnon Edwards <sme@iysik.com>, August 2017

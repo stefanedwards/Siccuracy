@@ -30,6 +30,9 @@
 #' 
 #' \code{convert_plinkA('temp_file.raw', 'alphaimpute_genotypes.txt')}
 #' 
+#' Take care of sample IDs when using PLINK, as IDs containing an underscore ('_')
+#' are split into family ID and sample ID (famID and sampID, respectively).
+#' 
 #' @name VCF_Siccuarcy
 #' @aliases Siccuracy_VCF
 #' @author Stefan McKinnon Edwards <sme@@iysik.com>, August 2017
