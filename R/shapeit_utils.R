@@ -177,11 +177,25 @@ extract.phased <- function(x) {
   snps
 }
 
+
+#' @rdname extract.gt
+#' @export
+extract.snps <- function(x, ...) {
+  UseMethods('extract.snps', x)
+}
+
+
 #' @rdname extract.gt
 #' @export
 #' @return \code{extract.snps} returns matrix with indivduals by row, with numeric genotypes.
-extract.snps <- function(x) {
-  t(extract.gt(x, is.numeric=TRUE))
+extract.snps.haps <- function(x) {
+  t(extract.gt.haps(x, is.numeric=TRUE))
+}
+
+#' @rdname extract.gt
+#' @export
+extract.snps.vcfR <- function(x) {
+  t(extract.gt.vcfR(x, is.numeric=TRUE))
 }
 
 # Write files ------------------
@@ -232,4 +246,25 @@ write.snps.haps <- function(x, file, row.names=TRUE, na='9', phased=FALSE, newID
   
   write.snps.matrix(t(gt), file=file, row.names=TRUE, na=na, ...)
   .newID
+}
+
+
+# Imputation accuracy -------------------
+
+#' @inheritParams imputation_accuracy.matrix
+#' @param ... Arguments passed on to \code{\link[vcfR]{extract.gt}}.
+#' @export
+#' @rdname imputation_accuracy
+imputation_accuracy.haps <- function(true, impute, standardized=TRUE, center=NULL, scale=NULL, p=NULL, excludeIDs=NULL, excludeSNPs=NULL, tol=0.1, ...) {
+  true <- extract.snps(true, as.numeric=TRUE, ...)
+  impute <- extract.snps(impute, as.numeric=TRUE, ...)
+  imputation_accuracy(true, impute, 
+                      standardized = standardized,
+                      center=center,
+                      scale=scale,
+                      p=p,
+                      excludeIDs=excludeIDs,
+                      excludeSNPs=excludeSNPs,
+                      tol=tol,
+                      transpose=FALSE)
 }

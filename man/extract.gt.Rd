@@ -6,6 +6,8 @@
 \alias{extract.gt.vcfR}
 \alias{extract.phased}
 \alias{extract.snps}
+\alias{extract.snps.haps}
+\alias{extract.snps.vcfR}
 \title{Extract genotypes / phases from SNP objects.}
 \usage{
 extract.gt(x, ...)
@@ -16,7 +18,11 @@ extract.gt(x, ...)
 
 extract.phased(x)
 
-extract.snps(x)
+extract.snps(x, ...)
+
+extract.snps.haps(x)
+
+extract.snps.vcfR(x)
 }
 \arguments{
 \item{x}{Object to extract genotypes or phases from.}
@@ -26,12 +32,12 @@ of SNP counts. When \code{FALSE}, character vector with both alleles
 separated by '/'.}
 }
 \value{
-Matrix with loci per row and samples per column.
+\code{extract.gt} returns a matrix with loci per row and samples per column.
 
-\code{extract.phased} returns individuals by row, with two rows
+\code{extract.phased} returns matrix with individuals by row, with two rows
   per individual for first and second allele.
 
-\code{extract.snps} returns indivduals by row, with numeric genotypes.
+\code{extract.snps} returns matrix with indivduals by row, with numeric genotypes.
 }
 \description{
 Extract genotypes / phases from SNP objects.

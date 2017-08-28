@@ -49,6 +49,9 @@
 #' \code{\link[=write.snps.vcfR]{write.snps}} and \code{\link[=imputation_accuracy.vcfR]{imputation_accuracy}}.
 #' For more information, see \link{VCF_Siccuracy}.
 #' 
+#' SHAPEIT's haps/sample format is covered with \code{\link{read.haps}} 
+#' and a method dispatch for imputation accuracy exists for this too.
+#' 
 #' @docType package
 #' @name Siccuracy
 #' @aliases AlphaImpute-format

@@ -63,6 +63,9 @@ For more information on how to specify the format, see \link{parseformat}.
 Currently, \strong{VCF} objects by package \code{vcfR} are supported for functions
 \code{\link[=write.snps.vcfR]{write.snps}} and \code{\link[=imputation_accuracy.vcfR]{imputation_accuracy}}.
 For more information, see \link{VCF_Siccuracy}.
+
+SHAPEIT's haps/sample format is covered with \code{\link{read.haps}} 
+and a method dispatch for imputation accuracy exists for this too.
 }
 \author{
 Stefan McKinnon Edwards <sme@iysik.com>
