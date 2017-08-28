@@ -15,6 +15,21 @@
 #'   \item{Writing SNP data}{\code{\link[=write.snps.vcfR]{write.snps.vcfR}}}
 #' }
 #' 
+#' @note 
+#' No functions have been implemented for VCF \emph{files}.
+#' The functions above all assume the files have been read in with
+#' \code{\link[vcfR]{read.vcfR}}.
+#' 
+#' Direct conversion from VCF formatted files to AlphaImpute may be done by
+#' first using PLINK to recode to 'A' format, and then use \code{\link{convert_plinkA}}.
+#' For the first step, PLINK may be called as:
+#' 
+#' \code{plink --vcf <vcf-filename> --recode A --allow-extra-chr --out temp_file}
+#' 
+#' and then to convert to AlphaImpute format:
+#' 
+#' \code{convert_plinkA('temp_file.raw', 'alphaimpute_genotypes.txt')}
+#' 
 #' @name VCF_Siccuarcy
 #' @aliases Siccuracy_VCF
 #' @author Stefan McKinnon Edwards <sme@@iysik.com>, August 2017
