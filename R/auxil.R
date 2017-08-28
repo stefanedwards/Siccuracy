@@ -92,7 +92,8 @@ NULL
 #' @param file Filename or connection to write to.
 #' @param na The string to use for \code{NA} in the data.
 #' @param ... Passed on to write.table.
-#' @seealso \code{\link[utils]{write.table}}, \link[base]{connections}
+#' @seealso \code{\link[utils]{write.table}}, \link[base]{connections},
+#'          \code{\link{write.snps.vcfR}}
 #' @export
 write.snps <- function(x, ...) {
   UseMethod('write.snps', x)
@@ -103,6 +104,7 @@ write.snps <- function(x, ...) {
 #' @param row.names If genotype matrix is "raw" and has first column with animals IDs, set this to \code{FALSE}.
 #' @export
 write.snps.matrix <- function(x, file, row.names=TRUE, na='9', ...) {
+  na <- as.character(na)
   utils::write.table(x, file, col.names=FALSE, row.names=row.names, quote=FALSE, na=na, ...)
 }
 
