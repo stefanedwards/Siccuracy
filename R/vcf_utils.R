@@ -2,6 +2,24 @@
 # Developed using the vcfR package v. 1.4.0.
 # August 2017
 
+#' VCF objects in Siccuracy
+#' 
+#' To allow fluid interaction with the \emph{Variant Call Format}, 
+#' some functions accepts the objects from the \code[=vcfR]{vcfR} package.
+#' 
+#' The following functions have been implemented 
+#' with method dispatching for \link[=vcfR]{vcfR} objects:
+#' 
+#' \describe{
+#'   \item{Imputation_accuracy}{\code{\link[=imputation_accuracy.vcfR]{imputation_accuracy}}}
+#'   \item{Writing SNP data}{\code{\link[=write.snps.vcfR]{write.snps.vcfR}}}
+#' }
+#' 
+#' @name VCF_Siccuarcy
+#' @aliases Siccuracy_VCF
+#' @author Stefan McKinnon Edwards <sme@@iysik.com>, August 2017
+NULL
+
 #' Writes genotypes in VCF class objects to files in \link{AlphaImpute-format}.
 #' 
 #' @details 
@@ -67,3 +85,19 @@ write.snps.vcfR <- function(x,
 
 
 
+#' @inheritParams imputation_accuracy.matrix
+#' @param ... Arguments passed on to \code{\link[vcfR]{extract.gt}}.
+#' @export
+#' @rdname imputation_accuracy
+imputation_accuracy.vcfR <- function(true, impute, standardized=TRUE, center=NULL, scale=NULL, p=NULL, excludeIDs=NULL, excludeSNPs=NULL, tol=0.1, ...) {
+  true <- vcfR::extract.gt(true, element='GT', as.numeric=TRUE, ...)
+  impute <- vcfR::extract.gt(impute, element='GT', as.numeric=TRUE, ...)
+  imputation_accuracy(true, impute, 
+                      standardized = standardized,
+                      center=center,
+                      scale=scale,
+                      p=p,
+                      excludeIDs=excludeIDs,
+                      excludeSNPs=excludeSNPs,
+                      tol=tol)
+}

@@ -2,6 +2,7 @@
 % Please edit documentation in R/Siccuracy.R
 \docType{package}
 \name{Siccuracy}
+\alias{AlphaImpute-format}
 \alias{Siccuracy}
 \alias{Siccuracy-package}
 \title{Stefan's imputation accuracy package}
@@ -56,6 +57,14 @@ that specifies whether the outputted format are integers (\code{int=TRUE}) or ha
 For more information on how to specify the format, see \link{parseformat}.
 }
 
+\section{Other formats}{
+
+
+Currently, \strong{VCF} objects by package \code{vcfR} are supported for functions
+\code{\link[=write.snps.vcfR]{write.snps}} and \code{\link[=imputation_accuracy.vcfR]{imputation_accuracy}}.
+For more information, see \link{VCF_Siccuracy}.
+}
 \author{
 Stefan McKinnon Edwards <sme@iysik.com>
 }
+
