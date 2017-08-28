@@ -2,25 +2,30 @@
 % Please edit documentation in R/auxil.R
 \name{write.snps}
 \alias{write.snps}
+\alias{write.snps.matrix}
 \title{Write genotype matrices to file.}
 \usage{
-write.snps(x, file, row.names = TRUE, na = "9", ...)
+write.snps(x, ...)
+
+\method{write.snps}{matrix}(x, file, row.names = TRUE, na = "9", ...)
 }
 \arguments{
 \item{x}{The matrix to write.}
+
+\item{...}{Passed on to write.table.}
 
 \item{file}{Filename or connection to write to.}
 
 \item{row.names}{If genotype matrix is "raw" and has first column with animals IDs, set this to \code{FALSE}.}
 
 \item{na}{The string to use for \code{NA} in the data.}
-
-\item{...}{Passed on to write.table.}
 }
 \description{
 \code{write.snps} is short hand for \code{write.table} with some default options.
 For file format see \link{Siccuracy}.
 }
 \seealso{
-\code{\link[utils]{write.table}}, \link[base]{connections}
+\code{\link[utils]{write.table}}, \link[base]{connections},
+         \code{\link{write.snps.vcfR}}
 }
+

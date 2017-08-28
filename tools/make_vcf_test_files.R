@@ -36,14 +36,13 @@ null <- dir.create(.datadir(''), recursive = TRUE)
 require(vcfR)
 require(Siccuracy)
 
-data(vcfR_example)
-# vcf
+data(vcfR_example) # loads object vcf
 
 vcf.fn <- 'vcfR.vcf.gz'
 vcfR::write.vcf(vcf, file = vcf.fn)
 plink(bfile=NULL, '--vcf', vcf.fn,  '--recode A', '--allow-extra-chr', out='vcfR')
 
-newIds <- convert_plinkA('vcfR.raw', outfn = .datadir('vcfR.txt'))
+newIDs <- convert_plinkA('vcfR.raw', outfn = .datadir('vcfR.txt'))
 write.table(newIDs, .datadir('vcfR.newids.txt'), row.names=FALSE, col.names = TRUE, quote=FALSE)
 
 
