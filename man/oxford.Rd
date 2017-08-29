@@ -3,11 +3,14 @@
 \name{read.oxford}
 \alias{is.oxford}
 \alias{read.oxford}
+\alias{write.oxford}
 \title{Oxford format}
 \usage{
 read.oxford(file, ...)
 
 is.oxford(x)
+
+write.oxford(x, file, ...)
 }
 \arguments{
 \item{file}{Filename to read in.}

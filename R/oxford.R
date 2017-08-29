@@ -53,6 +53,11 @@ is.oxford <- function(x) {
     length(dim(x$probs)) == 3
 }
 
+#' @rdname oxford
+#' @export
+write.oxford <- function(x, file, ...) {
+    write.table(cbind(x$map, apply(x$probs, 1:2, paste, collapse=' ')), col.names=FALSE, row.names=FALSE, quote=FALSE, ...)
+}
 
 #' @param x Object to extract genotypes or phases from.
 #' @return \code{extract.gt} returns a matrix with loci per row and samples per column.
@@ -79,6 +84,6 @@ extract.snps.oxford <- function(x, as.integer=FALSE, ...) {
 #' @param row.names If genotype matrix is "raw" and has first column with animals IDs, set this to \code{FALSE}.
 #' @export
 write.snps.oxford <- function(x, file, row.names=TRUE, na='9', ...) {
-  write.snps.matrix(extract.snps.oxford(x), file=file, row.names=row.names, na=na, ...)
+  write.snps.matrix(extract.snps.oxford(x, ...), file=file, row.names=row.names, na=na, ...)
 }
   
