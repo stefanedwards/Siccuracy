@@ -33,7 +33,7 @@ Assumes a file format with no header and first column are IDs. If no ID column, 
 Usually white-space delimted, but separator can be set with \code{sep} argument as per \code{\link[base]{scan}}.
 For file format example see \link{Siccuracy}.
 
-If ID columns contains alphabetical elements, use \code{what=character()}. This will however return a matrix. 
+If ID columns contains alphabetical elements, use \code{what=character()}. This will however return a character matrix. 
 Use e.g. \code{storage.mode(m) <- 'integer'} to convert to integer-based, keeping all other attributes.
 }
 \examples{
@@ -54,5 +54,6 @@ while (TRUE) {
 close(f)
 }
 \seealso{
-\code{\link{write.snps}}, \link[base]{typeof}, \code{\link{get_ncols}}, \code{\link[base]{scan}}.
+\code{\link{write.snps}}, \link[base]{typeof}, \code{\link{get_ncols}}, \code{\link[base]{scan}},
+          and \link{Oxford}, \link{SHAPEIT}, and \link{VCF} formats.
 }

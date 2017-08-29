@@ -8,7 +8,7 @@ convert_plinkA(rawfn, outfn, newID = 0, ncol = NULL, nlines = NULL,
   na = 9)
 }
 \arguments{
-\item{rawfn}{Plink output filename. Most likely \code{plink.raw} if PLINK command line argument \code{--output} is not used.}
+\item{rawfn}{Plink output filename. Most likely \code{plink.raw} if PLINK command line argument \code{--out} is not used.}
 
 \item{outfn}{Filename of new file.}
 
@@ -27,13 +27,15 @@ Data.frame with columns \code{famID}, \code{sampID}, and \code{newID}.
 Facilitates converting a PLINK binary file to simplified SNP file format.
 Requires using PLINK to recode it to the \code{A} format by using command line \code{plink -bfile <file stem> --recode A}.
 This function then swiftly strips of first 6 columns (family ID, sample ID, paternal ID, maternal ID, sex, phenotypic record) 
-and inserts an integer-based ID column. \code{NA}'s outputted from PLINK are replaced with \code{naval} argument.
+and inserts an integer-based ID column. \code{NA}'s outputted from PLINK are replaced with \code{na} argument.
 }
-\details{
+\section{Assigning new IDs}{
+ 
 The new integer IDs can be supplied. If not, they will be made for you.
 \code{newID} may be an integer vector and will be used as is.
 If data.frame with columns \code{famID}, \code{sampID}, and \code{newID}, they will be reordered to match input file.
 }
+
 \references{
 \itemize{
  \item PLINK. Purcell and Chang. \url{https://www.cog-genomics.org/plink2}

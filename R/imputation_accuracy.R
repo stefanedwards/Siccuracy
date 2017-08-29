@@ -9,26 +9,35 @@ imputation_accuracy <- function(true, impute, ...) {
 #' Imputation accuracy, aka. correlations
 #' 
 #' Calculation of column-wise, row-wise, and matrix-wise correlations between
-#' matrix in files \code{true} and \code{impute}.
-#' Assumes first column in both files is an integer ID column and thus excluded from calculations.
-#' Standardization (subtract mean, divide by standard deviation) is done column-wise based
-#' on means and standard deviations of \code{truefn}.
-#' Correlations are only performed on those rows that are found in \emph{both} files,
+#' two matrices, the "true" genotypes and the imputed genotypes.
+#' 
+#' \emph{Character} class method uses files \emph{only}, and arguments
+#' \code{true} and \code{impute} refer to the filenames.
+#' The method assumes first column in both files is an integer ID column and thus excluded from calculations.
+#' Genotypes equal to \code{na} are considered missing (i.e. \code{NA}) and are not included in the calculations.
+#' 
+#' \emph{matrix} class method performs same calculations, but on matrices stored
+#' in memory. Class methods for format-specific objects ('haps', 'oxford', or 'vcfR'),
+#' extracts SNP genotypes matrices using \code{\link{extract.snps}}.
+#' 
+#' Correlations are only performed on those rows that are found in \emph{both} matrices / files,
 #' based on the first column (ID column).
+#' 
 #'
-#' \emph{Standardization} is performed by subtracting the mean followed by 
+#' @section Standardization:
+#' Standardization is performed by subtracting the mean followed by 
 #' division of the standard deviation; conceptually the same as in 
 #' \code{\link[base]{scale}}.
 #' Mean and standard deviation are calculated based on \code{true} matrix,
 #' \emph{before} removing samples (\code{excludeIDs}) or SNPs (\code{excludeSNPs}).
 #' Alternate means and scales may be provided by arguments 
 #' \code{center} and \code{scale}, or \code{p}.
-#' Note: If either \code{scale} or \code{p} are \code{0} or \code{NA}, they 
+#' 
+#' \emph{Note:} If either \code{scale} or \code{p} are \code{0} or \code{NA}, they 
 #' will \emph{not} contribute to correlation, but they \emph{will count} towards
 #' correct pct. To exclude entirely, use \code{excludeSNPs}.
 #'
-#' Genotypes equal to \code{NAval} are considered missing (i.e. \code{NA}) and are not included in the calculations.
-#'
+#' @section File-based method:
 #' This method stores the "true" matrix in memory with a low-precision real type,
 #' and rows in the "imputed" matrix are read and matched by ID.
 #' If there are no extra rows in either matrix and order of IDs is the same,
@@ -291,29 +300,4 @@ vect.stat <- function(x, y, tol, m, s) {
   y.na <- sum(y & !x)
   both.na <- sum(x & y)
   return(c(cor=cor, correct=correct, x.na=x.na, y.na=y.na, both.na=both.na))
-}
-
-#' \code{imputation_accuracy1} and \code{imputation_accuracy3} has been replaced by \code{\link{imputation_accuracy}}.
-#' The difference between the two former functions is now covered by the \code{adaptive}-argument of the latter.
-#' 
-#' @param truefn,imputefn Deprected, was \emph{filename} to files with true and imputed genotype matrix.
-#' @param nSNPs Deprecated, use \code{ncol}.
-#' @param nAnimals Deprecated, use \code{nlines}.
-#' @param NAval Deprecated, use \code{na}.
-#' 
-#' @export
-#' @rdname deprecated
-#' @inheritParams imputation_accuracy
-imputation_accuracy3 <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAval=9, standardized=TRUE) {
-  .Deprecated('imputation_accuracy', package='Siccuracy')
-  with(imputation_accuracy(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, adaptive=TRUE),
-       list(means=snps$means, sds=snps$sds, rowcors=animals$cors, matcor=matcor))
-}
-
-#' @export
-#' @rdname deprecated
-imputation_accuracy1 <- function(truefn, imputefn, nSNPs=NULL, nAnimals=NULL, NAval=9, standardized=TRUE) {
-  .Deprecated('imputation_accuracy', package='Siccuracy')
-  with(imputation_accuracy(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, adaptive=FALSE),
-       list(means=snps$means, sds=snps$sds, rowcors=animals$cors, matcor=matcor))
 }

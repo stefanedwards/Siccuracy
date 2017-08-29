@@ -9,9 +9,11 @@
 #' reference allele and alternative allele. 
 #' Following triplets of columns denote each sample's genotype dosage / probability.
 #' 
-#' @param file Filename to read in.
+#' @param file Filename to read from or write to.
+#' @param ... Parameters forwarded to \code{\link[utils]{read.table}} or \code{\link[utils]{write.table}},
 #' @export
 #' @rdname oxford
+#' @name Oxford format
 #' @return \code{read.oxford} returns an \code{oxford} object, i.e. a list with two entries: 
 #' \describe{
 #'   \item{\code{map}:}{Data frame with map of loci, i.e. chromosome, snp ID, chromosomal position, and the two alleles.}
@@ -43,6 +45,7 @@ read.oxford <- function(file, ...) {
   res
 }
 
+#' @param x Oxford object.
 #' @rdname oxford
 #' @export
 is.oxford <- function(x) {
@@ -56,27 +59,31 @@ is.oxford <- function(x) {
 #' @rdname oxford
 #' @export
 write.oxford <- function(x, file, ...) {
-    write.table(cbind(x$map, apply(x$probs, 1:2, paste, collapse=' ')), col.names=FALSE, row.names=FALSE, quote=FALSE, ...)
+  args <- merge.list(list(...), list(as.is=TRUE, header=FALSE, row.names=NULL, file=file))
+  args$x <- cbind(x$map, apply(x$probs, 1:2, paste, collapse=' '))
+  do.call(write.table, args)
 }
 
-#' @param x Object to extract genotypes or phases from.
-#' @return \code{extract.gt} returns a matrix with loci per row and samples per column.
+#' @inheritParams extract.gt
+#' @param as.integer Rounds genotype dosages to whole integers.
 #' @rdname extract.gt
 #' @export
-extract.gt.oxford <- function(x, ...) {
+extract.gt.oxford <- function(x, as.integer=FALSE) {
   snps <- apply(x$probs, 1:2, reduce.oxford)
+  if (as.integer) {
+    snps <- round(snps)
+    storage.mode(snps) <- 'integer'
+  }
+  
   snps
 }
 reduce.oxford <- function(x) {(x[2]*1 + x[3]*2) / sum(x)}
 
-
-#' @rdname extract.gt
+#' @inheritParams extract.gt.oxford
+#' @rdname extract.snps
 #' @export
-#' @return \code{extract.snps} returns matrix with indivduals by row, with numeric genotypes.
-extract.snps.oxford <- function(x, as.integer=FALSE, ...) {
-  snps <- t(extract.gt.oxford(x))
-  if (as.integer) snps <- round(snps)
-  snps
+extract.snps.oxford <- function(x, as.integer=FALSE) {
+  t(extract.gt.oxford(x, as.integer=as.integer))
 }
 
 #' @rdname write.snps

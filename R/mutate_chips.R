@@ -2,7 +2,10 @@
 
 #' Column bind files with genotype matrices
 #'
-#' Does row-wise concatenation of multiple genotype files, ignoring the first column.
+#' Does row-wise concatenation of multiple genotype files, 
+#' ignoring the first column in subsequent files.
+#' \strong{NB!} Assumes rows are ordered identically in all files.
+#' 
 #' @param fns Character vector of filenames to concatenate. Max 255 characters per filename due to R-Fortran.
 #' @param fnout Filename of resulting file
 #' @param nlines Number of lines to read from each file. When \code{NULL} (default), use all lines.
@@ -12,9 +15,10 @@
 #' @param int Logical (default \code{TRUE}), read and write integers.
 #' @param format Character, Fortran edit descriptors for output. See \link{parseformat}.
 #' @return Exit status, invisible.
+#' @rdname cbind_snp_files
+#' @seealso \code{\link{rbind_snp_files}}
 #' @export
-# subroutine rowconcatenate(files, fns, fnout, nlines, ncols, result)
-cbind_SNPs <- function(fns, fnout, ncols=NULL, nlines=NULL, skiplines=0, excludeids=integer(0), format=NULL, int=TRUE) {
+cbind_snp_files <- function(fns, fnout, ncols=NULL, nlines=NULL, skiplines=0, excludeids=integer(0), format=NULL, int=TRUE) {
   if (!all(file.exists(fns))) {
     stop('Not all files in fns exists.')
   }
@@ -45,25 +49,13 @@ cbind_SNPs <- function(fns, fnout, ncols=NULL, nlines=NULL, skiplines=0, exclude
   invisible(res$result==0)
 }
 
-#' \code{rowconcatenate} has been deprecated.
-#' Use \code{\link{cbind_SNPs}} instead.
-#' 
 #' @export
-#' @rdname deprecated
-#' @inheritParams cbind_SNPs
-rowconcatenate <- function(fns, fnout, nlines=NULL, ncols=NULL, skiplines=0, excludeids=integer(0)) {
-  .Deprecated('cbind_SNPs', package='Siccuracy')
-  cbind_SNPs(fns=fns, fnout=fnout, nlines=nlines, ncols=ncols, skiplines=skiplines, excludeids=excludeids, int=FALSE)
-}
+#' @rdname cbind_snp_files
+#' @inheritDotParams cbind_snp_files
+cbind_SNP_files <- function(...) { cbind_snp_files(...) }
 
-# #' @export
-# #' @rdname cbind_SNPs
-# cbind_SNPS <- function(...) {cbind_SNPs(...)}
-# # The difference being the last s is upper/lowercase. The latter being grammatic correct.
 
-# Combine chips ####
-
-#' Combines two SNP chip files and provides masking.
+#' Combines rows of two SNP chip files and provides masking.
 #'
 #'
 #' We distinguish between \code{HD} and \code{LD} (high and low density) SNP chips,
@@ -89,10 +81,12 @@ rowconcatenate <- function(fns, fnout, nlines=NULL, ncols=NULL, skiplines=0, exc
 #' @param na Missing values.
 #' @param int Logical (default \code{TRUE}), read and write integers.
 #' @param format Character, Fortran edit descriptors for output. See \link{parseformat}.
-#' @seealso \code{\link{get_ncols}}
+#' @seealso \code{\link{get_ncols}}, \code{\link{cbind_snp_files}}, 
+#'           or \code{\link{mask_snp_file}} for more flexible masking (albeit on a single file).
 #' @return Number of lines written, with attribute 'stat' specifying last IO status.
+#' @rdname rbind_snp_files
 #' @export
-rbind_SNPs <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outcol=NULL, na=9, format=NULL, int=TRUE) {
+rbind_snp_files <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outcol=NULL, na=9, format=NULL, int=TRUE) {
   
   if (!file.exists(hdfn)) stop('`hdid` file was not found.')
   if (!file.exists(ldfn)) stop('`ldid` file was not found.')
@@ -133,32 +127,17 @@ rbind_SNPs <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outcol=NULL, 
   structure(res$n, stat=res$stat)
 }
 
-# #' @export
-# #' @noRd
-# rbind_SNPS <- function(...) rbind_SNPs(...)
-# #' @export
-# #' @noRd
-# rbind_snps <- function(...) rbind_SNPs(...)
-
-#' \code{mergeChips} has been deprecated.
-#' Use \code{\link{rbind_SNPs}} instead.
-#' 
+#' @rdname rbind_snp_files
+#' @inheritDotParams rbind_snp_files
 #' @export
-#' @param outpos Integer vector of collective SNP positions. Default to sorted, union of \code{hdpos} and \code{ldpos}. Make it anything else and you get?
-#' @rdname deprecated
-#' @inheritParams rbind_SNPs
-#' @param missing Missing value.
-mergeChips <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outpos=NULL, missing=9) {
-  .Deprecated('rbind_SNPs', package='Siccuracy')
-}
-
+rbind_SNP_files <- function(...) {rbind_snp_files(...)}
 
 # Mask a single SNP chip ####
 
 #' Masks entries of a single SNP chip file.
 #' 
-#' This function runs through a single file and masks specified columns of specified rows.
-#' It is a simplified version of \code{\link{rbind_SNPs}}.
+#' This function runs through a \emph{single} file and masks specified columns of specified rows.
+#' It is a simplified version of \code{\link{rbind_snp_files}}.
 #' 
 #' The \code{masking} argument controls which samples / loci are masked as missing with \code{na}.
 #' It accepts three different objects: 
@@ -180,6 +159,8 @@ mergeChips <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outpos=NULL, 
 #' @param int Logical (default \code{TRUE}), read and write integers.
 #' @param format Character, Fortran edit descriptors for output. See \link{parseformat}.
 #' @export
+#' @seealso \code{\link{rbind_snp_files}}
+#' @rdname mask_snp_file
 #' @return Invisible list of vectors sent to Fortran subtroutine.
 #' @examples
 #' 
@@ -197,7 +178,7 @@ mergeChips <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outpos=NULL, 
 #' res <- mask_SNPs(snpfile, fn, masking=masking, na=9)
 #' m <- read.snps(fn)
 #' 
-mask_SNPs <- function(fn, outfn, masking=NULL, snps=NULL, snpsinnew=FALSE, dropIDs=NULL, na=9, int=TRUE, format=NULL) {
+mask_snp_file <- function(fn, outfn, masking=NULL, snps=NULL, snpsinnew=FALSE, dropIDs=NULL, na=9, int=TRUE, format=NULL) {
   if (!file.exists(fn)) stop('Input file was not found.')
   
   format <- parse.format(format, int)
@@ -262,4 +243,10 @@ mask_SNPs <- function(fn, outfn, masking=NULL, snps=NULL, snpsinnew=FALSE, dropI
                   maskIDs=as.integer(maskIDs), maps=as.integer(length(maskstart)), maskstart=as.integer(maskstart), maskend=as.integer(maskend),
                   masklength=as.integer(length(maskSNPs)), maskSNPs=as.integer(maskSNPs))
   invisible(res)
+}
+#' @rdname mask_snp_file
+#' @inheritParams mask_snp_file
+#' @export
+mask_SNPs <- function(fn, outfn, masking=NULL, snps=NULL, snpsinnew=FALSE, dropIDs=NULL, na=9, int=TRUE, format=NULL) {
+  mask_snp_file(fn=fn, outfn=outfn, masking=masking, snps=snps, snpsinnew=snpsinnew, dropIDs=dropIDs, na=na, int=int, format=format)
 }

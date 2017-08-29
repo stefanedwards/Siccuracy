@@ -33,8 +33,7 @@
 #' Take care of sample IDs when using PLINK, as IDs containing an underscore ('_')
 #' are split into family ID and sample ID (famID and sampID, respectively).
 #' 
-#' @name VCF_Siccuarcy
-#' @aliases Siccuracy_VCF
+#' @name VCF format
 #' @author Stefan McKinnon Edwards <sme@@iysik.com>, August 2017
 NULL
 
@@ -55,6 +54,7 @@ NULL
 #' @param ... Arguments forwarded to \code{\link[vcfR]{extract.gt}} and \code{\link{write.snps}}. 
 #' @import vcfR
 #' @seealso \code{\link{write.snps}}
+#' @rdname write.snps
 #' @return Returns data frame with ID mapping, truncated to those elements outputted.
 #' @export
 write.snps.vcfR <- function(x, 

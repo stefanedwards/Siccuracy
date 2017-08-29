@@ -20,9 +20,9 @@
 # (5+i, 5+i+1) are the first and second allele for the ith individual (ARRAYS START AT ZERO!). Heh.
 
 
-#' Reads SHAPEIT haps/sample files
+#' SHAPEIT haps/sample format
 #' 
-#' Loads SHAPEIT haps/sample into a \code{haps} object.
+#' \code{read.haps} loads SHAPEIT haps/sample into a \code{haps} object.
 #' 
 #' \code{read.haps} accepts compressed files (.gz and .bz2, see \link[base]{connections}), 
 #' but then both filename arguments must be given.
@@ -37,6 +37,7 @@
 #'   \item{\code{map}:}{Data frame with map of loci, i.e. chromosome, snp ID, chromosomal position, and the two alleles.}
 #' }
 #' @rdname haps-format
+#' @name SHAPEIT format
 #' @seealso \code{\link{extract.gt}} for vcfR-style extraction of genotypes
 #' @export
 read.haps <- function(haps, sample=NULL) {
@@ -114,7 +115,8 @@ as.haps <- function(x) {
 
 
 
-#' Write haps object to haps/sample file formats
+#' \code{write.haps} writes haps object to haps/sample file formats
+#' 
 #' @rdname haps-format
 #' @export
 write.haps <- function(x, haps, sample) {
@@ -127,76 +129,6 @@ write.haps <- function(x, haps, sample) {
 
 
 
-# Extract.gt --------------
-
-#' Extract genotypes / phases from SNP objects.
-#'
-#' @export
-#' @rdname extract.gt
-extract.gt <- function(x, ...) {
-  UseMethod('extract.gt', x)
-}
-
-#' @rdname extract.gt
-#' @export
-extract.gt.vcfR <- function(x, ...) {
-  vcfR::extract.gt(x, ...)
-}
-
-#' @param x Object to extract genotypes or phases from.
-#' @param is.numeric Logical, when \code{TRUE} (default), return numeric matrix
-#'        of SNP counts. When \code{FALSE}, character vector with both alleles 
-#'        separated by '/'.
-#' @return \code{extract.gt} returns a matrix with loci per row and samples per column.
-#' @rdname extract.gt
-#' @export
-extract.gt.haps <- function(x, is.numeric=TRUE, ...) {
-  m <- ncol(x$haps)
-  if (is.numeric) {
-    snps <- x$haps[,seq.int(1,m,by=2)] + x$haps[,seq.int(2,m,by=2)]
-    dimnames(snps) <- list(rownames(x$haps), rownames(x$samples))
-  } else {
-    alleles <- as.matrix(x$map[,4:5])
-    snps <- paste(apply(x$haps[,seq.int(1,m,by=2)], 2, map2allele, alleles=alleles),
-                  apply(x$haps[,seq.int(2,m,by=2)], 2, map2allele, alleles=alleles),
-                  sep='/')
-    snps <- matrix(snps, ncol=m/2, dimnames=list(rownames(x$haps), rownames(x$samples)))
-  }
-  snps
-}
-
-map2allele <- function(column, alleles) { alleles[cbind(1:nrow(alleles), column+1)] }
-
-#' @rdname extract.gt
-#' @export
-#' @return \code{extract.phased} returns matrix with individuals by row, with two rows
-#'   per individual for first and second allele.
-extract.phased <- function(x) {
-  snps <- t(x$haps)
-  rownames(snps) <- rep(rownames(x$samples), each=2)
-  snps
-}
-
-
-#' @rdname extract.gt
-#' @export
-extract.snps <- function(x, ...) {
-  UseMethod('extract.snps', x)
-}
-
-
-#' @rdname extract.gt
-#' @export
-#' @return \code{extract.snps} returns matrix with indivduals by row, with numeric genotypes.
-extract.snps.haps <- function(x) {
-  t(extract.gt.haps(x, is.numeric=TRUE))
-}
-
-#' @rdname extract.gt
-#' @export
-extract.snps.vcfR <- function(x) {
-  t(extract.gt.vcfR(x, is.numeric=TRUE))
-}
 
 # Write files ------------------
 
@@ -209,7 +141,6 @@ extract.snps.vcfR <- function(x) {
 #' @param newID ... New ID, see \code{\link{convert_plinkA}}, but with some caveats here. I don't know.
 #' @export
 write.snps.haps <- function(x, file, row.names=TRUE, na='9', phased=FALSE, newID=0, ...) {
-  
   gt <- extract.gt(x, is.numeric=TRUE)
   
   # Handle IDs - code based of that for convert_plinkA
