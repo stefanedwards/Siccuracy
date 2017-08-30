@@ -1067,7 +1067,7 @@ test_that('Counting correct and incorrect works, dosages', {
   
   rownames(imputed) <- rownames(true) <- NULL
   
-  comp <- abs(true - imputed) < 0.2
+  comp <- abs(true - imputed) <= 0.1
   true <- is.na(true)
   imputed <- is.na(imputed)
   both.na <- true & imputed
@@ -1084,7 +1084,7 @@ test_that('Counting correct and incorrect works, dosages', {
   col.na.tru <- colSums(only.tru)
   col.na.both <- colSums(both.na)
   
-  results <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=FALSE, tol = 0.2)
+  results <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=FALSE, tol = 0.1)
   expect_equal(results$snps$correct, col.correct)
   expect_equal(results$snps$true.na, col.na.tru)
   expect_equal(results$snps$imp.na, col.na.imp)
@@ -1095,7 +1095,7 @@ test_that('Counting correct and incorrect works, dosages', {
   expect_equal(results$animals$imp.na, row.na.imp)
   expect_equal(results$animals$both.na, row.na.both)
 
-  results <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=TRUE, tol = 0.2)
+  results <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=TRUE, tol = 0.1)
   expect_equal(results$snps$correct, col.correct)
   expect_equal(results$snps$true.na, col.na.tru)
   expect_equal(results$snps$imp.na, col.na.imp)
@@ -1106,7 +1106,7 @@ test_that('Counting correct and incorrect works, dosages', {
   expect_equal(results$animals$imp.na, row.na.imp)
   expect_equal(results$animals$both.na, row.na.both)
   
-  r2 <- imputation_accuracy(ts$true, ts$imputed, standardized=FALSE, tol=0.2)
+  r2 <- imputation_accuracy(ts$true, ts$imputed, standardized=FALSE, tol=0.1)
   class(r2$animals$rowID) <- 'integer'
   expect_equal(results, r2)  
 })

@@ -51,8 +51,10 @@ cbind_snp_files <- function(fns, fnout, ncols=NULL, nlines=NULL, skiplines=0, ex
 
 #' @export
 #' @rdname cbind_snp_files
-#' @inheritDotParams cbind_snp_files
-cbind_SNP_files <- function(...) { cbind_snp_files(...) }
+#' @inheritParams cbind_snp_files
+cbind_SNP_files <- function(fns, fnout, ncols=NULL, nlines=NULL, skiplines=0, excludeids=integer(0), format=NULL, int=TRUE) { 
+  cbind_snp_files(fns=fns, fnout=fnout, ncols=ncols, nlines=nlines, skiplines=skiplines, excludeids=excludeids, format=format, int=int)
+}
 
 
 #' Combines rows of two SNP chip files and provides masking.
@@ -128,9 +130,11 @@ rbind_snp_files <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outcol=N
 }
 
 #' @rdname rbind_snp_files
-#' @inheritDotParams rbind_snp_files
+#' @inheritParams rbind_snp_files
 #' @export
-rbind_SNP_files <- function(...) {rbind_snp_files(...)}
+rbind_SNP_files <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outcol=NULL, na=9, format=NULL, int=TRUE) {
+  rbind_snp_files(hdid=hdid, ldid=ldid, hdpos=hdpos, ldpos=ldpos, hdfn=hdfn, fnout=fnout, outcol=outcol, na=na, format=format, int=int)
+}
 
 # Mask a single SNP chip ####
 

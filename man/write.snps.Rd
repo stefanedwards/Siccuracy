@@ -15,8 +15,8 @@ write.snps(x, file, row.names = TRUE, na = "9", ...)
 
 \method{write.snps}{oxford}(x, file, row.names = TRUE, na = "9", ...)
 
-\method{write.snps}{haps}(x, file, row.names = TRUE, na = "9",
-  phased = FALSE, newID = 0, ...)
+\method{write.snps}{haps}(x, file, row.names = TRUE, na = "9", newID = 0,
+  ...)
 
 \method{write.snps}{vcfR}(x, file, row.names = TRUE, na = "9", newID = 0,
   element = "GT", as.numeric = TRUE, convertNA = TRUE, ...)
@@ -31,9 +31,6 @@ write.snps(x, file, row.names = TRUE, na = "9", ...)
 \item{na}{The string to use for \code{NA} in the data.}
 
 \item{...}{Passed on to write.table.}
-
-\item{phased}{Logical, when \code{FALSE} (default), collapses all loci into single-value
-where haplotype information is lost.}
 
 \item{newID}{... New ID, see \code{\link{convert_plinkA}}, but with some caveats here. I don't know.}
 

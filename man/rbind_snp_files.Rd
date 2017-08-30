@@ -8,7 +8,8 @@
 rbind_snp_files(hdid, ldid, hdpos, ldpos, hdfn, ldfn, fnout, outcol = NULL,
   na = 9, format = NULL, int = TRUE)
 
-rbind_SNP_files(...)
+rbind_SNP_files(hdid, ldid, hdpos, ldpos, hdfn, ldfn, fnout, outcol = NULL,
+  na = 9, format = NULL, int = TRUE)
 }
 \arguments{
 \item{hdid}{IDs of HD genotyped individuals. Corresponds to (subset of) first column of \code{hdfn}.}
@@ -32,21 +33,6 @@ rbind_SNP_files(...)
 \item{format}{Character, Fortran edit descriptors for output. See \link{parseformat}.}
 
 \item{int}{Logical (default \code{TRUE}), read and write integers.}
-
-\item{...}{Arguments passed on to \code{rbind_snp_files}
-\describe{
-  \item{hdid}{IDs of HD genotyped individuals. Corresponds to (subset of) first column of \code{hdfn}.}
-  \item{ldid}{IDs of LD genotyped individuals. Corresponds to (subset of) first column of \code{ldfn}.}
-  \item{hdpos}{Integer vector of where columns in \code{hdfn} are positioned in output file. Coerced to same length as columns in \code{hdfn}.}
-  \item{ldpos}{Integer vector of where columns in \code{ldfn} are positioned in output file. Coerced to same length as columns in \code{ldfn}.}
-  \item{hdfn}{Filename of HD genotypes.}
-  \item{ldfn}{Filename of LD genotypes.}
-  \item{fnout}{Filename to write merged genotypes to.}
-  \item{outcol}{Integer, number of columns in output file. When \code{NULL} (default), uses max value of \code{hdpos} and \code{ldpos}.}
-  \item{na}{Missing values.}
-  \item{int}{Logical (default \code{TRUE}), read and write integers.}
-  \item{format}{Character, Fortran edit descriptors for output. See \link{parseformat}.}
-}}
 }
 \value{
 Number of lines written, with attribute 'stat' specifying last IO status.

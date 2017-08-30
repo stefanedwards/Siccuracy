@@ -8,7 +8,8 @@
 cbind_snp_files(fns, fnout, ncols = NULL, nlines = NULL, skiplines = 0,
   excludeids = integer(0), format = NULL, int = TRUE)
 
-cbind_SNP_files(...)
+cbind_SNP_files(fns, fnout, ncols = NULL, nlines = NULL, skiplines = 0,
+  excludeids = integer(0), format = NULL, int = TRUE)
 }
 \arguments{
 \item{fns}{Character vector of filenames to concatenate. Max 255 characters per filename due to R-Fortran.}
@@ -26,18 +27,6 @@ cbind_SNP_files(...)
 \item{format}{Character, Fortran edit descriptors for output. See \link{parseformat}.}
 
 \item{int}{Logical (default \code{TRUE}), read and write integers.}
-
-\item{...}{Arguments passed on to \code{cbind_snp_files}
-\describe{
-  \item{fns}{Character vector of filenames to concatenate. Max 255 characters per filename due to R-Fortran.}
-  \item{fnout}{Filename of resulting file}
-  \item{nlines}{Number of lines to read from each file. When \code{NULL} (default), use all lines.}
-  \item{ncols}{Number of columns to read from each file. When \code{NULL} (default), use all columns.}
-  \item{skiplines}{Integer, number of lines to skip before outputting. \code{nlines} counts towards total number of lines, i.e. both skipped and outputted.}
-  \item{excludeids}{Integer vector of first column id's to \emph{exclude} from the output. \code{nlines} also counts towards excluded lines.}
-  \item{int}{Logical (default \code{TRUE}), read and write integers.}
-  \item{format}{Character, Fortran edit descriptors for output. See \link{parseformat}.}
-}}
 }
 \value{
 Exit status, invisible.

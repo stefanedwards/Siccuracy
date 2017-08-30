@@ -1,5 +1,7 @@
 #' Deprecated functions
 #' 
+#' Mostly renamed function names.
+#' 
 #' @name Siccuracy-deprecated
 #' @rdname deprecated
 NULL

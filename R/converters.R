@@ -128,7 +128,7 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #
 # Using `PLINK --recode A` option probably counts the *major* allele; it is llisted in the header. 
 
-#' Converts PLINK binary format to flat format
+#' Converts PLINK binary format to SNP formatted file.
 #' 
 #' @details 
 #' 

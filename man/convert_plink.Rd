@@ -2,7 +2,7 @@
 % Please edit documentation in R/converters.R
 \name{convert_plink}
 \alias{convert_plink}
-\title{Converts PLINK binary format to flat format}
+\title{Converts PLINK binary format to SNP formatted file.}
 \usage{
 convert_plink(bfile, outfn, na = 9, newID = 0, nlines = NULL,
   fam = NULL, bim = NULL, bed = NULL, countminor = TRUE, maf = 0,
@@ -52,7 +52,7 @@ convert_plink(bfile, outfn, na = 9, newID = 0, nlines = NULL,
 \item{fragmentfns}{Character vector or function for producing filenames.}
 }
 \description{
-Converts PLINK binary format to flat format
+Converts PLINK binary format to SNP formatted file.
 }
 \details{
 \strong{\code{method}} \emph{simple} stores entire genotype matrix \emph{in memory}, as PLINK binary files are stored in locus-major mode, 

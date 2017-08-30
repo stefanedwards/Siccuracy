@@ -64,16 +64,16 @@ reduce.oxford <- function(x) {(x[2]*1 + x[3]*2) / sum(x)}
 
 
 
-#' Extracts 
-#' 
-#' @inheritParams extract.snps
-#' @return \code{extract.phased} returns matrix with individuals by row, with two rows
-#'   per individual for first and second allele.
-extract.phased <- function(x) {
-  snps <- t(x$haps)
-  rownames(snps) <- rep(rownames(x$samples), each=2)
-  snps
-}
+#' #' Extracts 
+#' #' 
+#' #' @inheritParams extract.snps
+#' #' @return \code{extract.phased} returns matrix with individuals by row, with two rows
+#' #'   per individual for first and second allele.
+#' extract.phased <- function(x) {
+#'   snps <- t(x$haps)
+#'   rownames(snps) <- rep(rownames(x$samples), each=2)
+#'   snps
+#' }
 
 # Extract SNPs -----------------------
 # SNPs are set in columns and individuals by row.

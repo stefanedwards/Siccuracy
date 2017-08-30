@@ -5,7 +5,17 @@
 \alias{extract.snps.haps}
 \alias{extract.snps.vcfR}
 \alias{extract.snps.oxford}
-\title{Extract genotypes from SNP objects, in AlphaImpute format}
+\title{#' Extracts 
+#' 
+#' @inheritParams extract.snps
+#' @return \code{extract.phased} returns matrix with individuals by row, with two rows
+#'   per individual for first and second allele.
+extract.phased <- function(x) {
+  snps <- t(x$haps)
+  rownames(snps) <- rep(rownames(x$samples), each=2)
+  snps
+}
+Extract genotypes from SNP objects, in AlphaImpute format}
 \usage{
 extract.snps(x, as.integer)
 

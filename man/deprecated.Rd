@@ -93,7 +93,7 @@ Currently by subtracting column mean and dividing by column standard deviation.}
 Number of rows written.
 }
 \description{
-Deprecated functions
+Mostly renamed function names.
 
 \code{cbind_SNPs} has been renamed to \code{\link{cbind_snp_files}}.
 

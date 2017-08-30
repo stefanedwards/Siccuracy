@@ -135,16 +135,16 @@ write.haps <- function(x, haps, sample) {
 
 #' @rdname write.snps
 #' @inheritParams write.snps.matrix
-#' @param phased Logical, when \code{FALSE} (default), collapses all loci into single-value
-#'               where haplotype information is lost.
+# @param phased Logical, when \code{FALSE} (default), collapses all loci into single-value
+#               where haplotype information is lost.
 #' @param newID ... New ID, see \code{\link{convert_plinkA}}, but with some caveats here. I don't know.
 #' @export
-write.snps.haps <- function(x, file, row.names=TRUE, na='9', phased=FALSE, newID=0, ...) {
-  if (phased) {
-    gt <- extract.phased(x, as.numeric=TRUE)
-  } else {
+write.snps.haps <- function(x, file, row.names=TRUE, na='9', newID=0, ...) {
+  # if (phased) {
+  #   gt <- extract.phased(x, as.numeric=TRUE)
+  # } else {
     gt <- extract.gt(x, as.numeric=TRUE)
-  }
+#  }
   
   # Handle IDs - code based of that for convert_plinkA
   if (is.data.frame(newID)) {
@@ -190,8 +190,8 @@ write.snps.haps <- function(x, file, row.names=TRUE, na='9', phased=FALSE, newID
 #' @export
 #' @rdname imputation_accuracy
 imputation_accuracy.haps <- function(true, impute, standardized=TRUE, center=NULL, scale=NULL, p=NULL, tol=0.1, ..., excludeIDs=NULL, excludeSNPs=NULL) {
-  true <- extract.snps(true, as.numeric=TRUE, ...)
-  impute <- extract.snps(impute, as.numeric=TRUE, ...)
+  true <- extract.snps.haps(true, ...)
+  impute <- extract.snps.haps(impute, ...)
   imputation_accuracy(true, impute, 
                       standardized = standardized,
                       center=center,
