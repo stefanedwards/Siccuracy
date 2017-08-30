@@ -49,16 +49,17 @@ NULL
 #' @param as.numeric logical, should the matrix be converted to numerics.
 #' @param convertNA logical indicating whether to convert "." to \code{NA} 
 #'                  (see \code{na} for which value to use when writing to text file).
-#' @param newID Integer scalar (default \code{0}) for automatically assigning 
-#'              new IDs. Use \code{NULL} to disable. See description for more.
-#' @param ... Arguments forwarded to \code{\link[vcfR]{extract.gt}} and \code{\link{write.snps}}. 
+# @param newID Integer scalar (default \code{0}) for automatically assigning 
+#              new IDs. Use \code{NULL} to disable. See description for more.
+# @param ... Arguments forwarded to \code{\link[vcfR]{extract.gt}} and \code{\link{write.snps}}. 
 #' @import vcfR
 #' @seealso \code{\link{write.snps}}
 #' @rdname write.snps
 #' @return Returns data frame with ID mapping, truncated to those elements outputted.
 #' @export
 write.snps.vcfR <- function(x, 
-                            file, 
+                            file,
+                            row.names=TRUE,
                             na='9', 
                             newID=0,
                             element='GT', 
@@ -104,12 +105,11 @@ write.snps.vcfR <- function(x,
 
 
 #' @inheritParams imputation_accuracy.matrix
-#' @param ... Arguments passed on to \code{\link[vcfR]{extract.gt}}.
 #' @export
 #' @rdname imputation_accuracy
-imputation_accuracy.vcfR <- function(true, impute, standardized=TRUE, center=NULL, scale=NULL, p=NULL, excludeIDs=NULL, excludeSNPs=NULL, tol=0.1, ...) {
-  true <- vcfR::extract.gt(true, element='GT', as.numeric=TRUE, ...)
-  impute <- vcfR::extract.gt(impute, element='GT', as.numeric=TRUE, ...)
+imputation_accuracy.vcfR <- function(true, impute, standardized=TRUE, center=NULL, scale=NULL, p=NULL, tol=0.1, excludeIDs=NULL, excludeSNPs=NULL, ...) {
+  true <- vcfR::extract.gt(true, as.numeric=TRUE, element='GT', ...)
+  impute <- vcfR::extract.gt(impute, as.numeric=TRUE, element='GT', ...)
   imputation_accuracy(true, impute, 
                       standardized = standardized,
                       center=center,

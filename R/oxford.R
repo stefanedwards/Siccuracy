@@ -64,31 +64,10 @@ write.oxford <- function(x, file, ...) {
   do.call(write.table, args)
 }
 
-#' @inheritParams extract.gt
-#' @param as.integer Rounds genotype dosages to whole integers.
-#' @rdname extract.gt
-#' @export
-extract.gt.oxford <- function(x, as.integer=FALSE) {
-  snps <- apply(x$probs, 1:2, reduce.oxford)
-  if (as.integer) {
-    snps <- round(snps)
-    storage.mode(snps) <- 'integer'
-  }
-  
-  snps
-}
-reduce.oxford <- function(x) {(x[2]*1 + x[3]*2) / sum(x)}
 
-#' @inheritParams extract.gt.oxford
-#' @rdname extract.snps
-#' @export
-extract.snps.oxford <- function(x, as.integer=FALSE) {
-  t(extract.gt.oxford(x, as.integer=as.integer))
-}
 
 #' @rdname write.snps
 #' @inheritParams write.snps.matrix
-#' @param row.names If genotype matrix is "raw" and has first column with animals IDs, set this to \code{FALSE}.
 #' @export
 write.snps.oxford <- function(x, file, row.names=TRUE, na='9', ...) {
   write.snps.matrix(extract.snps.oxford(x, ...), file=file, row.names=row.names, na=na, ...)

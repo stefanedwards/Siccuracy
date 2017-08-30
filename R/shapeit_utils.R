@@ -135,13 +135,16 @@ write.haps <- function(x, haps, sample) {
 
 #' @rdname write.snps
 #' @inheritParams write.snps.matrix
-#' @param row.names If genotype matrix is "raw" and has first column with animals IDs, set this to \code{FALSE}.
 #' @param phased Logical, when \code{FALSE} (default), collapses all loci into single-value
 #'               where haplotype information is lost.
 #' @param newID ... New ID, see \code{\link{convert_plinkA}}, but with some caveats here. I don't know.
 #' @export
 write.snps.haps <- function(x, file, row.names=TRUE, na='9', phased=FALSE, newID=0, ...) {
-  gt <- extract.gt(x, is.numeric=TRUE)
+  if (phased) {
+    gt <- extract.phased(x, as.numeric=TRUE)
+  } else {
+    gt <- extract.gt(x, as.numeric=TRUE)
+  }
   
   # Handle IDs - code based of that for convert_plinkA
   if (is.data.frame(newID)) {
@@ -174,6 +177,7 @@ write.snps.haps <- function(x, file, row.names=TRUE, na='9', phased=FALSE, newID
     .newID$newID[r] <- 1:sum(r) + max(.newID$newID[!r])
   }
   colnames(gt) <- as.character(.newID$newID)
+
   
   write.snps.matrix(t(gt), file=file, row.names=TRUE, na=na, ...)
   .newID
@@ -183,10 +187,9 @@ write.snps.haps <- function(x, file, row.names=TRUE, na='9', phased=FALSE, newID
 # Imputation accuracy -------------------
 
 #' @inheritParams imputation_accuracy.matrix
-#' @param ... Arguments passed on to \code{\link[vcfR]{extract.gt}}.
 #' @export
 #' @rdname imputation_accuracy
-imputation_accuracy.haps <- function(true, impute, standardized=TRUE, center=NULL, scale=NULL, p=NULL, excludeIDs=NULL, excludeSNPs=NULL, tol=0.1, ...) {
+imputation_accuracy.haps <- function(true, impute, standardized=TRUE, center=NULL, scale=NULL, p=NULL, tol=0.1, ..., excludeIDs=NULL, excludeSNPs=NULL) {
   true <- extract.snps(true, as.numeric=TRUE, ...)
   impute <- extract.snps(impute, as.numeric=TRUE, ...)
   imputation_accuracy(true, impute, 

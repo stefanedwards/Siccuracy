@@ -55,5 +55,5 @@ close(f)
 }
 \seealso{
 \code{\link{write.snps}}, \link[base]{typeof}, \code{\link{get_ncols}}, \code{\link[base]{scan}},
-          and \link{Oxford}, \link{SHAPEIT}, and \link{VCF} formats.
+          and \link[=read.oxford]{Oxford}, \link[=read.haps]{SHAPEIT}, and \link[=VCF format]{VCF} formats.
 }

@@ -9,42 +9,33 @@
 \alias{imputation_accuracy.vcfR}
 \title{Imputation accuracy, aka. correlations}
 \usage{
-imputation_accuracy(true, impute, ...)
+imputation_accuracy(true, impute, standardized = TRUE, center = NULL,
+  scale = NULL, p = NULL, tol = 0.1, ...)
 
-\method{imputation_accuracy}{character}(true, impute, ncol = NULL,
-  nlines = NULL, na = 9, standardized = TRUE, adaptive = TRUE,
-  center = NULL, scale = NULL, p = NULL, excludeIDs = NULL,
-  excludeSNPs = NULL, tol = 0.1)
+\method{imputation_accuracy}{character}(true, impute, standardized = TRUE,
+  center = NULL, scale = NULL, p = NULL, tol = 0.1, ..., ncol = NULL,
+  nlines = NULL, na = 9, adaptive = TRUE, excludeIDs = NULL,
+  excludeSNPs = NULL)
 
 \method{imputation_accuracy}{matrix}(true, impute, standardized = TRUE,
-  center = NULL, scale = NULL, p = NULL, excludeIDs = NULL,
-  excludeSNPs = NULL, tol = 0.1, transpose = FALSE)
+  center = NULL, scale = NULL, p = NULL, tol = 0.1, ...,
+  excludeIDs = NULL, excludeSNPs = NULL, transpose = FALSE)
 
 \method{imputation_accuracy}{haps}(true, impute, standardized = TRUE,
-  center = NULL, scale = NULL, p = NULL, excludeIDs = NULL,
-  excludeSNPs = NULL, tol = 0.1, ...)
+  center = NULL, scale = NULL, p = NULL, tol = 0.1, ...,
+  excludeIDs = NULL, excludeSNPs = NULL)
 
 \method{imputation_accuracy}{vcfR}(true, impute, standardized = TRUE,
-  center = NULL, scale = NULL, p = NULL, excludeIDs = NULL,
-  excludeSNPs = NULL, tol = 0.1, ...)
+  center = NULL, scale = NULL, p = NULL, tol = 0.1, excludeIDs = NULL,
+  excludeSNPs = NULL, ...)
 }
 \arguments{
 \item{true}{\emph{True} genotype matrix, or filename.}
 
 \item{impute}{\emph{Imputed} genotype matrix, or filename.}
 
-\item{...}{Arguments passed on to \code{\link[vcfR]{extract.gt}}.}
-
-\item{ncol}{Integer, number of SNP columns in files. When \code{NULL}, automagically detected with \code{get_ncols(true)-1}.}
-
-\item{nlines}{Integer, number of lines in \code{true}. When \code{NULL}, automagically detected with \code{gen_nlines(true)}.}
-
-\item{na}{Value of missing genotypes.}
-
 \item{standardized}{Logical, whether to center and scale genotypes by dataset in \code{true}-matrix.
 Currently by subtracting column mean and dividing by column standard deviation.}
-
-\item{adaptive}{Use adaptive method (default) that stores \code{true} in memory and compares rows by ID in first column.}
 
 \item{center}{Numeric vector of \code{ncol}-length to subtract with for standardization.}
 
@@ -52,19 +43,23 @@ Currently by subtracting column mean and dividing by column standard deviation.}
 
 \item{p}{Shortcut for \code{center} and \code{scale} when using allele frequencies. \code{center=2p} and \code{scale=2p(1-p)}.}
 
+\item{tol}{Numeric, tolerance for imputation error when counting correctly imputed genotypes.}
+
+\item{...}{Arguments passed between different methods (mostly \code{\link{extract.snps}} and \code{\link[vcfR]{extract.gt}}).}
+
+\item{ncol}{Integer, number of SNP columns in files. When \code{NULL}, automagically detected with \code{get_ncols(true)-1}.}
+
+\item{nlines}{Integer, number of lines in \code{true}. When \code{NULL}, automagically detected with \code{gen_nlines(true)}.}
+
+\item{na}{Value of missing genotypes.}
+
+\item{adaptive}{Use adaptive method (default) that stores \code{true} in memory and compares rows by ID in first column.}
+
 \item{excludeIDs}{Integer vector, exclude these individuals from correlations. \emph{Does not affect calculation of column means and standard deviations.}}
 
 \item{excludeSNPs}{Integer or logical vector, exclude these columns from correlations. \emph{Does not affect calculation of column means and standard deviations.}}
 
-\item{tol}{Numeric, tolerance for imputation error when counting correctly imputed genotypes.}
-
 \item{transpose}{Logical, if SNPs are per row, set to \code{TRUE}.}
-
-\item{true}{Matrix of true genotypes}
-
-\item{impute}{Matrix of imputed genotypes}
-
-\item{...}{Arguments passed on to \code{\link[vcfR]{extract.gt}}.}
 }
 \value{
 List with following elements:

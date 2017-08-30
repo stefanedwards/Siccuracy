@@ -1,11 +1,3 @@
-
-#' @rdname imputation_accuracy
-#' @export
-imputation_accuracy <- function(true, impute, ...) {
-  UseMethod('imputation_accuracy', true)
-}
-
-
 #' Imputation accuracy, aka. correlations
 #' 
 #' Calculation of column-wise, row-wise, and matrix-wise correlations between
@@ -36,28 +28,17 @@ imputation_accuracy <- function(true, impute, ...) {
 #' \emph{Note:} If either \code{scale} or \code{p} are \code{0} or \code{NA}, they 
 #' will \emph{not} contribute to correlation, but they \emph{will count} towards
 #' correct pct. To exclude entirely, use \code{excludeSNPs}.
-#'
-#' @section File-based method:
-#' This method stores the "true" matrix in memory with a low-precision real type,
-#' and rows in the "imputed" matrix are read and matched by ID.
-#' If there are no extra rows in either matrix and order of IDs is the same,
-#' consider setting \code{adaptive=FALSE}, as this has a memory usage of O(m), compared to O(nm) for the adaptive method, where 'm' is the number of SNPs and 'n' the number of animals.
-#' The non-adaptive method is however, and very surprisingly, slightly slower.
-#'
+#' 
 #' @param true \emph{True} genotype matrix, or filename.
 #' @param impute \emph{Imputed} genotype matrix, or filename.
-#' @param ncol Integer, number of SNP columns in files. When \code{NULL}, automagically detected with \code{get_ncols(true)-1}.
-#' @param nlines Integer, number of lines in \code{true}. When \code{NULL}, automagically detected with \code{gen_nlines(true)}.
-#' @param na Value of missing genotypes.
 #' @param standardized Logical, whether to center and scale genotypes by dataset in \code{true}-matrix.
 #'        Currently by subtracting column mean and dividing by column standard deviation.
-#' @param adaptive Use adaptive method (default) that stores \code{true} in memory and compares rows by ID in first column.
 #' @param center Numeric vector of \code{ncol}-length to subtract with for standardization.
 #' @param scale Numeric vector of \code{ncol}-length to divide by for standardization.
 #' @param p Shortcut for \code{center} and \code{scale} when using allele frequencies. \code{center=2p} and \code{scale=2p(1-p)}.
-#' @param excludeIDs Integer vector, exclude these individuals from correlations. \emph{Does not affect calculation of column means and standard deviations.}
-#' @param excludeSNPs Integer or logical vector, exclude these columns from correlations. \emph{Does not affect calculation of column means and standard deviations.}
 #' @param tol Numeric, tolerance for imputation error when counting correctly imputed genotypes.
+#' @param ... Arguments passed between different methods (mostly \code{\link{extract.snps}} and \code{\link[vcfR]{extract.gt}}).
+#' 
 #' @return List with following elements:
 #' \describe{
 #'   \item{\code{matcor}}{Matrix-wise correlation between true and imputed matrix.}
@@ -81,8 +62,30 @@ imputation_accuracy <- function(true, impute, ...) {
 #' }
 #' @export
 #' @rdname imputation_accuracy
+imputation_accuracy <- function(true, impute, standardized=TRUE, center=NULL, scale=NULL, p=NULL, tol=0.1, ...) {
+  UseMethod('imputation_accuracy', true)
+}
+
+
+
+#' @rdname imputation_accuracy
+#' @section File-based method:
+#' This method stores the "true" matrix in memory with a low-precision real type,
+#' and rows in the "imputed" matrix are read and matched by ID.
+#' If there are no extra rows in either matrix and order of IDs is the same,
+#' consider setting \code{adaptive=FALSE}, as this has a memory usage of O(m), compared to O(nm) for the adaptive method, where 'm' is the number of SNPs and 'n' the number of animals.
+#' The non-adaptive method is however, and very surprisingly, slightly slower.
+#'
+#' @param ncol Integer, number of SNP columns in files. When \code{NULL}, automagically detected with \code{get_ncols(true)-1}.
+#' @param nlines Integer, number of lines in \code{true}. When \code{NULL}, automagically detected with \code{gen_nlines(true)}.
+#' @param na Value of missing genotypes.
+#' @param adaptive Use adaptive method (default) that stores \code{true} in memory and compares rows by ID in first column.
+#' @param excludeIDs Integer vector, exclude these individuals from correlations. \emph{Does not affect calculation of column means and standard deviations.}
+#' @param excludeSNPs Integer or logical vector, exclude these columns from correlations. \emph{Does not affect calculation of column means and standard deviations.}
+#' 
+#' @export
 #' @seealso \code{\link{write.snps}} for writing SNPs to a file.
-imputation_accuracy.character <- function(true, impute, ncol=NULL, nlines=NULL, na=9, standardized=TRUE, adaptive=TRUE, center=NULL, scale=NULL, p=NULL, excludeIDs=NULL, excludeSNPs=NULL, tol=0.1) {
+imputation_accuracy.character <- function(true, impute, standardized=TRUE, center=NULL, scale=NULL, p=NULL, tol=0.1, ..., ncol=NULL, nlines=NULL, na=9,  adaptive=TRUE, excludeIDs=NULL, excludeSNPs=NULL) {
   stopifnot(file.exists(true))
   stopifnot(file.exists(impute))
   
@@ -181,13 +184,11 @@ imputation_accuracy.character <- function(true, impute, ncol=NULL, nlines=NULL, 
 
 
 
-#' @param true Matrix of true genotypes
-#' @param impute Matrix of imputed genotypes
 #' @param transpose Logical, if SNPs are per row, set to \code{TRUE}.
 #' @inheritParams imputation_accuracy.character
 #' @rdname imputation_accuracy
 #' @export
-imputation_accuracy.matrix <- function(true, impute, standardized=TRUE, center=NULL, scale=NULL, p=NULL, excludeIDs=NULL, excludeSNPs=NULL, tol=0.1, transpose=FALSE) {
+imputation_accuracy.matrix <- function(true, impute, standardized=TRUE, center=NULL, scale=NULL, p=NULL, tol=0.1, ..., excludeIDs=NULL, excludeSNPs=NULL, transpose=FALSE) {
   
   standardized <- as.logical(standardized)
 

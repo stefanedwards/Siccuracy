@@ -70,7 +70,7 @@ and a method dispatch for imputation accuracy exists for this too.
 
 Currently, \strong{VCF} objects by package \code{vcfR} are supported for functions
 \code{\link[=write.snps.vcfR]{write.snps}} and \code{\link[=imputation_accuracy.vcfR]{imputation_accuracy}}.
-For more information, see \link{VCF_Siccuracy}.
+For more information, see \link{VCF format}.
 }
 
 \author{

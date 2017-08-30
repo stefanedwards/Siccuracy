@@ -25,7 +25,7 @@ test_that('Two, partially overlapping SNP chips can be merged.', {
   
   mergedfn <- tempfile()
   #mergedfn <- 'merged.txt'
-  res <- rbind_SNPs(hdid=c(0, hd.id, 7), ldid=ld.id, hdpos=hd.snps, ldpos=ld.snps, hdfn=hd, ldfn=ld, fnout=mergedfn, na=9)
+  res <- rbind_snp_files(hdid=c(0, hd.id, 7), ldid=ld.id, hdpos=hd.snps, ldpos=ld.snps, hdfn=hd, ldfn=ld, fnout=mergedfn, na=9)
   
   expect_equivalent(res, length(hd.id)+length(ld.id))
   
@@ -56,7 +56,7 @@ test_that('Order of ID\' doesn\'t matter.', {
   
   mergedfn <- tempfile()
   #mergedfn <- 'merged.txt'
-  res <- rbind_SNPs(hdid=hd.id, ldid=ld.id, hdpos=hd.snps, ldpos=ld.snps, hdfn=hd, ldfn=ld, fnout=mergedfn, na=9)
+  res <- rbind_snp_files(hdid=hd.id, ldid=ld.id, hdpos=hd.snps, ldpos=ld.snps, hdfn=hd, ldfn=ld, fnout=mergedfn, na=9)
   
   expect_equivalent(res, length(hd.id)+length(ld.id))
   
@@ -79,7 +79,7 @@ test_that('Merging doesn\'t skip first row when starting in middle of ID list.',
   write.snps(snps, hd.fn)
   write.snps(snps, ld.fn)
   merged.fn <- tempfile()
-  res <- rbind_SNPs(hdid=hd, ldid=ld, hdpos=1, ldpos=1, hdfn=hd.fn, ldfn=ld.fn, fnout=merged.fn)
+  res <- rbind_snp_files(hdid=hd, ldid=ld, hdpos=1, ldpos=1, hdfn=hd.fn, ldfn=ld.fn, fnout=merged.fn)
   expect_equivalent(res, length(both))
   
   merged <- read.snps(merged.fn)
@@ -92,7 +92,7 @@ test_that('Searching exists when row not found in ID list.', {
   write.snps(snps, hd.fn)
   
   merged.fn <- tempfile()
-  res <- rbind_SNPs(hdid=sample.int(10)+3, ldid=sample.int(10)+3, hdpos=1, ldpos=1, hdfn=hd.fn, ldfn=hd.fn, fnout=merged.fn)
+  res <- rbind_snp_files(hdid=sample.int(10)+3, ldid=sample.int(10)+3, hdpos=1, ldpos=1, hdfn=hd.fn, ldfn=hd.fn, fnout=merged.fn)
   expect_equivalent(res, 0)
   merged <- read.snps(merged.fn)
   expect_equal(nrow(merged), 0)

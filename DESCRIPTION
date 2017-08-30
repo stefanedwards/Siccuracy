@@ -1,7 +1,7 @@
 Package: Siccuracy
 Type: Package
 Title: Stefan's imputation accuracies package
-Version: 0.7.1
+Version: 0.8.0
 Date: 2017-06-02
 Authors@R: person(given=c("Stefan","McKinnon"), family="Edwards", role = c("aut", "cre"),
 		     email = "sme@iysik.com")
@@ -10,7 +10,8 @@ License: GPL-2 | GPL-3
 LazyData: TRUE
 URL: https://github.com/stefanedwards/Siccuracy
 Depends:
-    R (> 3.1.0),
+    R (> 3.1.0)
+Imports:
     vcfR (>= 1.4.0),
     abind (>= 1.4.5)
 Suggests:

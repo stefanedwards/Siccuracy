@@ -16,7 +16,7 @@ write.oxford(x, file, ...)
 \arguments{
 \item{file}{Filename to read from or write to.}
 
-\item{...}{Parameters forwarded to \code{\link[base]{read.table}} or \code{\link[base]{write.table}},}
+\item{...}{Parameters forwarded to \code{\link[utils]{read.table}} or \code{\link[utils]{write.table}},}
 
 \item{x}{Oxford object.}
 }

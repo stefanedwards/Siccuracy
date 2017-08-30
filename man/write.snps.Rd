@@ -9,7 +9,7 @@
 \alias{write.snps.vcfR}
 \title{Write genotype matrices to file, AlphaImpute style.}
 \usage{
-write.snps(x, ...)
+write.snps(x, file, row.names = TRUE, na = "9", ...)
 
 \method{write.snps}{matrix}(x, file, row.names = TRUE, na = "9", ...)
 
@@ -18,19 +18,19 @@ write.snps(x, ...)
 \method{write.snps}{haps}(x, file, row.names = TRUE, na = "9",
   phased = FALSE, newID = 0, ...)
 
-\method{write.snps}{vcfR}(x, file, na = "9", newID = 0, element = "GT",
-  as.numeric = TRUE, convertNA = TRUE, ...)
+\method{write.snps}{vcfR}(x, file, row.names = TRUE, na = "9", newID = 0,
+  element = "GT", as.numeric = TRUE, convertNA = TRUE, ...)
 }
 \arguments{
 \item{x}{The matrix to write.}
-
-\item{...}{Passed on to write.table.}
 
 \item{file}{Filename or connection to write to.}
 
 \item{row.names}{If genotype matrix is "raw" and has first column with animals IDs, set this to \code{FALSE}.}
 
 \item{na}{The string to use for \code{NA} in the data.}
+
+\item{...}{Passed on to write.table.}
 
 \item{phased}{Logical, when \code{FALSE} (default), collapses all loci into single-value
 where haplotype information is lost.}
@@ -43,15 +43,6 @@ where haplotype information is lost.}
 
 \item{convertNA}{logical indicating whether to convert "." to \code{NA} 
 (see \code{na} for which value to use when writing to text file).}
-
-\item{row.names}{If genotype matrix is "raw" and has first column with animals IDs, set this to \code{FALSE}.}
-
-\item{row.names}{If genotype matrix is "raw" and has first column with animals IDs, set this to \code{FALSE}.}
-
-\item{newID}{Integer scalar (default \code{0}) for automatically assigning 
-new IDs. Use \code{NULL} to disable. See description for more.}
-
-\item{...}{Arguments forwarded to \code{\link[vcfR]{extract.gt}} and \code{\link{write.snps}}.}
 }
 \value{
 Returns data frame with ID mapping, truncated to those elements outputted.

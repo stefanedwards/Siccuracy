@@ -90,6 +90,7 @@ NULL
 #' 
 #' @param x The matrix to write.
 #' @param file Filename or connection to write to.
+#' @param row.names If genotype matrix is "raw" and has first column with animals IDs, set this to \code{FALSE}.
 #' @param na The string to use for \code{NA} in the data.
 #' @param ... Passed on to write.table.
 #' @seealso \code{\link[utils]{write.table}}, \link[base]{connections}.
@@ -100,7 +101,6 @@ write.snps <- function(x, file, row.names=TRUE, na='9', ...) {
 
 #' @rdname write.snps
 #' @inheritParams write.snps
-#' @param row.names If genotype matrix is "raw" and has first column with animals IDs, set this to \code{FALSE}.
 #' @export
 write.snps.matrix <- function(x, file, row.names=TRUE, na='9', ...) {
   na <- as.character(na)

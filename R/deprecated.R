@@ -26,7 +26,7 @@ cbind_SNPs <- function(fns, fnout, nlines, ncols, skiplines, excludeids, int) {
 #' @inheritParams cbind_snp_files
 rowconcatenate <- function(fns, fnout, nlines=NULL, ncols=NULL, skiplines=0, excludeids=integer(0)) {
   .Deprecated('cbind_snp_files', package='Siccuracy')
-  cbind_snp_files(fns=fns, fnout=fnout, nlines=nlines, ncols=ncols, skiplines=skiplines, excludeids=excludeids, int=int)
+  cbind_snp_files(fns=fns, fnout=fnout, nlines=nlines, ncols=ncols, skiplines=skiplines, excludeids=excludeids, int=TRUE)
 }
 
 # Imputation accuracy ------

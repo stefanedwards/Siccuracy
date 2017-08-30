@@ -6,6 +6,9 @@
 \usage{
 extract.phased(x)
 }
+\arguments{
+\item{x}{Object to extract genotypes from.}
+}
 \value{
 \code{extract.phased} returns matrix with individuals by row, with two rows
   per individual for first and second allele.

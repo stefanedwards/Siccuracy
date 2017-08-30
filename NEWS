@@ -1,3 +1,13 @@
+# 0.8.0
+
+  * Function renaming:
+    * `cbind_SNPs` --> `cbind_snp_files`
+    * `rbind_SNPs` --> `rbind_snp_files`
+    * `mask_SNPs` --> `mask_snp_file`
+
+  * Added support for reading SHAPEIT haps/sample files.
+  * Added support for reading Oxford formatted files.
+
 # 0.7.1
 
   * Fortran routines updated to be able to handle integer IDs exceeding 
@@ -10,9 +20,7 @@
     Correct.pct is calculated as # correct / (elements - true missing).
     Tolerance is limited to 4 digits. I.e. a tolerance below 1e-4 is effectively
     ignored.
-  
 
->>>>>>> devel
 # 0.5.0
 
   * Preparing package for publication.
