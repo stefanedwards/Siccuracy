@@ -32,6 +32,8 @@ end subroutine
 subroutine get_firstcolumn(fn, nlines, column, stat)
   !USE ISO_FORTRAN_ENV
   implicit none
+  
+  integer, parameter :: i16_kind = selected_int_kind(16)
 
   !! Arguments
   character(255), intent(in) :: fn
@@ -40,7 +42,7 @@ subroutine get_firstcolumn(fn, nlines, column, stat)
   integer, intent(out) :: stat
 
   !! Private variables
-  integer :: i, dummy
+  integer(i16_kind) :: i, dummy
 
   open(30, file=fn, status='OLD')
   do i=1,nlines

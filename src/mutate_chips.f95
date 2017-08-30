@@ -135,6 +135,10 @@ end subroutine cbindsnpscore
 subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
   nhd, hdid, nld, ldid, hdpos, ldpos,  missing, lenfmt, userfmt, asint, stat, totallines)
 
+  implicit none
+  
+  integer, parameter :: i16_kind = selected_int_kind(16)
+
   integer, intent(in) :: hdcols, ldcols, outcols, nhd, nld, missing, lenfmt, asint
   character(lenfmt), intent(in) :: userfmt
   character(255), intent(in) :: fnhd, fnld, fnout
@@ -145,7 +149,8 @@ subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
   integer, intent(out) :: stat, totallines
 
   logical :: foundID, isint
-  integer :: i, oldi, animalID
+  integer :: i, oldi
+  integer(i16_kind) :: animalID
   
   character(50)  :: fmt
   integer, allocatable :: intoutput(:)
@@ -282,6 +287,8 @@ subroutine masksnps2(fn, outfn, ncols, nlines, na, userfmt, lenuserfmt, asint, s
 
   implicit none
 
+  integer, parameter :: i16_kind = selected_int_kind(16)
+
   ! Arguments
   character(255), intent(in) :: fn, outfn
   integer, intent(in) :: ncols, nlines, lenuserfmt, asint, snpslength, maps, masklength
@@ -296,13 +303,12 @@ subroutine masksnps2(fn, outfn, ncols, nlines, na, userfmt, lenuserfmt, asint, s
     
   ! Local variables
   logical :: isint
-  integer :: i, animalID, ndropSNPs, snpstocopy
+  integer :: i, ndropSNPs, snpstocopy
+  integer(i16_kind) :: animalID 
   character(50) :: fmt
   logical, dimension(:), allocatable :: isnotzero
   integer, dimension(:), allocatable :: intoutput, copysnps, copysnpsdest
   real, dimension(:), allocatable :: realoutput, inputline, outputline
-  
-  !print *, 'Hello world!', nlines
 
   ! Construct input and output holders
   allocate(inputline(1:ncols)) 
@@ -323,6 +329,7 @@ subroutine masksnps2(fn, outfn, ncols, nlines, na, userfmt, lenuserfmt, asint, s
   if (isint) then
     allocate(intoutput(snpslength))  
   endif
+  
   allocate(realoutput(snpslength))
   realoutput(:) = na
   

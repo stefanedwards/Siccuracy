@@ -5,6 +5,7 @@ subroutine heterozygosity(fn, ncols, nlines, populations, npop, &
   implicit none
 
   integer, parameter :: r8_kind = selected_real_kind(15, 307)
+  integer, parameter :: i16_kind = selected_int_kind(16)
 
   !! Arguments
   character(255), intent(in) :: fn
@@ -14,7 +15,8 @@ subroutine heterozygosity(fn, ncols, nlines, populations, npop, &
   real(r8_kind), dimension( ncols, npop), intent(out) :: p, Hobs, Hexp
 
   !! Local variables
-  integer :: i, stat, animalid, j
+  integer :: i, stat, j
+  integer(i16_kind) :: animalid
   integer, dimension(ncols) :: genotype
   integer, dimension(0:2,ncols, npop) :: allelecount
 
@@ -42,16 +44,6 @@ subroutine heterozygosity(fn, ncols, nlines, populations, npop, &
 
 end subroutine
 
-subroutine test (a)
-  implicit none
-  integer, dimension(1:5, 1:2), intent(inout) :: a
-  integer :: i
-  
-  do i=1,5
-    a(i,1) = i
-    a(i,2) = i+5
-  end do
-end subroutine
 
 
 

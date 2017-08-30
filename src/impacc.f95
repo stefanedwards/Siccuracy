@@ -13,6 +13,7 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
   implicit none
   
   integer, parameter :: r8_kind = selected_real_kind(15, 307) ! double precision, 64-bit like, required for transferring to and fro R.
+  integer, parameter :: i16_kind = selected_int_kind(16)
 
   !! Arguments
   character(255), intent(in) :: truefn, imputefn
@@ -27,8 +28,9 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
   real(r8_kind), intent(out) :: matcor
 
   !! Private variables
-  integer :: stat, animalID, i, j, mn
+  integer :: stat, i, j, mn, itol
   real(r8_kind) :: tru, imp, nan
+  integer(i16_kind) :: animalID
   logical, dimension(nAnimals) :: exids
   real(r8_kind), dimension(nSNPs) :: M, S, Mold, Sold
   real, dimension(nSNPs) :: genoin, true, imputed
@@ -48,6 +50,9 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
 
   exids = iexids == 1
   
+  ! Ugly hack where in the R side, differences of 'exactly' 0.10 are counted correctly,
+  ! but not here.
+  itol = nint(tol * 1e4)
 
   !! Read through true genotype file and get column-wise mean and variance
   if (standardized == 1 .and. usermeans == 0) then
@@ -126,9 +131,18 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
     !print *, 'Animal', animalID
 
     do j=1,nSnps
+      if (iexsnps(j) == 1) then
+        rNA = rNA + 1
+        cNA(j) = cNA(j) + 1
+        cycle
+      end if
+    
       if (imputed(j) == NAval .and. true(j) == NAval) then
         colbothna(j) = colbothna(j) + 1
         rowbothna(i) = rowbothna(i) + 1
+        rNA = rNA + 1
+        cNA(j) = cNA(j) + 1
+        cycle
       elseif (imputed(j) == NAval) then
         colimpna(j) = colimpna(j) + 1
         rowimpna(i) = rowimpna(i) + 1
@@ -136,17 +150,20 @@ subroutine imp_acc_fast(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, 
         coltruena(j) = coltruena(j) + 1
         rowtruena(i) = rowtruena(i) + 1
       endif
+
+      if (nint(abs(true(j) - imputed(j)) * 1e4) .le. itol) then
+        colcorrect(j) = colcorrect(j) + 1
+        rowcorrect(i) = rowcorrect(i) + 1
+      endif
+      
       if (imputed(j) == NAval .or. true(j) == NAval .or. sds(j) == 0.) then
         rNA = rNA + 1
         cNA(j) = cNA(j) + 1
         cycle
       end if
+      
       mn = mn + 1
 
-      if (abs(true(j) - imputed(j)) .le. tol) then
-        colcorrect(j) = colcorrect(j) + 1
-        rowcorrect(i) = rowcorrect(i) + 1
-      endif
 
       if (standardized == 1) then
         tru = (true(j)-means(j))/sds(j)
@@ -238,7 +255,8 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
   implicit none
   
   integer, parameter :: r8_kind = selected_real_kind(15, 150) ! double precision, 64-bit like, required for transferring to and fro R.
-
+  integer, parameter :: i16_kind = selected_int_kind(16)
+  
   character(255), intent(in) :: truefn, imputefn
   integer, intent(in) :: nSNPs, NAval, standardized, nAnimals, usermeans
   integer, dimension(nAnimals), intent(in) :: iexids
@@ -249,16 +267,18 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
   real(r8_kind), dimension(nSnps), intent(inout) :: means, sds, colcors
   real(r8_kind), dimension(nAnimals), intent(out) :: rowcors
   real(r8_kind), intent(out) :: matcor
+  
   !! Private variables
   logical, dimension(nAnimals) :: foundID
-  integer :: stat, start, animalID, commonrows, i, j, k, l, maxanimal, minanimal, ianimalID
+  integer :: stat, start, commonrows, i, j, k, l, itol
+  integer(i16_kind) :: animalID, maxanimal, minanimal, ianimalID
   real(r8_kind) :: tru, imp, nan
   real(r8_kind), dimension(nSNPs) :: M, S, Mold, Sold
   real(r8_kind), dimension(nSNPs) :: genoin, imputed
   real(r8_kind), dimension(nAnimals, nSnps) :: trueMat
   !! For running correlation on columns
   integer, dimension(nSNPs) :: cNA, nLines
-  integer, dimension(nAnimals) :: animalIndex
+  integer(i16_kind), dimension(nAnimals) :: animalIndex
   real(r8_kind), dimension(nSNPs) :: cmp, cmq, cmt, cmi, csi, cst, csb
   !! For matrix
   integer :: mn
@@ -268,6 +288,10 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
   real(r8_kind) :: rmp, rmq, rmt, rmi, rsi, rst, rsb  
 
   nan = 0.0
+  
+  ! Ugly hack where in the R side, differences of 'exactly' 0.10 are counted correctly,
+  ! but not here.
+  itol = nint(tol * 1e4)
 
   rowID(:) = 0
   rowcors(:) = 0.0
@@ -367,8 +391,7 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
       exit
     endif
     !print *, 'Got', ianimalID, 'as imputed...'
-
-
+   
     ! Find true genotype
     start = i
     k = 0
@@ -403,9 +426,18 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
     rsb = 0
 
     do j=1,nSnps
+      if (iexsnps(j) .eq. 1) then
+        rNA = rNA + 1
+        cNA(j) = cNA(j) + 1
+        cycle
+      end if
+    
       if (imputed(j) == NAval .and. trueMat(i,j) == NAval) then
         colbothna(j) = colbothna(j) + 1
         rowbothna(i) = rowbothna(i) + 1
+        rNA = rNA + 1 
+        cNA(j) = cNA(j) + 1
+        cycle
       elseif (imputed(j) == NAval) then
         colimpna(j) = colimpna(j) + 1
         rowimpna(i) = rowimpna(i) + 1
@@ -413,11 +445,18 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
         coltruena(j) = coltruena(j) + 1
         rowtruena(i) = rowtruena(i) + 1
       endif    
+      
+      if (nint(abs(trueMat(i,j) - imputed(j)) * 1e4) .le. itol) then
+        colcorrect(j) = colcorrect(j) + 1
+        rowcorrect(i) = rowcorrect(i) + 1
+      endif
+      
       if (imputed(j) == NAval .or. trueMat(i,j) == Naval .or. sds(j) == 0.) then
         rNA = rNA + 1
         cNA(j) = cNA(j) + 1
         cycle
       end if
+      
       mn = mn + 1
 
       if (standardized == 1) then
@@ -428,10 +467,6 @@ subroutine imp_acc(truefn, imputefn, nSNPs, nAnimals, NAval, standardized, means
         imp = imputed(j)
       endif
       
-      if (abs(trueMat(i,j) - imputed(j)) .le. tol) then
-        colcorrect(j) = colcorrect(j) + 1
-        rowcorrect(i) = rowcorrect(i) + 1
-      endif
 
       ! rowcorrelation
       if (j - rNA .eq. 1) then

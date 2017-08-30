@@ -2,7 +2,7 @@
 % Please edit documentation in R/converters.R
 \name{convert_plink}
 \alias{convert_plink}
-\title{Converts PLINK binary format to flat format}
+\title{Converts PLINK binary format to SNP formatted file.}
 \usage{
 convert_plink(bfile, outfn, na = 9, newID = 0, nlines = NULL,
   fam = NULL, bim = NULL, bed = NULL, countminor = TRUE, maf = 0,
@@ -52,13 +52,9 @@ convert_plink(bfile, outfn, na = 9, newID = 0, nlines = NULL,
 \item{fragmentfns}{Character vector or function for producing filenames.}
 }
 \description{
-Converts PLINK binary format to flat format
+Converts PLINK binary format to SNP formatted file.
 }
 \details{
-The new integer IDs can be supplied. If not, they will be made for you.
-\code{newID} may be an integer vector and will be used as is.
-If data.frame with columns \code{famID}, \code{sampID}, and \code{newID}, they will be reordered to match input file.
-
 \strong{\code{method}} \emph{simple} stores entire genotype matrix \emph{in memory}, as PLINK binary files are stored in locus-major mode, 
 i.e. first \eqn{m} bits store first locus for all \eqn{n} animals.
 Since we are interested in writing out all \eqn{m} loci for each animal, for efficiency we need to read the entire file.
@@ -70,6 +66,13 @@ When \code{fragment='chr'} (case unsensitive), loci are split according to 1st c
 If \code{fragment} is a scalar integer, loci are split into this number of blocks.
 If an integer vector of same length as \code{ncol}, it directly specifies which block a locus is sent to. \code{max(fragment)} specifies the number of blocks.
 }
+\section{Assigning new IDs}{
+ 
+The new integer IDs can be supplied. If not, they will be made for you.
+\code{newID} may be an integer vector and will be used as is.
+If data.frame with columns \code{famID}, \code{sampID}, and \code{newID}, they will be reordered to match input file.
+}
+
 \section{Filtering loci or samples}{
 
 Filters on loci or samples can be employed in a number of ways; filtering on loci and samples are handled independently.
@@ -89,6 +92,22 @@ For restricting the output to certain chromosomes, use \code{extract_chr}. The o
  \item{Character}{Matched against both famID or sampID, i.e. 1st and 2nd column of .fam file.}
  \item{List with named elements \code{famID} and/or \code{sampID}}{The named elements are matched against, respectively, the 1st and 2nd column of the .fam file.}
 }
+}
+
+\section{Fragment file names}{
+
+The argument \code{fragmentfns} is used for method \code{'lowmem'}, providing filenames 
+(absolute or relative) for producing the final converted files and intermediate .bim files.
+When \code{remerge=TRUE}, the argument \code{outfn} is ignored.
+
+\code{fragmentfns} defaults to temporary files, created with \code{\link[base]{tempfile}}.
+If a character vector, the first $n_f$ elements are filenames for $n_f$ fragments (e.g. chromosomes).
+The following $n_f + 1 ... 2 n_f$ elements are for the intermediate .bim files.
+The vector is automatically padding with temporary files to the required length.
+
+If \code{fragmentfns} is a \emph{function}, it will be called with 0, 1, or 2
+arguments. The first argument is a running number for the fragments, the second
+is the maximum number of fragments.
 }
 
 \references{

@@ -3,6 +3,7 @@
 \docType{package}
 \name{Siccuracy}
 \alias{Siccuracy}
+\alias{AlphaImpute-format}
 \alias{Siccuracy-package}
 \title{Stefan's imputation accuracy package}
 \description{
@@ -33,8 +34,10 @@ Requirements for format: Space or tab separated; number of digits is unimportant
   \item \strong{File info} \code{\link{get_nlines}}, \code{\link{get_firstcolumn}}, \code{\link{get_ncols}}.
   \item \strong{Imputation accuracies} \code{\link{imputation_accuracy}} correlations between matrices, and tabulating correctly imputed genotypes.
   \item \strong{Heterozygosity} \code{\link{heterozygosity}} counting alleles.
-  \item \strong{Mutators} \code{\link{cbind_SNPs}}, \code{\link{rbind_SNPs}} for combining multiple files, \code{\link{mask_SNPs}} for masking SNPs for simulating different density SNP chips.
-  \item \strong{Reading and writing} \code{\link{write.snps}}, \code{\link{read.snps}}.
+  \item \strong{Mutators} \code{\link{cbind_snp_files}}, \code{\link{rbind_snp_files}} for combining multiple files, \code{\link{mask_SNPs}} for masking SNPs for simulating different density SNP chips.
+  \item \strong{Reading and writing} \code{\link{write.snps}}, \code{\link{read.snps}},
+                                     \code{\link{read.haps}}, \code{\link{read.oxford}},
+                                     \code{\link[=VCF format]{read.vcf}}.
 }
 }
 
@@ -54,6 +57,20 @@ Regarding \emph{repeated} IDs, it is best to avoid these.
 Functions that write new files may have a pair of arguments (\code{int} and \code{format}) 
 that specifies whether the outputted format are integers (\code{int=TRUE}) or have decimals.
 For more information on how to specify the format, see \link{parseformat}.
+}
+
+\section{Other formats}{
+
+
+\strong{Oxford} format is covered with \code{\link{read.oxford}}
+and a method dispatch for imputation accuracy exists for this too.
+
+\strong{SHAPEIT}'s haps/sample format is covered with \code{\link{read.haps}} 
+and a method dispatch for imputation accuracy exists for this too.
+
+Currently, \strong{VCF} objects by package \code{vcfR} are supported for functions
+\code{\link[=write.snps.vcfR]{write.snps}} and \code{\link[=imputation_accuracy.vcfR]{imputation_accuracy}}.
+For more information, see \link{VCF format}.
 }
 
 \author{

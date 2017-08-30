@@ -51,31 +51,6 @@ convert_phases <- function(fn, outfn, ncol=NULL, nlines=NULL, na=9, int=TRUE, fo
   res$nrow
 }
 
-#' Deprecated functions
-#' 
-#' \code{phasotogeno} and \code{phasotogeno_int} has been replaced by \code{\link{convert_phases}}. 
-#' The difference between the two former functions is covered by the \code{int} argument in the new function.
-#' 
-#' @param phasefn Filename of input file, every two rows are for same animal.
-#' @param genofn Filename of intended output.
-#' @param ncol Number of columns to read, if \code{NULL} (default), number is estimated from file.
-#' @param nrow Number of rows to maximally read from \code{phasefn}. If \code{NULL}, no limit is used.
-#' @return Number of rows written.
-#' @export
-#' @rdname deprecated
-phasotogeno <- function(phasefn, genofn, ncol=NULL, nrow=NULL) {
-  .Deprecated('convert_phases', package='Siccuracy')
-  convert_phases(phasefn, genofn, ncol, nrow, int=FALSE)
-}
-#' @export
-#' @rdname deprecated
-#' @inheritParams phasotogeno
-phasotogeno_int <- function(phasefn, genofn, ncol=NULL, nrow=NULL) {
-  .Deprecated('convert_phases', package='Siccuracy')
-  convert_phases(phasefn, genofn, ncol, nrow, int=TRUE)
-}
-
-
 
 # Convert plink A format #########################
 
@@ -84,18 +59,15 @@ phasotogeno_int <- function(phasefn, genofn, ncol=NULL, nrow=NULL) {
 #' Facilitates converting a PLINK binary file to simplified SNP file format.
 #' Requires using PLINK to recode it to the \code{A} format by using command line \code{plink -bfile <file stem> --recode A}.
 #' This function then swiftly strips of first 6 columns (family ID, sample ID, paternal ID, maternal ID, sex, phenotypic record) 
-#' and inserts an integer-based ID column. \code{NA}'s outputted from PLINK are replaced with \code{naval} argument.
+#' and inserts an integer-based ID column. \code{NA}'s outputted from PLINK are replaced with \code{na} argument.
 #' 
-#' The new integer IDs can be supplied. If not, they will be made for you.
-#' \code{newID} may be an integer vector and will be used as is.
-#' If data.frame with columns \code{famID}, \code{sampID}, and \code{newID}, they will be reordered to match input file.
-#' 
-#' @param rawfn Plink output filename. Most likely \code{plink.raw} if PLINK command line argument \code{--output} is not used.
+#' @param rawfn Plink output filename. Most likely \code{plink.raw} if PLINK command line argument \code{--out} is not used.
 #' @param outfn Filename of new file.
 #' @param newID Integer scalar (default \code{0}) for automatically assigning new IDs. See description for more. 
 #' @param ncol Integer,number of SNP columns in \code{rawfn}. When \code{NULL}, automagically detected with \code{get_ncols(rawfn)-6}.
 #' @param nlines Number of lines to process.
 #' @param na Missing value, 
+#' @inheritSection convert_plink Assigning new IDs
 #' @return Data.frame with columns \code{famID}, \code{sampID}, and \code{newID}.
 #' @references 
 #' \itemize{
@@ -156,12 +128,9 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #
 # Using `PLINK --recode A` option probably counts the *major* allele; it is llisted in the header. 
 
-#' Converts PLINK binary format to flat format
+#' Converts PLINK binary format to SNP formatted file.
 #' 
 #' @details 
-#' The new integer IDs can be supplied. If not, they will be made for you.
-#' \code{newID} may be an integer vector and will be used as is.
-#' If data.frame with columns \code{famID}, \code{sampID}, and \code{newID}, they will be reordered to match input file.
 #' 
 #' \strong{\code{method}} \emph{simple} stores entire genotype matrix \emph{in memory}, as PLINK binary files are stored in locus-major mode, 
 #' i.e. first \eqn{m} bits store first locus for all \eqn{n} animals.
@@ -173,7 +142,11 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #' When \code{fragment='chr'} (case unsensitive), loci are split according to 1st column of .bim file.
 #' If \code{fragment} is a scalar integer, loci are split into this number of blocks.
 #' If an integer vector of same length as \code{ncol}, it directly specifies which block a locus is sent to. \code{max(fragment)} specifies the number of blocks.
-#' 
+#'
+#' @section Assigning new IDs: 
+#' The new integer IDs can be supplied. If not, they will be made for you.
+#' \code{newID} may be an integer vector and will be used as is.
+#' If data.frame with columns \code{famID}, \code{sampID}, and \code{newID}, they will be reordered to match input file.
 #'   
 #' @section Filtering loci or samples:
 #' Filters on loci or samples can be employed in a number of ways; filtering on loci and samples are handled independently.
@@ -193,6 +166,20 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #'  \item{Character}{Matched against both famID or sampID, i.e. 1st and 2nd column of .fam file.}
 #'  \item{List with named elements \code{famID} and/or \code{sampID}}{The named elements are matched against, respectively, the 1st and 2nd column of the .fam file.}
 #' }
+#' 
+#' @section Fragment file names:
+#' The argument \code{fragmentfns} is used for method \code{'lowmem'}, providing filenames 
+#' (absolute or relative) for producing the final converted files and intermediate .bim files.
+#' When \code{remerge=TRUE}, the argument \code{outfn} is ignored.
+#' 
+#' \code{fragmentfns} defaults to temporary files, created with \code{\link[base]{tempfile}}.
+#' If a character vector, the first $n_f$ elements are filenames for $n_f$ fragments (e.g. chromosomes).
+#' The following $n_f + 1 ... 2 n_f$ elements are for the intermediate .bim files.
+#' The vector is automatically padding with temporary files to the required length.
+#' 
+#' If \code{fragmentfns} is a \emph{function}, it will be called with 0, 1, or 2
+#' arguments. The first argument is a running number for the fragments, the second
+#' is the maximum number of fragments.
 #' 
 #' 
 #' @param bfile Filename of PLINK binary files, i.e. without extension.

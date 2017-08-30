@@ -2,7 +2,7 @@
 #'
 #' Short-hand functions for retriving file information such as number of columns or rows,
 #' or picking the first column (relevant if this contains IDs).
-#' @name auxfunc
+#' @name Auxiliary functions
 #' @rdname auxfunc
 NULL
 
@@ -83,19 +83,27 @@ get_firstcolumn <- function(fn, class='integer', ...) {
 
 NULL
 
-#' Write genotype matrices to file.
+#' Write genotype matrices to file, AlphaImpute style.
 #'
 #' \code{write.snps} is short hand for \code{write.table} with some default options.
-#' For file format see \link{Siccuracy}.
+#' For AlphaImpute format see \link{Siccuracy}.
 #' 
 #' @param x The matrix to write.
 #' @param file Filename or connection to write to.
 #' @param row.names If genotype matrix is "raw" and has first column with animals IDs, set this to \code{FALSE}.
 #' @param na The string to use for \code{NA} in the data.
 #' @param ... Passed on to write.table.
-#' @seealso \code{\link[utils]{write.table}}, \link[base]{connections}
+#' @seealso \code{\link[utils]{write.table}}, \link[base]{connections}.
 #' @export
 write.snps <- function(x, file, row.names=TRUE, na='9', ...) {
+  UseMethod('write.snps', x)
+}
+
+#' @rdname write.snps
+#' @inheritParams write.snps
+#' @export
+write.snps.matrix <- function(x, file, row.names=TRUE, na='9', ...) {
+  na <- as.character(na)
   utils::write.table(x, file, col.names=FALSE, row.names=row.names, quote=FALSE, na=na, ...)
 }
 
@@ -107,7 +115,7 @@ write.snps <- function(x, file, row.names=TRUE, na='9', ...) {
 #' Usually white-space delimted, but separator can be set with \code{sep} argument as per \code{\link[base]{scan}}.
 #' For file format example see \link{Siccuracy}.
 #' 
-#' If ID columns contains alphabetical elements, use \code{what=character()}. This will however return a matrix. 
+#' If ID columns contains alphabetical elements, use \code{what=character()}. This will however return a character matrix. 
 #' Use e.g. \code{storage.mode(m) <- 'integer'} to convert to integer-based, keeping all other attributes.
 #' 
 #'
@@ -120,7 +128,8 @@ write.snps <- function(x, file, row.names=TRUE, na='9', ...) {
 #' @param ... Passed on to \code{\link[base]{scan}}.
 #' @return Native \link[base]{matrix}.
 #' @export
-#' @seealso  \code{\link{write.snps}}, \link[base]{typeof}, \code{\link{get_ncols}}, \code{\link[base]{scan}}.
+#' @seealso  \code{\link{write.snps}}, \link[base]{typeof}, \code{\link{get_ncols}}, \code{\link[base]{scan}},
+#'           and \link[=read.oxford]{Oxford}, \link[=read.haps]{SHAPEIT}, and \link[=VCF format]{VCF} formats.
 #' @examples
 #'
 #' # Make test data
@@ -151,4 +160,19 @@ read.snps <- function(file, ncols=NULL, na=NA, what=integer(), extractIDs=TRUE, 
   }
   if (!is.na(na)) M[M==na] <- NA
   M
+}
+
+
+# From RCUrl ----
+merge.list <- function (x, y, ...) 
+{
+  if (length(x) == 0) 
+    return(y)
+  if (length(y) == 0) 
+    return(x)
+  i = match(names(y), names(x))
+  i = is.na(i)
+  if (any(i)) 
+    x[names(y)[which(i)]] = y[which(i)]
+  x
 }

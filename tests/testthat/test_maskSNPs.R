@@ -10,7 +10,7 @@ test_that('Masking SNPs works...', {
   maskSNPs <- sample.int(ncol(SNPs), ncol(SNPs)*.3)
   
   fn <- tempfile()
-  res <- mask_SNPs(snpfile, fn, masking=list(maskIDs, maskSNPs))
+  res <- mask_snp_file(snpfile, fn, masking=list(maskIDs, maskSNPs))
   m <- read.snps(fn)
 
   SNPs[maskIDs, maskSNPs] <- 9
@@ -26,7 +26,7 @@ test_that('Dropping individuals works', {
   dropIDs <- sample(maskIDs, length(maskIDs) * 0.5)
   
   fn <- tempfile()
-  res <- mask_SNPs(snpfile, fn, masking=list(maskIDs, 1), dropIDs=dropIDs, na=9)
+  res <- mask_snp_file(snpfile, fn, masking=list(maskIDs, 1), dropIDs=dropIDs, na=9)
   m <- read.snps(fn)
   
   expect_equal(nrow(m), nrow(SNPs) - length(dropIDs))
@@ -48,7 +48,7 @@ test_that('Dropping SNPs works', {
   
   
   fn <- tempfile()
-  res <- mask_SNPs(snpfile, fn, snps=snps, masking=list(maskIDs, maskSNPs), na=9)
+  res <- mask_snp_file(snpfile, fn, snps=snps, masking=list(maskIDs, maskSNPs), na=9)
   m <- read.snps(fn)
   
   SNPs[maskIDs,maskSNPs] <- 9
@@ -71,7 +71,7 @@ test_that('We can mask multiple patterns', {
   )
   
   fn <- tempfile()
-  res <- mask_SNPs(snpfile, fn, masking=masking, na=9)
+  res <- mask_snp_file(snpfile, fn, masking=masking, na=9)
   m <- read.snps(fn)
   
   for (i in 1:length(masking)) {
@@ -96,7 +96,7 @@ test_that('Using `snpsinnew`', {
   )
   
   fn <- tempfile()
-  res <- mask_SNPs(snpfile, fn, snps=snps, masking=masking, snpsinnew = TRUE, na=9)
+  res <- mask_snp_file(snpfile, fn, snps=snps, masking=masking, snpsinnew = TRUE, na=9)
   m <- read.snps(fn)
   
   SNPs <- SNPs[,snps]
@@ -118,7 +118,7 @@ test_that('Setting empty columns', {
   snps <- c(1,0,2,0,3,0,4,0,5)
   
   fn <- tempfile()
-  res <- mask_SNPs(snpfile, masking=5, fn, snps=snps, na=9)
+  res <- mask_snp_file(snpfile, masking=5, fn, snps=snps, na=9)
   m <- read.snps(fn)
   
   expect_true(all(m[,c(2,4,6,8,9)] == 9))
