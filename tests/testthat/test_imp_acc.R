@@ -596,7 +596,7 @@ test_that('User-provided allele frequencies works:',{
   
   p <- seq(0.01, 0.05, length.out=ncol(ts$true))
   m <- 2*p
-  v <- 2*p*(1-p)
+  v <- sqrt(2*p*(1-p))
   results <- imputation_accuracy(true=ts$truefn, impute=ts$imputedfn, standardized = TRUE, adaptive = FALSE, p=p)
   
   true <- scale(ts$true, center=m, scale=v)
@@ -777,8 +777,8 @@ test_that('Excluding SNPs by given NA allele frequencies does or does not break'
   expect_equal(res, r2)  
   
   # Now calculate in R (natively):
-  true <- scale(ts$true, 2*p, 2*p*(1-p))
-  imputed <- scale(ts$imputed, 2*p, 2*p*(1-p))
+  true <- scale(ts$true, 2*p, sqrt(2*p*(1-p)))
+  imputed <- scale(ts$imputed, 2*p, sqrt(2*p*(1-p)))
   true <- true[,-4]
   imputed <- imputed[,-4]
   mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')
@@ -801,8 +801,8 @@ test_that('Excluding SNPs by given NA allele frequencies does not change, non-ad
   class(r2$animals$rowID) <- 'integer'
   expect_equal(res, r2)  
   
-  true <- scale(ts$true, 2*p, 2*p*(1-p))
-  imputed <- scale(ts$imputed, 2*p, 2*p*(1-p))
+  true <- scale(ts$true, 2*p, sqrt(2*p*(1-p)))
+  imputed <- scale(ts$imputed, 2*p, sqrt(2*p*(1-p)))
   true <- true[,-4]
   imputed <- imputed[,-4]
   mat2 <- cor(as.vector(true), as.vector(imputed), use = 'complete.obs')

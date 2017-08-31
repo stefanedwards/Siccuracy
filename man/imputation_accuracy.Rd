@@ -41,7 +41,7 @@ Currently by subtracting column mean and dividing by column standard deviation.}
 
 \item{scale}{Numeric vector of \code{ncol}-length to divide by for standardization.}
 
-\item{p}{Shortcut for \code{center} and \code{scale} when using allele frequencies. \code{center=2p} and \code{scale=2p(1-p)}.}
+\item{p}{Shortcut for \code{center} and \code{scale} when using allele frequencies. \code{center=2p} and \code{scale=sqrt(2p(1-p))}.}
 
 \item{tol}{Numeric, tolerance for imputation error when counting correctly imputed genotypes.}
 

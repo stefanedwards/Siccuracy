@@ -35,7 +35,7 @@
 #'        Currently by subtracting column mean and dividing by column standard deviation.
 #' @param center Numeric vector of \code{ncol}-length to subtract with for standardization.
 #' @param scale Numeric vector of \code{ncol}-length to divide by for standardization.
-#' @param p Shortcut for \code{center} and \code{scale} when using allele frequencies. \code{center=2p} and \code{scale=2p(1-p)}.
+#' @param p Shortcut for \code{center} and \code{scale} when using allele frequencies. \code{center=2p} and \code{scale=sqrt(2p(1-p))}.
 #' @param tol Numeric, tolerance for imputation error when counting correctly imputed genotypes.
 #' @param ... Arguments passed between different methods (mostly \code{\link{extract.snps}} and \code{\link[vcfR]{extract.gt}}).
 #' 
@@ -102,7 +102,7 @@ imputation_accuracy.character <- function(true, impute, standardized=TRUE, cente
   if (!is.null(p)) {
     stopifnot(length(p)==m)
     center <- 2*p
-    scale <- 2*p*(1-p)
+    scale <- sqrt(2*p*(1-p))
   }
   if (is.null(center)) center=numeric(m)
   if (is.null(scale)) {scale=numeric(m);scale[] <- 1}
@@ -222,7 +222,7 @@ imputation_accuracy.matrix <- function(true, impute, standardized=TRUE, center=N
     if (!is.null(p)) {
       stopifnot(length(p)==m)
       center <- 2*p
-      scale <- 2*p*(1-p)
+      scale <- sqrt(2*p*(1-p))
     }
     
   } else if (standardized) {

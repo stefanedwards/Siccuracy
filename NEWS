@@ -7,6 +7,10 @@
 
   * Added support for reading SHAPEIT haps/sample files.
   * Added support for reading Oxford formatted files.
+  
+  * `imputation_accuracy`: Standardizing with `p` is now scaling with the
+    *squareroot* of the variance of allele frequency. Before this, it was the
+    variance.
 
 # 0.7.1
 
