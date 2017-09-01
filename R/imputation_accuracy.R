@@ -29,8 +29,8 @@
 #' will \emph{not} contribute to correlation, but they \emph{will count} towards
 #' correct pct. To exclude entirely, use \code{excludeSNPs}.
 #' 
-#' @param true \emph{True} genotype matrix, or filename.
-#' @param impute \emph{Imputed} genotype matrix, or filename.
+#' @param true \emph{True} genotype matrix, or filename (AlphaImpute format only).
+#' @param impute \emph{Imputed} genotype matrix, or filename  (AlphaImpute format only).
 #' @param standardized Logical, whether to center and scale genotypes by dataset in \code{true}-matrix.
 #'        Currently by subtracting column mean and dividing by column standard deviation.
 #' @param center Numeric vector of \code{ncol}-length to subtract with for standardization.

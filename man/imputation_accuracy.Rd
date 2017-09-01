@@ -30,9 +30,9 @@ imputation_accuracy(true, impute, standardized = TRUE, center = NULL,
   excludeSNPs = NULL, ...)
 }
 \arguments{
-\item{true}{\emph{True} genotype matrix, or filename.}
+\item{true}{\emph{True} genotype matrix, or filename (AlphaImpute format only).}
 
-\item{impute}{\emph{Imputed} genotype matrix, or filename.}
+\item{impute}{\emph{Imputed} genotype matrix, or filename  (AlphaImpute format only).}
 
 \item{standardized}{Logical, whether to center and scale genotypes by dataset in \code{true}-matrix.
 Currently by subtracting column mean and dividing by column standard deviation.}
