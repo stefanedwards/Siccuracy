@@ -17,11 +17,11 @@ test_that('Heterozygosity works with a single population',{
   res <- heterozygosity(truefn)
   expect_equal(nrow(res), ncol(true))
   expect_equal(p, 1-q)
-  expect_equal(res$p, p, tolerance=1e-7)
-  expect_equal(1-res$p, q, tolerance=1e-7)
+  expect_equal(res$p, p, tolerance=2e-7)
+  expect_equal(1-res$p, q, tolerance=2e-7)
   expect_equal(res$n, apply(true, 2, function(x) sum(!is.na(x))))
-  expect_equal(res$Hobs, Hobs, tolerance=1e-7)
-  expect_equal(res$Hexp, Hexp, tolerance=1e-7)
+  expect_equal(res$Hobs, Hobs, tolerance=2e-7)
+  expect_equal(res$Hexp, Hexp, tolerance=2e-7)
   expect_equal(res$n, rep(nrow(true),ncol(true)))
 })
 
@@ -39,11 +39,11 @@ test_that('Heterozygosity works with NA-values',{
   Hexp <- 2*p*q
 
   expect_equal(p, 1-q)
-  expect_equal(res$p, p, tolerance=1e-7)
-  expect_equal(1-res$p, q, tolerance=1e-7)
+  expect_equal(res$p, p, tolerance=2e-7)
+  expect_equal(1-res$p, q, tolerance=2e-7)
   expect_equal(res$n, apply(true, 2, function(x) sum(!is.na(x))))
-  expect_equal(res$Hobs, Hobs, tolerance=1e-7)
-  expect_equal(res$Hexp, Hexp, tolerance=1e-7)
+  expect_equal(res$Hobs, Hobs, tolerance=2e-7)
+  expect_equal(res$Hexp, Hexp, tolerance=2e-7)
 })
 
 
@@ -72,14 +72,14 @@ test_that('Heterozygosity works with a two populations and missing values',{
   
   res <- heterozygosity(truefn, population = populations)
   expect_equal(nrow(res), 2*ncol(true)) # two populations in this
-  expect_equal(with(res, p[populations=='a']), pa, tolerance=1e-7)
-  expect_equal(with(res, p[populations=='b']), pb, tolerance=1e-7)
-  expect_equal(with(res, n[populations=='a']), na, tolerance=1e-7)
-  expect_equal(with(res, n[populations=='b']), nb, tolerance=1e-7)
-  expect_equal(with(res, Hobs[populations=='a']), Hobsa, tolerance=1e-7)
-  expect_equal(with(res, Hobs[populations=='b']), Hobsb, tolerance=1e-7)
-  expect_equal(with(res, Hexp[populations=='a']), Hexpa, tolerance=1e-7)
-  expect_equal(with(res, Hexp[populations=='b']), Hexpb, tolerance=1e-7)
+  expect_equal(with(res, p[populations=='a']), pa, tolerance=2e-7)
+  expect_equal(with(res, p[populations=='b']), pb, tolerance=2e-7)
+  expect_equal(with(res, n[populations=='a']), na, tolerance=2e-7)
+  expect_equal(with(res, n[populations=='b']), nb, tolerance=2e-7)
+  expect_equal(with(res, Hobs[populations=='a']), Hobsa, tolerance=2e-7)
+  expect_equal(with(res, Hobs[populations=='b']), Hobsb, tolerance=2e-7)
+  expect_equal(with(res, Hexp[populations=='a']), Hexpa, tolerance=2e-7)
+  expect_equal(with(res, Hexp[populations=='b']), Hexpb, tolerance=2e-7)
 })
 
 test_that('What happens with numeric inputs?', {

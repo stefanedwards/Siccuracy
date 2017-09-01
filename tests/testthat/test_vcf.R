@@ -67,7 +67,7 @@ test_that('write.snps fails when given vcfR without gt', {
   # dput(vcfR_test)
   # pasting back without gt slot
   
-  v <- new("vcfR"
+  v <- methods::new("vcfR"
       , meta = c("##fileformat=VCFv4.3", "##fileDate=20090805", "##source=myImputationProgramV3.1", 
                  "##reference=file:///seq/references/1000GenomesPilot-NCBI36.fasta", 
                  "##contig=<ID=20,length=62435964,assembly=B36,md5=f126cdf8a6e0c7f379d618ff66beb2da,species=\"Homo sapiens\",taxonomy=x>", 

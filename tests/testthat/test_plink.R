@@ -7,7 +7,7 @@ context('\nConverting plink binary format to AlphaImpute format')
 
 v <- mget('.extdata.dir', ifnotfound=NA)  # variable given in .Rprofile
 if (is.na(v$`.extdata.dir`)) {
-  .extdata.dir <- system.file('extdata/testdata', package='Siccuracy', mustWork=TRUE)
+  .extdata.dir <- dirname(system.file('extdata/testdata/simple1.bim', package='Siccuracy', mustWork=TRUE))
 } else {
   .extdata.dir <- v$`.extdata.dir`
 }
