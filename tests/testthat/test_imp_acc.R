@@ -77,6 +77,7 @@ test_that("Results matches R's correlations (standardized=FALSE)",{
   
 })
 
+# Results matches R's correlations (standardized=TRUE) -----
 
 test_that("Results matches R's correlations (standardized=TRUE)",{
   ts <- Siccuracy:::make.test(15, 21)
@@ -169,9 +170,9 @@ test_that('Imputation accuracies handles gene dosages, i.e. numeric values', {
   suppressWarnings(col1 <- sapply(1:ncol(true), function(i) cor(true[,i], imputed[,i], use='na.or.complete')))
   
   results <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized = FALSE, adaptive=FALSE, tol=0.10)
-  expect_equal(results$matcor, mat1, tolerance=1e-8)
-  expect_equal(results$animals$cors, row1, tolerance=1e-8)
-  expect_equal(results$snps$cors, col1, tolerance=1e-8)
+  expect_equal(results$matcor, mat1, tolerance=2e-8)
+  expect_equal(results$animals$cors, row1, tolerance=2e-8)
+  expect_equal(results$snps$cors, col1, tolerance=2e-8)
   expect_equivalent(results$snps$correct, col.correct)
   expect_equivalent(results$snps$true.na, col.true.na)
   expect_equivalent(results$snps$imp.na, col.imp.na)

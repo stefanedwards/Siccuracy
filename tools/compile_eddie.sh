@@ -49,6 +49,12 @@ for f in *.f95; do
   ifort -c -O3 -fpic  ${f%.f95}.f90 -o ${f%.f95}.o
 done
 
+for f in *.f95; do
+  rm -f ${f%.f95}.f90
+  cp $f ${f%.f95}.f90
+  ifort -c -O3 -fpic -L/exports/applications/apps/SL7/R/3.3.2/lib64/R/lib -L/usr/local/lib64 ${f%.f95}.f90 -o ${f%.f95}.o -lR 
+done
+
 echo FC=ifort > Makevars
 echo F77=ifort >> Makevars
 export R_MAKEVARS_USER=$(pwd)/Makevar

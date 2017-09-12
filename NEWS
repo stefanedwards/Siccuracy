@@ -5,8 +5,8 @@
     * `rbind_SNPs` --> `rbind_snp_files`
     * `mask_SNPs` --> `mask_snp_file`
 
-  * Added support for reading SHAPEIT haps/sample files.
-  * Added support for reading Oxford formatted files.
+  * Added support for reading SHAPEIT haps/sample files (`read.haps`)
+  * Added support for reading Oxford formatted files (`read.oxford`).
   
   * `imputation_accuracy`: Standardizing with `p` is now scaling with the
     *squareroot* of the variance of allele frequency. Before this, it was the
