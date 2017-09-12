@@ -1157,3 +1157,34 @@ test_that('Repeated IDs are handled somehow?', {
   
 })
 
+# Mega-large size --------
+if (FALSE) {
+  # Excluded from normal test routines do to time restrictions
+  test_that('Mega-large file sets also work nicely', {
+    ts <- Siccuracy:::make.test(6000, 35000)
+    
+    rs1 <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=FALSE)
+    rs2 <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=TRUE)
+    expect_equal(rs1, rs2)
+    
+    rs0 <- imputation_accuracy(ts$true, ts$imputed, standardized=FALSE) 
+    class(rs0$animals$rowID) <- 'integer'
+    expect_equal(rs1, rs0)
+  })
+  test_that('Mega-large file sets works with gene dosages', {
+    ts <- Siccuracy:::make.test(6000, 35000)
+    
+    r <- sample.int(prod(dim(ts$imputed)), prod(dim(ts$imputed))*0.5)
+    imputed <- ts$imputed
+    imputed[r] <- imputed[r] + round(rnorm(length(r), sd=0.3), 2)
+    imputed[imputed < 0] <- 0
+    imputed[imputed > 2] <- 2
+    write.snps(imputed, ts$imputedfn)
+    
+    ts$imputed <- imputed
+    rs1 <- imputation_accuracy(ts$truefn, ts$imputedfn, standardized=FALSE, adaptive=FALSE)
+    rs0 <- imputation_accuracy(ts$true, ts$imputed, standardized=FALSE) 
+    class(rs0$animals$rowID) <- 'integer'
+    expect_equal(rs1, rs0)
+  })
+}
