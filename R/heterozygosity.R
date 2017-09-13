@@ -64,9 +64,17 @@ heterozygosity <- function(fn, population=NULL, ncol=NULL, nlines=NULL) {
   pop <- as.factor(population)
   npop <- nlevels(pop)
 
-  res <- .Fortran('heterozygosity', fn=as.character(fn), ncols=as.integer(ncol), nlines=as.integer(nlines), 
-                  populations=as.integer(pop), npop=as.integer(npop), 
-                  p=numeric(npop*ncol), Hobs=numeric(npop*ncol), Hexp=numeric(npop*ncol), n=integer(npop*ncol))
+  res <- .Fortran('heterozygosity', 
+                  fn=as_fortran_character(fn), 
+                  ncols=as.integer(ncol), 
+                  nlines=as.integer(nlines), 
+                  populations=as.integer(pop), 
+                  npop=as.integer(npop), 
+                  p=numeric(npop*ncol), 
+                  Hobs=numeric(npop*ncol), 
+                  Hexp=numeric(npop*ncol), 
+                  n=integer(npop*ncol),
+                  PACKAGE='Siccuracy')
   
   # To do: res$populations is of length (nlines), while p, Hobs, etc. are of length npop*ncol.
   res$populations <- factor(rep(1:npop, each=ncol), levels=1:npop, labels=levels(pop))

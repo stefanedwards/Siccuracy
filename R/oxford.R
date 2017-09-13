@@ -21,6 +21,7 @@
 #'                        gene dosage of homozygote for reference allele, heterozygote, and homozygote for alternative allele.}
 #' }
 #' @import abind abind
+#' @importFrom utils read.table write.table
 read.oxford <- function(file, ...) {
   args <- merge.list(list(...), list(as.is=TRUE, header=FALSE, row.names=NULL))
   args$file <- file

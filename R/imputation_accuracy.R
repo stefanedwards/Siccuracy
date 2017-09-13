@@ -133,25 +133,45 @@ imputation_accuracy.character <- function(true, impute, standardized=TRUE, cente
   }
   
   subroutine <- ifelse(adaptive, 'imp_acc', 'imp_acc_fast')
-  
-  res <- .Fortran(subroutine,
-                  true=as.character(true),
-                  imputedfn=as.character(impute),
-                  nSnps=m,
-                  nAnimals=as.integer(nlines),
-                  NAval=as.integer(na),
-                  standardized=as.integer(standardized),
-                  means=as.numeric(center), sds=as.numeric(scale),  # Placeholders for return data.
-                  usermeans=as.integer(usermeans),
-                  rowcors=vector('numeric', n), matcor=numeric(1), colcors=vector('numeric',m),
-                  rowID=vector('integer',n),
-                  excludeIDs=as.integer(ex_ids),
-                  excludeSNPs=as.integer(ex_snps),
-                  tol=as.numeric(tol),
-                  colcorrect=vector('integer',m), coltruena=vector('integer',m), colimpna=vector('integer',m), colbothna=vector('integer',m), 
-                  rowcorrect=vector('integer',n), rowtruena=vector('integer',n), rowimpna=vector('integer',n), rowbothna=vector('integer',n),
-                  NAOK=FALSE,
-                  PACKAGE='Siccuracy')
+  if (adaptive) {
+    res <- .Fortran('imp_acc',
+                    true=as_fortran_character(true),
+                    imputedfn=as_fortran_character(impute),
+                    nSnps=m,
+                    nAnimals=as.integer(nlines),
+                    NAval=as.integer(na),
+                    standardized=as.integer(standardized),
+                    means=as.numeric(center), sds=as.numeric(scale),  # Placeholders for return data.
+                    usermeans=as.integer(usermeans),
+                    rowcors=vector('numeric', n), matcor=numeric(1), colcors=vector('numeric',m),
+                    rowID=vector('integer',n),
+                    excludeIDs=as.integer(ex_ids),
+                    excludeSNPs=as.integer(ex_snps),
+                    tol=as.numeric(tol),
+                    colcorrect=vector('integer',m), coltruena=vector('integer',m), colimpna=vector('integer',m), colbothna=vector('integer',m), 
+                    rowcorrect=vector('integer',n), rowtruena=vector('integer',n), rowimpna=vector('integer',n), rowbothna=vector('integer',n),
+                    NAOK=FALSE,
+                    PACKAGE='Siccuracy')
+  } else {
+    res <- .Fortran('imp_acc_fast',
+                    true=as_fortran_character(true),
+                    imputedfn=as_fortran_character(impute),
+                    nSnps=m,
+                    nAnimals=as.integer(nlines),
+                    NAval=as.integer(na),
+                    standardized=as.integer(standardized),
+                    means=as.numeric(center), sds=as.numeric(scale),  # Placeholders for return data.
+                    usermeans=as.integer(usermeans),
+                    rowcors=vector('numeric', n), matcor=numeric(1), colcors=vector('numeric',m),
+                    rowID=vector('integer',n),
+                    excludeIDs=as.integer(ex_ids),
+                    excludeSNPs=as.integer(ex_snps),
+                    tol=as.numeric(tol),
+                    colcorrect=vector('integer',m), coltruena=vector('integer',m), colimpna=vector('integer',m), colbothna=vector('integer',m), 
+                    rowcorrect=vector('integer',n), rowtruena=vector('integer',n), rowimpna=vector('integer',n), rowbothna=vector('integer',n),
+                    NAOK=FALSE,
+                    PACKAGE='Siccuracy')
+  }
   res$colcors[is.infinite(res$colcors)] <- NA
   res$colcors[is.nan(res$colcors)] <- NA
   res$rowcors[is.infinite(res$rowcors)] <- NA
@@ -187,6 +207,7 @@ imputation_accuracy.character <- function(true, impute, standardized=TRUE, cente
 #' @param transpose Logical, if SNPs are per row, set to \code{TRUE}.
 #' @inheritParams imputation_accuracy.character
 #' @rdname imputation_accuracy
+#' @importFrom stats cor sd
 #' @export
 imputation_accuracy.matrix <- function(true, impute, standardized=TRUE, center=NULL, scale=NULL, p=NULL, tol=0.1, ..., excludeIDs=NULL, excludeSNPs=NULL, transpose=FALSE) {
   

@@ -22,19 +22,8 @@ subroutine cbindsnpsrwrapper(files, fnin, fnout, nlines, ncols, skiplines, &
   end do
   close(64)
 
-
-  !open(27, file='C:\Users\shojedw\Documents\Projects\test1.txt')
-  !write(27, *) 'tag:', ctag
-  !write(27, '(A7,A255)') 'input:', trim(adjustl(fnin))
-  !write(27, *) 'files:', files
-  !do i=1,files
-  !  write(27, *) 'file:', i, '>>'//trim(adjustl(fns(i)))//'<<'
-  !enddo
-  !close(27)
-  
   alsoasint = asint==1
-  
-  !ctag="Hello, is it me you're looking for?"
+
   call cbindsnpscore(files, fns, fnout, nlines, ncols, skiplines, &
       idlength, excludeids, result, lenfmt, userfmt, alsoasint)
   
@@ -76,15 +65,6 @@ subroutine cbindsnpscore(files, fns, fnout, nlines, ncols, skiplines, &
   advance(:) = 'no'
   advance(files) = 'yes'
 
-  !open(27, file='C:\Users\shojedw\Documents\Projects\test2.txt')  
-  !write(27, *) 'tag:', ctag  
-  !write(27, *) 'from cbindsnps:'
-  !write(27, *) 'files:', files
-  !do i=1,files
-  !  write(27, '(A6,I2,A70,A70)') 'file:', i, '>>'//trim(adjustl(fns(i)))//'<< ', fns(i)
-  !enddo
-  !close(27)
-  
   do i=1,files
     units(i) = 200 + i
     open(units(i), file=fns(i), status='UNKNOWN')
@@ -332,11 +312,6 @@ subroutine masksnps2(fn, outfn, ncols, nlines, na, userfmt, lenuserfmt, asint, s
   
   allocate(realoutput(snpslength))
   realoutput(:) = na
-  
-  
-  !print *, 'maskIDs:', maskIDs
-  !print *, 'maskSNPs:', maskSNPs
-  !print *, 'dropIDs:', dropIDs
   
   write(fmt, '(i10)') snpslength
   fmt='(i20,'//trim(adjustl(fmt))//userfmt//')'

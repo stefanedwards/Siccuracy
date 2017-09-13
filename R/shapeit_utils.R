@@ -39,6 +39,7 @@
 #' @rdname haps-format
 #' @name SHAPEIT format
 #' @seealso \code{\link{extract.gt}} for vcfR-style extraction of genotypes
+#' @importFrom utils read.table write.table
 #' @export
 read.haps <- function(haps, sample=NULL) {
   if (is.null(sample)) {

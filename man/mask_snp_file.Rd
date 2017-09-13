@@ -49,6 +49,7 @@ By default, the integer vector of loci to mask are mapped to the input file. To 
 }
 \examples{
 
+\dontrun{
 SNPs <- Siccuracy:::make.true(9, 12)
 snpfile <- tempfile()
 write.snps(SNPs, snpfile)
@@ -62,6 +63,7 @@ list(7:9, c(1,3,9,10,12))
 fn <- tempfile()
 res <- mask_SNPs(snpfile, fn, masking=masking, na=9)
 m <- read.snps(fn)
+}
 
 }
 \seealso{

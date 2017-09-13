@@ -33,8 +33,8 @@ cbind_snp_files <- function(fns, fnout, ncols=NULL, nlines=NULL, skiplines=0, ex
   
   res <- .Fortran('cbindsnpsrwrapper',
                   files=length(fns),
-                  fnin=as.character(ftemp),
-                  fnout=as.character(fnout),
+                  fnin=as_fortran_character(ftemp),
+                  fnout=as_fortran_character(fnout),
                   nlines=as.integer(nlines),
                   ncols=as.integer(ncols),
                   skiplines=as.integer(skiplines),
@@ -117,15 +117,24 @@ rbind_snp_files <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outcol=N
   #subroutine rbindsnps(fnhd, fnld, fnout, hdcols, ldcols, outcols, &
   #                       nhd, hdid, nld, ldid, hdpos, ldpos,  missing, lenfmt, userfmt, asint, stat)
   res <- .Fortran('rbindsnps', 
-                  fnhd=as.character(hdfn), fnld=as.character(ldfn), fnout=as.character(fnout),
-                  hdcols=as.integer(hdcols), ldcols=as.integer(ldcols),
+                  fnhd=as_fortran_character(hdfn), 
+                  fnld=as_fortran_character(ldfn), 
+                  fnout=as_fortran_character(fnout),
+                  hdcols=as.integer(hdcols), 
+                  ldcols=as.integer(ldcols),
                   outcols=as.integer(outcol), 
-                  nhd=as.integer(length(hdid)), hdid=as.integer(hdid),
-                  nld=as.integer(length(ldid)), ldid=as.integer(ldid),
-                  hdpos=as.integer(hdpos), ldpos=as.integer(ldpos),
+                  nhd=as.integer(length(hdid)), 
+                  hdid=as.integer(hdid),
+                  nld=as.integer(length(ldid)), 
+                  ldid=as.integer(ldid),
+                  hdpos=as.integer(hdpos), 
+                  ldpos=as.integer(ldpos),
                   missing=as.integer(na),
-                  lenfmt=as.integer(nchar(format)), userfmt=as.character(format), asint=as.integer(int),
-                  stat=integer(1), n=integer(1))
+                  lenfmt=as.integer(nchar(format)), 
+                  userfmt=as.character(format), 
+                  asint=as.integer(int),
+                  stat=integer(1), n=integer(1),
+                  PACKAGE='Siccuracy')
   structure(res$n, stat=res$stat)
 }
 
@@ -168,6 +177,7 @@ rbind_SNP_files <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outcol=N
 #' @return Invisible list of vectors sent to Fortran subtroutine.
 #' @examples
 #' 
+#' \dontrun{
 #' SNPs <- Siccuracy:::make.true(9, 12)
 #' snpfile <- tempfile()
 #' write.snps(SNPs, snpfile)
@@ -181,6 +191,7 @@ rbind_SNP_files <- function(hdid,ldid, hdpos, ldpos, hdfn, ldfn, fnout, outcol=N
 #' fn <- tempfile()
 #' res <- mask_SNPs(snpfile, fn, masking=masking, na=9)
 #' m <- read.snps(fn)
+#' }
 #' 
 mask_snp_file <- function(fn, outfn, masking=NULL, snps=NULL, snpsinnew=FALSE, dropIDs=NULL, na=9, int=TRUE, format=NULL) {
   if (!file.exists(fn)) stop('Input file was not found.')
@@ -240,12 +251,26 @@ mask_snp_file <- function(fn, outfn, masking=NULL, snps=NULL, snpsinnew=FALSE, d
   dropIDs <- IDs %in% dropIDs
   
   #subroutine masksnps(fn, outfn, ncols, nlines, na, userfmt, lenuserfmt, asint, stat
-  res <- .Fortran('masksnps2', fn=as.character(fn), outfn=as.character(outfn), ncol=as.integer(m), nlines=as.integer(n),
-                  na=as.numeric(na), userfmt=as.character(format), lenuserfmt=nchar(format), asint=as.integer(int), stat=integer(1),
+  res <- .Fortran('masksnps2', 
+                  fn=as_fortran_character(fn), 
+                  outfn=as_fortran_character(outfn), 
+                  ncol=as.integer(m), 
+                  nlines=as.integer(n),
+                  na=as.numeric(na), 
+                  userfmt=as.character(format), 
+                  lenuserfmt=nchar(format), 
+                  asint=as.integer(int), 
+                  stat=integer(1),
                   dropIDs=as.integer(dropIDs),
-                  snpslength=as.integer(length(snps)), snps=as.integer(snps), 
-                  maskIDs=as.integer(maskIDs), maps=as.integer(length(maskstart)), maskstart=as.integer(maskstart), maskend=as.integer(maskend),
-                  masklength=as.integer(length(maskSNPs)), maskSNPs=as.integer(maskSNPs))
+                  snpslength=as.integer(length(snps)), 
+                  snps=as.integer(snps), 
+                  maskIDs=as.integer(maskIDs), 
+                  maps=as.integer(length(maskstart)), 
+                  maskstart=as.integer(maskstart), 
+                  maskend=as.integer(maskend),
+                  masklength=as.integer(length(maskSNPs)), 
+                  maskSNPs=as.integer(maskSNPs),
+                  PACKAGE='Siccuracy')
   invisible(res)
 }
 #' @rdname mask_snp_file

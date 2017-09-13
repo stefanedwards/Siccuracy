@@ -78,6 +78,12 @@ parse.format <- function(format=NULL, int=TRUE) {
   format  
 }
 
+#' Pads a string to 255 characters, before sending off to Fortran
+#' 
+#' @noRd
+as_fortran_character <- function(s) { sprintf('%-255s', s) }
+
+
 # For testing.
 make.true <- function(n,m,types=0:2) {
   true <- matrix(sample(types, size = n*m, replace=TRUE), ncol=m)  # fill true with random 0, 1, or 2.

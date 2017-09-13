@@ -25,15 +25,7 @@ subroutine readplinksimple(bed, fnout, ncol, nlines, na, newID, minor, maf, extr
   integer, dimension(:,:), allocatable :: snps
   real :: allelefreq
   character(100) :: nChar, fmt
-  
-  !print *, 'bed:', bed
-  !print *, 'fnout:', fnout
-  !print *, 'ncol, nlines, na:', ncol, nlines, na
-  !print *, 'newID(len=nlines):', size(newID), newID
-  !print *, 'maf:', maf
-  !print *, 'extract:', size(extract), extract
-  !print *, 'keep:', size(keep), keep
-  
+
   ! Supported formats as per plink 1.9.
   !data magicnumber/X"6C",X'0000001B' /,  plinkmode/X'01'/
   data magicnumber /108,27/, plinkmode /1/
@@ -116,9 +108,7 @@ subroutine readplinksimple(bed, fnout, ncol, nlines, na, newID, minor, maf, extr
 
   deallocate(snps)
   status=stat
-  
-  !print *, 'readplinksimple is done.'
-  
+
 end subroutine readplinksimple
 
 

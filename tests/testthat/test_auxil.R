@@ -1,3 +1,6 @@
+library(testthat)
+library(Siccuracy)
+
 context('Testing auxillary functions')
 
 test_that('`get_nlines` works', {

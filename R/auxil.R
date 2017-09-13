@@ -40,7 +40,12 @@ get_ncols <- function(file) {
 #' }
 get_nlines <- function(fn) {
   stopifnot(file.exists(fn))
-  res <- .Fortran('get_nlines', fn=as.character(fn), nlines=integer(1), stat=integer(1))
+  fn <- sprintf('%-255s', fn)
+  res <- .Fortran('get_nlines', 
+                  fn=as_fortran_character(fn), 
+                  nlines=integer(1), 
+                  stat=integer(1),
+                  PACKAGE='Siccuracy')
   if (res$nlines == 0 & res$stat != 0) {
     warning(paste0('get_nlines did not read lines; IOSTAT error ', res$stat, '.'))
     return(structure(NA, code=res$stat))

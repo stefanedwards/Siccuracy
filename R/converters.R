@@ -46,8 +46,14 @@ convert_phases <- function(fn, outfn, ncol=NULL, nlines=NULL, na=9, int=TRUE, fo
   format <- parse.format(format, int)
   
   # subroutine convert_phase(phasefn, genofn, ncol, nrow, na, int, lenfmt, userfmt)
-  res <- .Fortran('convert_phase', phasefn=as.character(fn), genofn=as.character(outfn), ncol=as.integer(ncol), nrow=as.integer(nlines), 
-                  na=as.integer(na), int=as.integer(int), lenfmt=as.integer(nchar(format)), userfmt=as.character(format))
+  res <- .Fortran('convert_phase', 
+                  phasefn=as_fortran_character(fn), 
+                  genofn=as_fortran_character(outfn), 
+                  ncol=as.integer(ncol), 
+                  nrow=as.integer(nlines), 
+                  na=as.integer(na), 
+                  int=as.integer(int), 
+                  lenfmt=as.integer(nchar(format)), userfmt=as.character(format))
   res$nrow
 }
 
@@ -72,7 +78,7 @@ convert_phases <- function(fn, outfn, ncol=NULL, nlines=NULL, na=9, int=TRUE, fo
 #' @references 
 #' \itemize{
 #'  \item PLINK. Purcell and Chang. \url{https://www.cog-genomics.org/plink2}
-#'  \item \href{http://www.gigasciencejournal.com/content/4/1/7}{Chang CC, Chow CC, Tellier LCAM, Vattikuti S, Purcell SM, Lee JJ (2015) Second-generation PLINK: rising to the challenge of larger and richer datasets. GigaScience, 4.}
+#'  \item Chang CC, Chow CC, Tellier LCAM, Vattikuti S, Purcell SM, Lee JJ (2015) Second-generation PLINK: rising to the challenge of larger and richer datasets. GigaScience, 4. doi: \href{https://doi.org/10.1186/s13742-015-0047-8}{10.1186/s13742-015-0047-8} \href{http://gigascience.biomedcentral.com/articles/10.1186/s13742-015-0047-8}{link}.
 #' }
 #' @export
 #' @seealso 
@@ -113,9 +119,16 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
   newID$newID <- as.integer(newID$newID)
   
   #subroutine convert_plinkA(rawfn, outputfn, newID, ncol, nrow, naval, stat) 
-  res <- .Fortran('convertplinka', rawfn=as.character(rawfn), outputfn=as.character(outfn), newID=as.integer(newID$newID),
-                  ncol=as.integer(ncol), nrow=as.integer(nlines), naval=as.integer(na), header=as.integer(header),
-                  stat=integer(1), PACKAGE='Siccuracy', NAOK=TRUE)
+  res <- .Fortran('convertplinka', 
+                  rawfn=as_fortran_character(rawfn), 
+                  outputfn=as_fortran_character(outfn), 
+                  newID=as.integer(newID$newID),
+                  ncol=as.integer(ncol), 
+                  nrow=as.integer(nlines), 
+                  naval=as.integer(na), 
+                  header=as.integer(header),
+                  stat=integer(1), 
+                  PACKAGE='Siccuracy', NAOK=TRUE)
   
   newID
 }
@@ -205,9 +218,9 @@ convert_plinkA <- function(rawfn, outfn, newID=0, ncol=NULL, nlines=NULL, na=9) 
 #' @export
 #' @references 
 #' \itemize{
-#'  \item PLINK v. 1.07 BED file format: \url{http://pngu.mgh.harvard.edu/~purcell/plink/binary.shtml}
+#'  \item PLINK v. 1.07 BED file format: \url{https://www.cog-genomics.org/plink/1.9/formats#bed}
 #'  \item Shaun Purvell and Christopher Chang. \emph{PLINK v. 1.90} \url{https://www.cog-genomics.org/plink2}
-#'  \item Chang CC, Chow CC, Tellier LCAM, Vattikuti S, Purcell SM, Lee JJ (2015) \href{http://www.gigasciencejournal.com/content/4/1/7}{Second-generation PLINK: rising to the challenge of larger and richer datasets.} \emph{GigaScience}, 4.
+#'  \item Chang CC, Chow CC, Tellier LCAM, Vattikuti S, Purcell SM, Lee JJ (2015) Second-generation PLINK: rising to the challenge of larger and richer datasets. GigaScience, 4. doi: \href{https://doi.org/10.1186/s13742-015-0047-8}{10.1186/s13742-015-0047-8} \href{http://gigascience.biomedcentral.com/articles/10.1186/s13742-015-0047-8}{link}.
 #' }
 #' @seealso 
 #' \code{convert_plink} is a direct conversion that does not rely on PLINK.
@@ -396,10 +409,19 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
   
   if (use.method == 1) {
     #subroutine readplinksimple(bed, fnout, ncol, nlines, na, newID, minor, maf, extract, keep, status)
-    res <- .Fortran('readplinksimple', bed=as.character(bed), fnout=as.character(outfn), 
-                    ncol=as.integer(ncol), nlines=as.integer(nlines), na=as.integer(na), newID=as.integer(newID$newID), minor=as.integer(countminor), 
-                    maf=as.numeric(maf), extract=as.integer(.extract), keep=as.integer(.keep), 
-                    status=as.integer(0))
+    res <- .Fortran('readplinksimple', 
+                    bed=as_fortran_character(bed), 
+                    fnout=as_fortran_character(outfn), 
+                    ncol=as.integer(ncol), 
+                    nlines=as.integer(nlines), 
+                    na=as.integer(na), 
+                    newID=as.integer(newID$newID), 
+                    minor=as.integer(countminor), 
+                    maf=as.numeric(maf), 
+                    extract=as.integer(.extract), 
+                    keep=as.integer(.keep), 
+                    status=as.integer(0),
+                    PACKAGE='Siccuracy')
   } else if (use.method == 2) {
     # The not-so-simple complex way to do stuff. Boy, do we get to have fun now!
     tmpfile <- tempfile()
@@ -407,11 +429,23 @@ convert_plink <- function(bfile, outfn, na=9, newID=0, nlines=NULL, fam=NULL, bi
     
     #subroutine convertplinkrwrapper(listfn, n, remerge, fragments, &
     #                       bed, fnout, ncol, nlines, na, newID, minor, maf, extract, keep, status)
-    res <- .Fortran('convertplinkrwrapper', listfn=as.character(tmpfile), n=as.integer(length(tmpfiles)), remerge=as.integer(remerge), fragments=as.integer(fragments),
-                    bed=as.character(bed), fnout=as.character(outfn), 
-                    ncol=as.integer(ncol), nlines=as.integer(nlines), na=as.integer(na), newID=as.integer(newID$newID),
-                    minor=as.integer(countminor), maf=as.numeric(maf), extract=as.integer(.extract), keep=as.integer(.keep),
-                    status=as.integer(0))
+    res <- .Fortran('convertplinkrwrapper', 
+                    listfn=as_fortran_character(tmpfile), 
+                    n=as.integer(length(tmpfiles)), 
+                    remerge=as.integer(remerge), 
+                    fragments=as.integer(fragments),
+                    bed=as_fortran_character(bed), 
+                    fnout=as_fortran_character(outfn), 
+                    ncol=as.integer(ncol), 
+                    nlines=as.integer(nlines),
+                    na=as.integer(na), 
+                    newID=as.integer(newID$newID),
+                    minor=as.integer(countminor), 
+                    maf=as.numeric(maf), 
+                    extract=as.integer(.extract), 
+                    keep=as.integer(.keep),
+                    status=as.integer(0),
+                    PACKAGE='Siccuracy')
     
     res$listfn <- NULL
     res$n <- NULL
