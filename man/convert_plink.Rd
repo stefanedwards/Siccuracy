@@ -112,9 +112,9 @@ is the maximum number of fragments.
 
 \references{
 \itemize{
- \item PLINK v. 1.07 BED file format: \url{http://pngu.mgh.harvard.edu/~purcell/plink/binary.shtml}
+ \item PLINK v. 1.07 BED file format: \url{https://www.cog-genomics.org/plink/1.9/formats#bed}
  \item Shaun Purvell and Christopher Chang. \emph{PLINK v. 1.90} \url{https://www.cog-genomics.org/plink2}
- \item Chang CC, Chow CC, Tellier LCAM, Vattikuti S, Purcell SM, Lee JJ (2015) \href{http://www.gigasciencejournal.com/content/4/1/7}{Second-generation PLINK: rising to the challenge of larger and richer datasets.} \emph{GigaScience}, 4.
+ \item Chang CC, Chow CC, Tellier LCAM, Vattikuti S, Purcell SM, Lee JJ (2015) Second-generation PLINK: rising to the challenge of larger and richer datasets. GigaScience, 4. doi: \href{https://doi.org/10.1186/s13742-015-0047-8}{10.1186/s13742-015-0047-8} \href{http://gigascience.biomedcentral.com/articles/10.1186/s13742-015-0047-8}{link}.
 }
 }
 \seealso{

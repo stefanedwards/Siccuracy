@@ -39,7 +39,7 @@ If data.frame with columns \code{famID}, \code{sampID}, and \code{newID}, they w
 \references{
 \itemize{
  \item PLINK. Purcell and Chang. \url{https://www.cog-genomics.org/plink2}
- \item \href{http://www.gigasciencejournal.com/content/4/1/7}{Chang CC, Chow CC, Tellier LCAM, Vattikuti S, Purcell SM, Lee JJ (2015) Second-generation PLINK: rising to the challenge of larger and richer datasets. GigaScience, 4.}
+ \item Chang CC, Chow CC, Tellier LCAM, Vattikuti S, Purcell SM, Lee JJ (2015) Second-generation PLINK: rising to the challenge of larger and richer datasets. GigaScience, 4. doi: \href{https://doi.org/10.1186/s13742-015-0047-8}{10.1186/s13742-015-0047-8} \href{http://gigascience.biomedcentral.com/articles/10.1186/s13742-015-0047-8}{link}.
 }
 }
 \seealso{

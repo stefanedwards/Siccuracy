@@ -1,11 +1,15 @@
 Package: Siccuracy
 Type: Package
-Title: Stefan's imputation accuracies package
+Title: Pipeline Package for AlphaImpute
 Version: 0.8.0
 Date: 2017-09-11
 Authors@R: person(given=c("Stefan","McKinnon"), family="Edwards", role = c("aut", "cre"),
 		     email = "sme@iysik.com")
-Description: Calculation of imputation accuracies and similar allele stats.
+Description: Resources for manipulating genotype files in AlphaImpute format,
+    calculating imputation accuracies (both correlations and correctly imputed)
+    across both samples and SNPs, and calculating heterozygosities.
+    Also features converting PLINK files, reading SHAPEIT and Oxford formatted
+    files, and calculating imputation accuracies on these.
 License: GPL-2 | GPL-3
 LazyData: TRUE
 URL: https://github.com/stefanedwards/Siccuracy
@@ -19,5 +23,4 @@ Suggests:
     knitr,
     rmarkdown
 RoxygenNote: 6.0.1
-VignetteBuilder: knitr
 BugReports: https://github.com/stefanedwards/Siccuracy/issues

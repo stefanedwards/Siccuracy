@@ -10,7 +10,7 @@
 Calculation of imputation accuracies and similar allele stats.
 }
 \details{
-This package was developed for working with SNP files in the format used in \href{http://alphagenes.roslin.ed.ac.uk}{AlphaSuite}. 
+This package was developed for working with SNP files in the format used in \href{http://www.alphagenes.roslin.ed.ac.uk/}{AlphaSuite}. 
 The format of these consists of first column with \emph{integer} sample ID (Individual or Animal ID),
 and subsequent column counting minor alleles at each loci:
 
