@@ -12,7 +12,7 @@
 
 
 /* .Fortran calls */
-extern void F77_NAME(cbindsnpsrwrapper)(char *, char *, char *, int *, int *, int *, int *, int *, int *, int *, char *, int *);
+extern void F77_NAME(cbindsnpsrwrapper)(int *, char *, char *, int *, int *, int *, int *, int *, int *, int *, char *, int *);
 extern void F77_NAME(convert_phase)(char *, char *, int *, int *, int *, int *, int *, char *);
 extern void F77_NAME(convertplinka)(char *, char *, int *, int *, int *, int *, int *, int *);
 extern void F77_NAME(convertplinkrwrapper)(char *, int *, int *, int *, char *, char *, int *, int *, int *, int *, int *, double *, int *, int *, int *);
