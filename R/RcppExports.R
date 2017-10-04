@@ -48,10 +48,40 @@ get_nlines <- function(fn) {
 #'              Values in either input or output that are strictly smaller than 
 #'              first element or strictly larger than second element are replaced
 #'              with \code{na}.
+#' @param idwidth Width of ID column.
+#' @param precision Number of decimals to print genotypes; 
+#'                  when \code{-1} (default) genotypes are printed with mixed 
+#'                  precision. When \code{0}, genotypes are rounded to whole integers.
 #' @return Number of rows written.
 #' @backref src/convert_phases.cpp
 #' @export
-convert_phases <- function(fnin, fnout, nlines = -1L, na = 9L, range = as.integer( c(0, 2))) {
-    .Call('_Siccuracy_convert_phases', PACKAGE = 'Siccuracy', fnin, fnout, nlines, na, range)
+convert_phases <- function(fnin, fnout, nlines = -1L, na = 9L, range = as.integer( c(0, 2)), idwidth = 4L, precision = 0L) {
+    .Call('_Siccuracy_convert_phases', PACKAGE = 'Siccuracy', fnin, fnout, nlines, na, range, idwidth, precision)
+}
+
+#' Convert PLINK recoded A to SNP file.
+#' 
+#' Facilitates converting a PLINK binary file to simplified SNP file format.
+#' Requires using PLINK to recode it to the \code{A} format by using command line \code{plink -bfile <file stem> --recode A}.
+#' This function then swiftly strips of first 6 columns (family ID, sample ID, paternal ID, maternal ID, sex, phenotypic record) 
+#' and inserts an integer-based ID column. \code{NA}'s outputted from PLINK are replaced with \code{na} argument.
+#' 
+#' @param fnraw Plink output filename. Most likely \code{plink.raw} if PLINK command line argument \code{--out} is not used.
+#' @param fnout Filename of new file.
+#' @param newID Integer scalar (default \code{1}) for first integer ID, or vector of new integer IDs.
+#' @param na Character. Numeric value to use for missing values, but passed as a character scalar.
+#' @inheritParams convert_phases
+#' @return Data.frame with columns \code{famID}, \code{sampID}, and \code{newID}.
+#' @references 
+#' \itemize{
+#'  \item PLINK. Purcell and Chang. \url{https://www.cog-genomics.org/plink2}
+#'  \item Chang CC, Chow CC, Tellier LCAM, Vattikuti S, Purcell SM, Lee JJ (2015) Second-generation PLINK: rising to the challenge of larger and richer datasets. GigaScience, 4. doi: \href{https://doi.org/10.1186/s13742-015-0047-8}{10.1186/s13742-015-0047-8} \href{http://gigascience.biomedcentral.com/articles/10.1186/s13742-015-0047-8}{link}.
+#' }
+#' @export
+#' @backref src/convert_plinkA.cpp
+#' @seealso 
+#' \code{\link{convert_plink}} is a direct conversion that does not rely on PLINK.
+convert_plinkA <- function(fnraw, fnout, newID = as.integer( c(1)), nlines = -1L, na = "9", idwidth = 4L, precision = 0L) {
+    .Call('_Siccuracy_convert_plinkA', PACKAGE = 'Siccuracy', fnraw, fnout, newID, nlines, na, idwidth, precision)
 }
 

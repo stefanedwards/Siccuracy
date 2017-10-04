@@ -17,8 +17,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // convert_phases
-long convert_phases(std::string fnin, std::string fnout, long nlines, long na, Rcpp::IntegerVector range);
-RcppExport SEXP _Siccuracy_convert_phases(SEXP fninSEXP, SEXP fnoutSEXP, SEXP nlinesSEXP, SEXP naSEXP, SEXP rangeSEXP) {
+long convert_phases(std::string fnin, std::string fnout, long nlines, long na, Rcpp::IntegerVector range, int idwidth, int precision);
+RcppExport SEXP _Siccuracy_convert_phases(SEXP fninSEXP, SEXP fnoutSEXP, SEXP nlinesSEXP, SEXP naSEXP, SEXP rangeSEXP, SEXP idwidthSEXP, SEXP precisionSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -27,14 +27,34 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< long >::type nlines(nlinesSEXP);
     Rcpp::traits::input_parameter< long >::type na(naSEXP);
     Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type range(rangeSEXP);
-    rcpp_result_gen = Rcpp::wrap(convert_phases(fnin, fnout, nlines, na, range));
+    Rcpp::traits::input_parameter< int >::type idwidth(idwidthSEXP);
+    Rcpp::traits::input_parameter< int >::type precision(precisionSEXP);
+    rcpp_result_gen = Rcpp::wrap(convert_phases(fnin, fnout, nlines, na, range, idwidth, precision));
+    return rcpp_result_gen;
+END_RCPP
+}
+// convert_plinkA
+long convert_plinkA(std::string fnraw, std::string fnout, Rcpp::IntegerVector newID, int nlines, std::string na, int idwidth, int precision);
+RcppExport SEXP _Siccuracy_convert_plinkA(SEXP fnrawSEXP, SEXP fnoutSEXP, SEXP newIDSEXP, SEXP nlinesSEXP, SEXP naSEXP, SEXP idwidthSEXP, SEXP precisionSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type fnraw(fnrawSEXP);
+    Rcpp::traits::input_parameter< std::string >::type fnout(fnoutSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type newID(newIDSEXP);
+    Rcpp::traits::input_parameter< int >::type nlines(nlinesSEXP);
+    Rcpp::traits::input_parameter< std::string >::type na(naSEXP);
+    Rcpp::traits::input_parameter< int >::type idwidth(idwidthSEXP);
+    Rcpp::traits::input_parameter< int >::type precision(precisionSEXP);
+    rcpp_result_gen = Rcpp::wrap(convert_plinkA(fnraw, fnout, newID, nlines, na, idwidth, precision));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_Siccuracy_get_nlines", (DL_FUNC) &_Siccuracy_get_nlines, 1},
-    {"_Siccuracy_convert_phases", (DL_FUNC) &_Siccuracy_convert_phases, 5},
+    {"_Siccuracy_convert_phases", (DL_FUNC) &_Siccuracy_convert_phases, 7},
+    {"_Siccuracy_convert_plinkA", (DL_FUNC) &_Siccuracy_convert_plinkA, 7},
     {NULL, NULL, 0}
 };
 

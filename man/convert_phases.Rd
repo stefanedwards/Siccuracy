@@ -5,7 +5,7 @@
 \title{Convert phase files to genotype files.}
 \usage{
 convert_phases(fnin, fnout, nlines = -1L, na = 9L, range = as.integer(c(0,
-  2)))
+  2)), idwidth = 4L, precision = 0L)
 }
 \arguments{
 \item{fnin}{Filename of input file, every two rows are for same animal.}
@@ -21,6 +21,12 @@ When \code{-1} (default), no maximum.}
 Values in either input or output that are strictly smaller than 
 first element or strictly larger than second element are replaced
 with \code{na}.}
+
+\item{idwidth}{Width of ID column.}
+
+\item{precision}{Number of decimals to print genotypes; 
+when \code{-1} (default) genotypes are printed with mixed 
+precision. When \code{0}, genotypes are rounded to whole integers.}
 }
 \value{
 Number of rows written.
