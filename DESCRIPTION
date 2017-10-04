@@ -17,10 +17,27 @@ Depends:
     R (> 3.1.0)
 Imports:
     vcfR (>= 1.4.0),
-    abind (>= 1.4.5)
+    abind (>= 1.4.5),
+    Rcpp (>= 0.12.12)
 Suggests:
     testthat,
     knitr,
     rmarkdown
 RoxygenNote: 6.0.1
 BugReports: https://github.com/stefanedwards/Siccuracy/issues
+LinkingTo:
+    Rcpp
+Collate: 
+    'auxil.R'
+    'RcppExports.R'
+    'Siccuracy.R'
+    'converters.R'
+    'deprecated.R'
+    'extract_.R'
+    'heterozygosity.R'
+    'imputation_accuracy.R'
+    'internals.R'
+    'mutate_chips.R'
+    'oxford.R'
+    'shapeit_utils.R'
+    'vcf_utils.R'

@@ -11,47 +11,15 @@ NULL
 #' \code{get_ncols} returns number of columns.
 #'
 #' @param file Filename or connection to read from.
+#' @param sep Character that separate fields.
 #' @return \code{get_ncols}: Number of read fields, including ID columns.
 #' @export
 #' @rdname auxfunc
-get_ncols <- function(file) {
-  #on.exit(try(close(f), silent=TRUE))
-  #f <- gzfile(fn, 'r')
-  s <- scan(file, what=character(), quiet=TRUE, nlines=1)
-  #close(f)
+get_ncols <- function(file, sep='') {
+  s <- scan(file, what=character(), sep=sep, quiet=TRUE, nlines=1)
   length(s)
 }
 
-
-#' Gets number of rows in as file.
-#'
-#' \code{get_nlines} returns number of lines.
-#'
-#' @param fn Filename.
-#' @export
-#' @return \code{get_nlines}: Number of lines, or \code{NA} on error.
-#' @rdname auxfunc
-#' @section Error messages:
-#' \code{get_nlines} is implemented in Fortran and may return \code{NA} with an error message, if an error is encountered.
-#' 
-#' IOSTAT errors:
-#' \describe{
-#'  \item{5010}{The first column most likely contains non-integer or non-numeric elements.}
-#' }
-get_nlines <- function(fn) {
-  stopifnot(file.exists(fn))
-  fn <- sprintf('%-255s', fn)
-  res <- .Fortran('get_nlines', 
-                  fn=as_fortran_character(fn), 
-                  nlines=integer(1), 
-                  stat=integer(1),
-                  PACKAGE='Siccuracy')
-  if (res$nlines == 0 & res$stat != 0) {
-    warning(paste0('get_nlines did not read lines; IOSTAT error ', res$stat, '.'))
-    return(structure(NA, code=res$stat))
-  }
-  res$nlines
-}
 
 #' Reads first column(s)
 #'

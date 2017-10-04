@@ -3,14 +3,40 @@ library(Siccuracy)
 
 context('Testing auxillary functions')
 
-test_that('`get_nlines` works', {
-   n <- sample.int(5000, 1)
-   m <- 10
-   r <- matrix(rnorm(n*m), ncol=m)
-   fn <- tempfile(fileext='.txt')
-   write.snps(r, fn)
-   res <- get_nlines(fn)
-   expect_equal(res, n)
+test_that('`get_nlines` works and fails', {
+  n <- sample.int(5000, 1)
+  m <- 10
+  r <- matrix(rnorm(n*m), ncol=m)
+  fn <- tempfile(fileext='.txt')
+  write.snps(r, fn)
+  res <- get_nlines(fn)
+  expect_equal(res, n)
+  
+  fn <- tempfile()
+  expect_error(get_nlines(fn))
+  
+  writeLines('', fn)
+  expect_equal(get_nlines(fn), 1) #because writeLines ends with new line.
+  
+  fn <- tempfile()
+  writeLines('', fn, sep='')
+  expect_equal(get_nlines(fn), 0)
+  
+  fn <- tempfile()
+  s <- c('a','','b')
+  writeLines(s, fn, sep='\n')
+  expect_equal(get_nlines(fn), length(s))
+  
+  fn <- tempfile()
+  s <- c('a','','','b')
+  writeLines(s, fn, sep='\n')
+  expect_equal(get_nlines(fn), length(s))
+  
+  fn <- tempfile()
+  s <- c('a\n','\n','b')
+  writeLines(s, fn, sep='')
+  expect_equal(get_nlines(fn), length(s))
+  
 })
 
 test_that('`get_ncolumns works', {
