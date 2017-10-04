@@ -7,7 +7,7 @@
 \alias{get_nlines}
 \title{Auxiliary functions}
 \usage{
-get_ncols(file, sep = " ")
+get_ncols(file, sep = "")
 
 get_firstcolumn(fn, class = "integer", ...)
 
@@ -16,7 +16,7 @@ get_nlines(fn)
 \arguments{
 \item{file}{Filename or connection to read from.}
 
-\item{sep}{Character that separate fields.}
+\item{sep}{Character that separate fields. See argument for \code{\link[base]{scan}}.}
 
 \item{fn}{Filename.}
 

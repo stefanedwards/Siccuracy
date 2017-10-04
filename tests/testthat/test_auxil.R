@@ -79,7 +79,7 @@ test_that('`get_firstcolumn works', {
   
 })
 
- test_that('Fortran `get_nlines` and `get_ncolumns` can handle very, very long lines', {
+ test_that('Rcpp `get_nlines` and `get_ncols` (scan) can handle very, very long lines', {
    cols <- 20000
    rows <- 5
    m <- matrix(sample.int(9, cols*rows, replace=TRUE), ncol=cols)

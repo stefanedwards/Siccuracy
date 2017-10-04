@@ -11,7 +11,7 @@ NULL
 #' \code{get_ncols} returns number of columns.
 #'
 #' @param file Filename or connection to read from.
-#' @param sep Character that separate fields.
+#' @param sep Character that separate fields. See argument for \code{\link[base]{scan}}.
 #' @return \code{get_ncols}: Number of read fields, including ID columns.
 #' @export
 #' @rdname auxfunc
