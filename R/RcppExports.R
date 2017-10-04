@@ -15,3 +15,43 @@ get_nlines <- function(fn) {
     .Call('_Siccuracy_get_nlines', PACKAGE = 'Siccuracy', fn)
 }
 
+#' Convert phase files to genotype files.
+#' 
+#' Simply sums every pair of rows together.
+#' 
+#' A phase file has format similar to SNP files, expect the genotype on each allele are listed on two pairs of rows.
+#' Each individual has therefore two rows, one for each allele, see following example:
+#'
+#' \code{Genotype file:}
+#' \tabular{lccccc}{
+#'  1003 \tab 0 \tab 1 \tab 1 \tab 2 \tab 0 \cr
+#'  1004 \tab 1 \tab 1 \tab 0 \tab 1 \tab 0 \cr
+#' }
+#'
+#' \code{Phase file:}
+#' \tabular{lccccc}{
+#'  1003 \tab 0 \tab 0 \tab 1 \tab 1 \tab 0 \cr
+#'  1003 \tab 0 \tab 1 \tab 0 \tab 1 \tab 0 \cr
+#'  1004 \tab 0 \tab 1 \tab 0 \tab 0 \tab 0 \cr
+#'  1004 \tab 1 \tab 0 \tab 0 \tab 1 \tab 0 \cr
+#' }
+#'
+#' \strong{Missing values:} Values after summing less than 0 or greater than 2 are assumed as missing and replaced with \code{na}.
+#' Value of this range can be changed with argument \code{range}.
+#'
+#' @param fnin Filename of input file, every two rows are for same animal.
+#' @param fnout Filename of output file.
+#' @param nlines Integer, maximum number of pairs of lines to convert. 
+#'               When \code{-1} (default), no maximum.
+#' @param na Value to use for missing values.
+#' @param range Integer vector of range of allowable values. 
+#'              Values in either input or output that are strictly smaller than 
+#'              first element or strictly larger than second element are replaced
+#'              with \code{na}.
+#' @return Number of rows written.
+#' @backref src/convert_phases.cpp
+#' @export
+convert_phases <- function(fnin, fnout, nlines = -1L, na = 9L, range = as.integer( c(0, 2))) {
+    .Call('_Siccuracy_convert_phases', PACKAGE = 'Siccuracy', fnin, fnout, nlines, na, range)
+}
+
