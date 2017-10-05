@@ -37,7 +37,7 @@ long convert_plinkA(std::string fnraw,
                     int nlines = -1,
                     std::string na = "9",
                     int idwidth = 4,
-                    int precision = 0)
+                    int precision = -1)
 {
   long cnt;  // counter
   long skipped;
