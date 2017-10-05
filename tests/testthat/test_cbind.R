@@ -13,11 +13,11 @@ test_that('cbind_snp_files binds columns correctly', {
   total <- do.call(cbind, SNPs)
   
   fnout <- tempfile()
-  stat <- cbind_snp_files(fns, fnout, int=TRUE)
+  stat <- cbind_snp_files(fns, fnout)
   res <- read.snps(fnout, what=integer())
   expect_equal(res, total)
   
-  stat <- cbind_snp_files(fns, fnout, int=FALSE)
+  stat <- cbind_snp_files(fns, fnout)
   res <- read.snps(fnout, what=numeric())
   expect_equal(res, total)  
 })
@@ -34,7 +34,7 @@ test_that('Skiplines skip lines', {
   total <- do.call(cbind, SNPs)
   
   fnout <- tempfile()
-  stat <- cbind_snp_files(fns, fnout, int=TRUE, skiplines=5)
+  stat <- cbind_snp_files(fns, fnout, skiplines=5)
   res <- read.snps(fnout, what=integer())
   expect_equal(res, total[-c(1:5),])  
 })
@@ -52,30 +52,27 @@ test_that('Excluded IDs are not outputted',{
   
   exclude <- sample.int(nrow(total), 5)
   fnout <- tempfile()
-  stat <- cbind_snp_files(fns, fnout, int=TRUE, excludeids = exclude)
+  stat <- cbind_snp_files(fns, fnout, excludeids = exclude)
   res <- read.snps(fnout, what=integer())
   expect_equal(res, total[-exclude,])  
 })
 
-test_that('Numerical formats are respected',{
-  #cat('Numerical formats are respected','\n')
+test_that('Mismatching ID are warned and thrown out',{
+  #cat('Excluded IDs are not outputted','\n')
   nchr <- 5
   fns <- replicate(nchr, tempfile())
   # Different columns per SNP file.
   cols <- sample.int(10, size=nchr) + 10
   SNPs <- sapply(cols, Siccuracy:::make.true, n =16)
+  rownames(SNPs[[1]])[c(3,5)] <- c(100, 105)
   null <- mapply(write.snps, file=fns, x=SNPs)
   
   total <- do.call(cbind, SNPs)
   
   fnout <- tempfile()
-  n <- cbind_snp_files(fns, fnout, int=FALSE, format='8.4')
-  s <- scan(fnout, what='character', quiet=TRUE, nlines=1)[-1]
-  expect(all(nchar(s) == 6), 'Wrong number of characters in written output.')  # spaces are stripped; expected character length is 4+2 (decimals + period + leading digit).
-  
-  #cat('Testing something else..\n')
-  n <- cbind_snp_files(fns, fnout, int=FALSE, format='10.8') 
-  s <- scan(fnout, what='character', quiet=TRUE)
-  expect(length(s) == nrow(total), 'Space as separators are not missing.')
-  
+  expect_warning( stat <- cbind_snp_files(fns, fnout) )
+  expect_equal(stat, nrow(total) - 2)
+  res <- read.snps(fnout, what=integer())
+  expect_equal(res, total[-c(3,5),])  
 })
+

@@ -15,6 +15,27 @@ get_nlines <- function(fn) {
     .Call('_Siccuracy_get_nlines', PACKAGE = 'Siccuracy', fn)
 }
 
+#' Column bind files with genotype matrices
+#'
+#' Does row-wise concatenation of multiple genotype files, 
+#' ignoring the first column in subsequent files.
+#' \strong{NB!} Assumes rows are ordered identically in all files, but will check that
+#' value in first column is identical. If not, corresponding line is skipped in all files.
+#' 
+#' @param fnin Character vector of filenames to concatenate. 
+#' @param fnout Filename of resulting file.
+#' @param skiplines Integer, number of lines to skip before outputting.
+#' @param excludeids Integer vector of first column id's to \emph{exclude} from the output. 
+#' @inheritParams convert_phases
+#' @return Number of lines written.
+#' @rdname cbind_snp_files
+#' @backref src/bind_snps.cpp
+#' @seealso \code{\link{rbind_snp_files}}
+#' @export
+cbind_snp_files <- function(fnin, fnout, skiplines = 0L, excludeids = as.integer( c()), idwidth = 4L, precision = -1L) {
+    .Call('_Siccuracy_cbind_snp_files', PACKAGE = 'Siccuracy', fnin, fnout, skiplines, excludeids, idwidth, precision)
+}
+
 #' Convert phase files to genotype files.
 #' 
 #' Simply sums every pair of rows together.

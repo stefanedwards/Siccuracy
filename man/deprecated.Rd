@@ -34,17 +34,13 @@ rbind_SNPs(hdid, ldid, hdpos, ldpos, hdfn, ldfn, fnout, outcol = NULL,
   na = 9, format = NULL, int = TRUE)
 }
 \arguments{
-\item{fns}{Character vector of filenames to concatenate. Max 255 characters per filename due to R-Fortran.}
+\item{fnout}{Filename of resulting file.}
 
-\item{fnout}{Filename of resulting file}
+\item{nlines}{Integer, number of lines in \code{true}. When \code{NULL}, automagically detected with \code{gen_nlines(true)}.}
 
-\item{nlines}{Number of lines to read from each file. When \code{NULL} (default), use all lines.}
+\item{skiplines}{Integer, number of lines to skip before outputting.}
 
-\item{ncols}{Number of columns to read from each file. When \code{NULL} (default), use all columns.}
-
-\item{skiplines}{Integer, number of lines to skip before outputting. \code{nlines} counts towards total number of lines, i.e. both skipped and outputted.}
-
-\item{excludeids}{Integer vector of first column id's to \emph{exclude} from the output. \code{nlines} also counts towards excluded lines.}
+\item{excludeids}{Integer vector of first column id's to \emph{exclude} from the output.}
 
 \item{int}{Logical (default \code{TRUE}), read and write integers.}
 

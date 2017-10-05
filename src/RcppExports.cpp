@@ -16,6 +16,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cbind_snp_files
+int cbind_snp_files(CharacterVector fnin, std::string fnout, int skiplines, IntegerVector excludeids, int idwidth, int precision);
+RcppExport SEXP _Siccuracy_cbind_snp_files(SEXP fninSEXP, SEXP fnoutSEXP, SEXP skiplinesSEXP, SEXP excludeidsSEXP, SEXP idwidthSEXP, SEXP precisionSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type fnin(fninSEXP);
+    Rcpp::traits::input_parameter< std::string >::type fnout(fnoutSEXP);
+    Rcpp::traits::input_parameter< int >::type skiplines(skiplinesSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type excludeids(excludeidsSEXP);
+    Rcpp::traits::input_parameter< int >::type idwidth(idwidthSEXP);
+    Rcpp::traits::input_parameter< int >::type precision(precisionSEXP);
+    rcpp_result_gen = Rcpp::wrap(cbind_snp_files(fnin, fnout, skiplines, excludeids, idwidth, precision));
+    return rcpp_result_gen;
+END_RCPP
+}
 // convert_phases
 long convert_phases(std::string fnin, std::string fnout, long nlines, long na, Rcpp::IntegerVector range, int idwidth, int precision);
 RcppExport SEXP _Siccuracy_convert_phases(SEXP fninSEXP, SEXP fnoutSEXP, SEXP nlinesSEXP, SEXP naSEXP, SEXP rangeSEXP, SEXP idwidthSEXP, SEXP precisionSEXP) {
