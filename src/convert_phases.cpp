@@ -54,12 +54,12 @@ long convert_phases(std::string fnin,
                     long na = 9,
                     Rcpp::IntegerVector range = Rcpp::IntegerVector::create(0, 2),
                     int idwidth = 4,
-                    int precision = 0) 
+                    int precision = -1) 
 {
   
   long cnt;
-  char id1;
-  char id2;
+  std::string id1;
+  std::string id2;
   float g;
   std::string line1;
   std::string line2;
