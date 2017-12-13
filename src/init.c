@@ -1,3 +1,5 @@
+#include <R.h>
+#include <Rinternals.h>
 #include <R_ext/RS.h>
 #include <stdlib.h> // for NULL
 #include <R_ext/Rdynload.h>
@@ -42,5 +44,5 @@ static const R_FortranMethodDef FortranEntries[] = {
 void R_init_Siccuracy(DllInfo *dll)
 {
     R_registerRoutines(dll, NULL, NULL, FortranEntries, NULL);
-    R_useDynamicSymbols(dll, FALSE);
+    R_useDynamicSymbols(dll, TRUE);
 }
