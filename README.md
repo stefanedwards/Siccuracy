@@ -3,8 +3,6 @@
 Stefan's imputation accuracy package. And with helper functions for working with AlphaSuite's SNP files.
 Implemented in Fortran for speed.
 
-See also script [runAlphaImpute](runAlphaImpute/)
-
 ## What is this repository for? ###
 
 This package was developed for working with SNP files in the format used in [AlphaSuite](https://bitbucket.org/tutorials/markdowndemo). The format of these consists of first column with sample ID (Individual or Animal ID), and subsequent column counting minor alleles at each loci: 
@@ -22,7 +20,7 @@ Requirements for format: Space separated; number of digits is unimportant.
 
 In R, load package with `library(Siccuracy)`. There exists a number of functions:
 
-* Calculate imputation accuracy (i.e. correlation between two genotype matrices): `imputation_accuracy3`
+* Calculate imputation accuracy (i.e. correlation between two genotype matrices): `imputation_accuracy`
 * Calculate hetereozygosity: `heterozygosity`
 * Helper functions: `get_ncol`, `get_firstcolumn`, `get_nlines`
 * Combining files: `rowconcatenate` and `mergeChips`
@@ -34,16 +32,12 @@ In R, load package with `library(Siccuracy)`. There exists a number of functions
 
 ## How do I get set up? ###
 
+Visiti https://github.com/stefanedwards/Siccuracy/releases to download 
+the package for installation in R.
+Zip-files are available for Windows users.
 
-Download source folder, from command line run
-
-```
-#!
-R CMD INSTALL Siccuracy
-```
-
-or, (untested)
-
+Alternatively, 
+use `devtools` to install directly from github:
 
 ```
 #!r
